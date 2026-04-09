@@ -1,0 +1,302 @@
+{
+  "$description": "Smart Site Design Tokens — 三端汇总参考文件（W3C Design Tokens 格式）。注意：各端令牌完全独立，此文件仅供对比参考，不作为开发依据。各端开发请使用 tokens/app/、tokens/pc/、tokens/h5/ 下的独立文件。",
+  "$version": "3.0.0",
+  "$figmaFileUrl": "[请补充 Figma 文件链接]",
+  "$lastSyncDate": "2026-03-24",
+  "$architecture": "platform-independent — 三端独立设计语言，无跨端继承关系",
+
+  "app": {
+    "$description": "APP 端完整设计令牌 — 唯一权威来源: design-tokens-app.json（Figma 自动提取，Figma 文件 APP端设计，版本 2334524955982427521，提取时间 2026-03-24T14:10:45.062Z）",
+    "$designLanguage": "现代、活泼、圆润",
+    "$brand": "NOVASYNC / SMART SITE",
+    "$figmaVersion": "2334524955982427521",
+    "$extractedAt": "2026-03-24T14:10:45.062Z",
+    "$sourceFile": "outputs/ui/shared/design-tokens-app.json",
+
+    "color": {
+      "$description": "全部色值直接来自 Figma 提取，以 color-N 为 Figma token 标识",
+      "white":            { "$value": "#ffffff", "$type": "color", "$figmaToken": "color-0",   "$description": "纯白（卡片/导航栏背景）" },
+      "black":            { "$value": "#000000", "$type": "color", "$figmaToken": "color-1",   "$description": "纯黑" },
+      "ios-separator":    { "$value": "#d1d1d6", "$type": "color", "$figmaToken": "color-2",   "$description": "iOS 分隔线" },
+      "text-primary":     { "$value": "#3c3c43", "$type": "color", "$figmaToken": "color-3",   "$description": "主文字（标题、标签、导航标题）" },
+      "ios-grouped-bg":   { "$value": "#ebebf5", "$type": "color", "$figmaToken": "color-4",   "$description": "iOS 分组背景" },
+      "success":          { "$value": "#34c759", "$type": "color", "$figmaToken": "color-5",   "$description": "成功状态" },
+      "warning":          { "$value": "#ffd60a", "$type": "color", "$figmaToken": "color-6",   "$description": "警告状态" },
+      "text-tertiary":    { "$value": "#5f6f83", "$type": "color", "$figmaToken": "color-7",   "$description": "三级文字（时间戳、辅助信息）" },
+      "error":            { "$value": "#f56c6c", "$type": "color", "$figmaToken": "color-8",   "$description": "错误提示、校验失败、badge" },
+      "primary":          { "$value": "#6892ff", "$type": "color", "$figmaToken": "color-9",   "$description": "主品牌色（Sign In 按钮、Tab 选中、功能图标色）" },
+      "border":           { "$value": "#e3e9f4", "$type": "color", "$figmaToken": "color-10",  "$description": "输入框下划线、通用分隔线、卡片边框" },
+      "text-secondary":   { "$value": "#5d6776", "$type": "color", "$figmaToken": "color-11",  "$description": "辅助文字（描述、副标题）" },
+      "brand-red":        { "$value": "#f83000", "$type": "color", "$figmaToken": "color-12",  "$description": "危险操作（删除）/ SMART SITE 品牌红" },
+      "text-placeholder": { "$value": "#c0c4cc", "$type": "color", "$figmaToken": "color-13",  "$description": "输入框占位文字" },
+      "primary-dark":     { "$value": "#4c6ef5", "$type": "color", "$figmaToken": "color-14",  "$description": "主品牌色深色变体（边框高亮、选中态边框）" },
+      "border-light":     { "$value": "#d5dbe2", "$type": "color", "$figmaToken": "color-16",  "$description": "轻边框" },
+      "text-hint":        { "$value": "#7c8993", "$type": "color", "$figmaToken": "color-17",  "$description": "提示文字、次要标签" },
+      "text-secondary-alt": { "$value": "#5f6368", "$type": "color", "$figmaToken": "color-118", "$description": "次要文字替代色" },
+      "text-disabled":    { "$value": "#a5a8ae", "$type": "color", "$figmaToken": "color-119", "$description": "禁用/未选中文字、Tab 未选中" },
+      "bg-page":          { "$value": "#f5f7ff", "$type": "color", "$figmaToken": "color-121", "$description": "页面背景色 / 功能图标容器背景" },
+      "bg-light":         { "$value": "#f3f3f3", "$type": "color", "$figmaToken": "color-122", "$description": "只读字段背景" },
+      "bg-secondary":     { "$value": "#f6f6f6", "$type": "color", "$figmaToken": "color-113", "$description": "次级背景（筛选项未选中、骨架屏）/ 轻分隔线" },
+      "primary-bg":       { "$value": "#e7edff", "$type": "color", "$figmaToken": "color-114", "$description": "主色浅背景（选中行背景、高亮区域）" },
+      "teal-accent":      { "$value": "#4eb3ba", "$type": "color", "$figmaToken": "color-116", "$description": "青色功能图标（历史记录、辅助图标）" },
+      "amber":            { "$value": "#eeae57", "$type": "color", "$figmaToken": "color-117", "$description": "琥珀色功能图标" },
+      "overlay":          { "$value": "rgba(0,0,0,0.4)", "$type": "color", "$description": "遮罩层背景" }
+    },
+
+    "spacing": {
+      "$description": "全部间距值直接来自 Figma 提取（单位 px）",
+      "space-2":   { "$value": "2px",   "$type": "dimension" },
+      "space-4":   { "$value": "4px",   "$type": "dimension" },
+      "space-6":   { "$value": "6px",   "$type": "dimension" },
+      "space-8":   { "$value": "8px",   "$type": "dimension" },
+      "space-9":   { "$value": "9px",   "$type": "dimension" },
+      "space-10":  { "$value": "10px",  "$type": "dimension" },
+      "space-11":  { "$value": "11px",  "$type": "dimension" },
+      "space-12":  { "$value": "12px",  "$type": "dimension" },
+      "space-14":  { "$value": "14px",  "$type": "dimension" },
+      "space-16":  { "$value": "16px",  "$type": "dimension" },
+      "space-18":  { "$value": "18px",  "$type": "dimension" },
+      "space-20":  { "$value": "20px",  "$type": "dimension" },
+      "space-24":  { "$value": "24px",  "$type": "dimension" },
+      "space-30":  { "$value": "30px",  "$type": "dimension" },
+      "space-32":  { "$value": "32px",  "$type": "dimension" },
+      "space-37":  { "$value": "37px",  "$type": "dimension" },
+      "space-48":  { "$value": "48px",  "$type": "dimension" },
+      "space-60":  { "$value": "60px",  "$type": "dimension" },
+      "space-88":  { "$value": "88px",  "$type": "dimension" },
+      "space-105": { "$value": "105px", "$type": "dimension" },
+      "space-303": { "$value": "303px", "$type": "dimension" }
+    },
+
+    "radius": {
+      "$description": "全部圆角值直接来自 Figma 提取（单位 px）",
+      "radius-1":          { "$value": "1px",                      "$type": "dimension" },
+      "radius-2":          { "$value": "2px",                      "$type": "dimension" },
+      "radius-4":          { "$value": "4px",                      "$type": "dimension" },
+      "radius-5":          { "$value": "5px",                      "$type": "dimension" },
+      "radius-8":          { "$value": "8px",                      "$type": "dimension", "$description": "小圆角（标签、徽章）" },
+      "radius-10":         { "$value": "10px",                     "$type": "dimension", "$description": "卡片圆角" },
+      "radius-20":         { "$value": "20px",                     "$type": "dimension", "$description": "大卡片 / 弹层圆角" },
+      "radius-30":         { "$value": "30px",                     "$type": "dimension", "$description": "胶囊按钮" },
+      "radius-100":        { "$value": "100px",                    "$type": "dimension", "$description": "完整圆形（头像、图标容器）" },
+      "radius-0-0-20-20":  { "$value": "0 0 20px 20px",           "$type": "dimension", "$description": "顶部直角、底部圆角（弹层底部卡片）" },
+      "radius-10-10-0-0":  { "$value": "10px 10px 0 0",           "$type": "dimension", "$description": "底部直角、顶部圆角" },
+      "radius-20-20-0-0":  { "$value": "20px 20px 0 0",           "$type": "dimension", "$description": "底部直角、顶部大圆角（底部弹层）" },
+      "radius-44-44-0-0":  { "$value": "44px 44px 0 0",           "$type": "dimension", "$description": "Tab 栏顶部圆角容器" }
+    },
+
+    "typography": {
+      "$description": "字体样式直接来自 Figma 提取，以 figmaStyleId 为唯一标识",
+      "font-family-primary": { "$value": "Noto Sans SC",  "$type": "fontFamily", "$description": "主字体（英文正文、数字）" },
+      "font-family-title":   { "$value": "PingFang SC",   "$type": "fontFamily", "$description": "中文标题字体" },
+      "font-family-brand":   { "$value": "Righteous",     "$type": "fontFamily", "$description": "品牌 Logo 字体（NOVASYNC）" },
+      "font-family-quote":   { "$value": "Urbanist",      "$type": "fontFamily", "$description": "横幅引言字体" },
+      "font-family-caption": { "$value": "Futura",        "$type": "fontFamily", "$description": "说明文字字体" },
+
+      "text-标题": {
+        "$type": "typography",
+        "$value": { "fontFamily": "PingFang SC", "fontSize": "18px", "fontWeight": 600, "lineHeight": "150%", "letterSpacing": 0 },
+        "$figmaStyleId": "12:4358"
+      },
+      "text-小标题": {
+        "$type": "typography",
+        "$value": { "fontFamily": "PingFang SC", "fontSize": "14px", "fontWeight": 500, "lineHeight": "150%", "letterSpacing": 0 },
+        "$figmaStyleId": "12:5135"
+      },
+      "text-填充": {
+        "$type": "typography",
+        "$value": { "fontFamily": "PingFang SC", "fontSize": "16px", "fontWeight": 600, "lineHeight": "150%", "letterSpacing": 0 },
+        "$figmaStyleId": "12:4353"
+      },
+      "text-小字": {
+        "$type": "typography",
+        "$value": { "fontFamily": "PingFang SC", "fontSize": "12px", "fontWeight": 500, "lineHeight": "150%", "letterSpacing": 0 },
+        "$figmaStyleId": "12:4355"
+      },
+      "mobile-16-regular": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Noto Sans SC", "fontSize": "16px", "fontWeight": 400, "lineHeight": "112.5%", "letterSpacing": 0 },
+        "$figmaStyleId": "6:1469"
+      },
+      "mobile-16-medium": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Noto Sans SC", "fontSize": "16px", "fontWeight": 500, "lineHeight": "112.5%", "letterSpacing": 0 },
+        "$figmaStyleId": "6:1470"
+      },
+      "mobile-14-regular": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Noto Sans SC", "fontSize": "14px", "fontWeight": 400, "lineHeight": "128.57%", "letterSpacing": 0 },
+        "$figmaStyleId": "6:143"
+      },
+      "mobile-14-medium": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Noto Sans SC", "fontSize": "14px", "fontWeight": 500, "lineHeight": "128.57%", "letterSpacing": 0 },
+        "$figmaStyleId": "6:250"
+      },
+      "mobile-12-regular": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Noto Sans SC", "fontSize": "12px", "fontWeight": 400, "lineHeight": "116.67%", "letterSpacing": 0 },
+        "$figmaStyleId": "6:318"
+      },
+      "mobile-12-medium": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Noto Sans SC", "fontSize": "12px", "fontWeight": 500, "lineHeight": "100%", "letterSpacing": 0 },
+        "$figmaStyleId": "6:295"
+      },
+      "sc1-p1": {
+        "$type": "typography",
+        "$value": { "fontFamily": "Futura", "fontSize": "13px", "fontWeight": 500, "lineHeight": "132.81%", "letterSpacing": "-0.195px" },
+        "$figmaStyleId": "6:145"
+      }
+    },
+
+    "shadow": {
+      "btn-nav-shadow": {
+        "$type": "shadow",
+        "$value": "0px -4px 4px 0px rgba(0,0,0,0.051)",
+        "$figmaStyleId": "6:1563",
+        "$description": "Tab Bar / 底部导航阴影"
+      },
+      "card": {
+        "$type": "shadow",
+        "$value": "0 2px 8px rgba(0,0,0,0.06)",
+        "$description": "通用卡片阴影"
+      },
+      "form-slide": {
+        "$type": "shadow",
+        "$value": "0 -2px 10px rgba(0,0,0,0.05)",
+        "$description": "底部上推表单阴影"
+      }
+    },
+
+    "border": {
+      "$description": "全部边框样式直接来自 Figma 提取",
+      "border-primary-1":     { "$type": "border", "$value": { "color": "#4c6ef5", "width": "1px",   "style": "solid" }, "$figmaToken": "color-14" },
+      "border-primary-2":     { "$type": "border", "$value": { "color": "#4c6ef5", "width": "2px",   "style": "solid" }, "$figmaToken": "color-14" },
+      "border-primary-blue-1":{ "$type": "border", "$value": { "color": "#6892ff", "width": "1px",   "style": "solid" }, "$figmaToken": "color-9" },
+      "border-divider-1":     { "$type": "border", "$value": { "color": "#e3e9f4", "width": "1px",   "style": "solid" }, "$figmaToken": "color-10" },
+      "border-bg-page-1":     { "$type": "border", "$value": { "color": "#f5f7ff", "width": "1px",   "style": "solid" }, "$figmaToken": "color-121" },
+      "border-secondary-2":   { "$type": "border", "$value": { "color": "#f6f6f6", "width": "2px",   "style": "solid" }, "$figmaToken": "color-113" },
+      "border-light-f2":      { "$type": "border", "$value": { "color": "#f2f2f2", "width": "1px",   "style": "solid" } },
+      "border-light-f7":      { "$type": "border", "$value": { "color": "#f7f7f7", "width": "1px",   "style": "solid" } },
+      "border-gray-1-5":      { "$type": "border", "$value": { "color": "#afafaf", "width": "1.5px", "style": "solid" } },
+      "border-warm-gray-1-3": { "$type": "border", "$value": { "color": "#dfddd9", "width": "1.3px", "style": "solid" } },
+      "border-teal-1":        { "$type": "border", "$value": { "color": "#3fd0b6", "width": "1px",   "style": "solid" }, "$description": "青色功能边框" }
+    },
+
+    "opacity": {
+      "opacity-60": { "$type": "opacity", "$value": 0.6, "$description": "半透明遮罩 / 禁用态" },
+      "opacity-0":  { "$type": "opacity", "$value": 0,   "$description": "全透明" }
+    },
+
+    "gradient": {
+      "$description": "全部渐变样式直接来自 Figma 提取",
+      "linear-blue": {
+        "$type": "gradient",
+        "$value": "linear-gradient(180deg, #6892ff 0%, #445dda 51%, #3110d2 100%)",
+        "$figmaStyleId": "6:336",
+        "$description": "主按钮渐变（Sign In、Submit）"
+      },
+      "color-c-legend-3-linear": {
+        "$type": "gradient",
+        "$value": "linear-gradient(180deg, #3963ce 0%, #6892ff 100%)",
+        "$figmaStyleId": "6:196",
+        "$description": "辅助渐变（装饰、图表图例）"
+      },
+      "gradient-1":  { "$type": "gradient", "$value": "linear-gradient(180deg, #315a78 0%, #1b405b 100%)" },
+      "gradient-2":  { "$type": "gradient", "$value": "linear-gradient(180deg, #4a7b9a 0%, #2d5a7b 100%)" },
+      "gradient-3":  { "$type": "gradient", "$value": "linear-gradient(180deg, #92a5b2 0%, #5d8099 100%)" },
+      "gradient-4":  { "$type": "gradient", "$value": "linear-gradient(180deg, #185e82 0%, #0f2b41 73%)" },
+      "gradient-5":  { "$type": "gradient", "$value": "linear-gradient(180deg, #e2e3e2 0%, #4d6680 100%)" },
+      "gradient-6":  { "$type": "gradient", "$value": "linear-gradient(180deg, #437193 0%, #28597a 100%)" },
+      "gradient-7":  { "$type": "gradient", "$value": "linear-gradient(180deg, #949ba6 0%, #102e46 100%)" },
+      "gradient-8":  { "$type": "gradient", "$value": "linear-gradient(180deg, #246487 0%, #163d5c 71%)" },
+      "gradient-9":  { "$type": "gradient", "$value": "linear-gradient(180deg, #7696ab 0%, #163b58 100%)" },
+      "gradient-10": { "$type": "gradient", "$value": "linear-gradient(180deg, #59697d 0%, #1f3c5a 100%)" },
+      "gradient-11": { "$type": "gradient", "$value": "linear-gradient(180deg, #f1ebe8 0%, #cbcdcf 100%)" }
+    },
+
+    "animation": {
+      "fast":   { "$value": "200ms ease",         "$type": "duration", "$description": "遮罩淡入" },
+      "normal": { "$value": "300ms ease-in-out",  "$type": "duration", "$description": "面板滑入" }
+    }
+  },
+
+  "pc": {
+    "$description": "PC 端完整设计令牌 — 权威来源: UI-REQ-001-pc.md § 2",
+    "$designLanguage": "商务、专业、沉稳",
+    "$brand": "SMART CONSTRUCTION / BACK OFFICE",
+    "$componentLibrary": "Element UI",
+
+    "color": {
+      "primary": { "$value": "#4A90D9", "$type": "color", "$description": "主品牌色（蓝）" },
+      "primary-hover": { "$value": "#357ABD", "$type": "color" },
+      "primary-active": { "$value": "#2A6FA8", "$type": "color" },
+      "primary-bg": { "$value": "#EBF5FF", "$type": "color" },
+      "error": { "$value": "#FF4D4F", "$type": "color" },
+      "success": { "$value": "#52C41A", "$type": "color" },
+      "warning": { "$value": "#FAAD14", "$type": "color" },
+      "badge": { "$value": "#FF4D4F", "$type": "color" },
+      "overlay": { "$value": "rgba(0,0,0,0.4)", "$type": "color" },
+      "text-primary": { "$value": "#212121", "$type": "color", "$description": "品牌标题" },
+      "text-body": { "$value": "#333333", "$type": "color", "$description": "正文" },
+      "text-secondary": { "$value": "#666666", "$type": "color" },
+      "text-placeholder": { "$value": "#BDBDBD", "$type": "color" },
+      "text-disabled": { "$value": "#999999", "$type": "color" },
+      "border": { "$value": "#D9D9D9", "$type": "color", "$description": "全边框输入框" },
+      "border-light": { "$value": "#E8E8E8", "$type": "color" },
+      "border-lighter": { "$value": "#F0F0F0", "$type": "color" },
+      "bg-page": { "$value": "#F5F7FA", "$type": "color" },
+      "bg-card": { "$value": "#FFFFFF", "$type": "color" },
+      "hover-bg": { "$value": "#F5F7FA", "$type": "color" }
+    },
+
+    "spacing": {
+      "xs": { "$value": "4px", "$type": "dimension" },
+      "sm": { "$value": "8px", "$type": "dimension" },
+      "md": { "$value": "12px", "$type": "dimension" },
+      "lg": { "$value": "16px", "$type": "dimension" },
+      "xl": { "$value": "20px", "$type": "dimension" },
+      "xxl": { "$value": "24px", "$type": "dimension" }
+    },
+
+    "radius": {
+      "sm": { "$value": "4px", "$type": "dimension" },
+      "md": { "$value": "7px", "$type": "dimension" },
+      "lg": { "$value": "18px", "$type": "dimension", "$description": "登录卡片" }
+    },
+
+    "typography": {
+      "font-family": { "$value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif", "$type": "fontFamily" },
+      "font-size-xs": { "$value": "12px", "$type": "dimension" },
+      "font-size-sm": { "$value": "13px", "$type": "dimension" },
+      "font-size-md": { "$value": "14px", "$type": "dimension" },
+      "font-size-lg": { "$value": "16px", "$type": "dimension" },
+      "font-size-xl": { "$value": "21px", "$type": "dimension" },
+      "font-weight-regular": { "$value": "400", "$type": "fontWeight" },
+      "font-weight-medium": { "$value": "500", "$type": "fontWeight" },
+      "font-weight-semibold": { "$value": "600", "$type": "fontWeight" },
+      "font-weight-bold": { "$value": "700", "$type": "fontWeight" }
+    },
+
+    "shadow": {
+      "card": { "$value": "0 8px 32px rgba(0,0,0,0.12)", "$type": "shadow", "$description": "登录卡片" },
+      "header": { "$value": "0 1px 4px rgba(0,0,0,0.04)", "$type": "shadow" },
+      "content": { "$value": "0 1px 4px rgba(0,0,0,0.04)", "$type": "shadow" },
+      "dropdown": { "$value": "0 4px 12px rgba(0,0,0,0.08)", "$type": "shadow" }
+    },
+
+    "animation": {
+      "fast": { "$value": "200ms ease", "$type": "duration", "$description": "hover 变色" },
+      "normal": { "$value": "300ms ease-in-out", "$type": "duration", "$description": "侧边栏折叠" },
+      "slow": { "$value": "400ms ease", "$type": "duration", "$description": "弹窗/抽屉" }
+    }
+  },
+
+  "h5": {
+    "$description": "H5 端完整设计令牌 — 待定义",
+    "$designLanguage": "待定",
+    "$brand": "待定",
+    "$status": "🔴 尚未开始设计"
+  }
+}
