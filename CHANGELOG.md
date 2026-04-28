@@ -8,29 +8,32 @@
 ## REQ-014 · 图纸管理用户反馈迭代（REQ-003/004/005 第一版用户反馈汇总）
 
 - **状态**: 草稿
-- **涉及端**: PC / APP（视反馈内容而定）
+- **涉及端**: PC / APP
 - **依赖**: REQ-003、REQ-004、REQ-005
 
 ### 新增内容
-- 统一收录REQ-003/004/005上线第一版后的用户反馈
-- 按反馈来源、用户角色、优先级分类整理
-- 迭代方案涵盖功能优化、交互改进、性能/体验优化等
+- **FB-001**（REQ-003）：上传新版本时允许修改 Drawing Code（图纸编号本身），同项目唯一性校验，历史版本保留原值不变
+- **FB-002**（REQ-003）：图纸版本详情新增附件（Attachments）区域，支持任意文件类型上传；SE 可下载，上传/删除权限与 PDF 管理一致
+- **FB-003**（REQ-004）：`+Markup` 入口从操作列移入 Markup 历史弹框，弹框内新增 `+ Add Markup` 按钮
+- **FB-004**（REQ-004）：Markup 历史列表新增"Drawing Code"列，由系统在创建 Markup 时自动记录，只读展示
+- **FB-005**（REQ-004）：SE 角色在 PC 端和 APP 端完全隐藏 Markup 相关所有入口（`v-if` 控制），接口层同步返回 403
+- **FB-006**（REQ-003/REQ-005）：SE 视角只显示 Drawing Code，隐藏系统版本号（Ver）字段；非 SE 角色同时显示两者
 
 ### 对已有需求的影响
 | 需求 | 影响 |
 |------|------|
-| **REQ-003** | 视反馈内容而定 |
-| **REQ-004** | 视反馈内容而定 |
-| **REQ-005** | 视反馈内容而定 |
+| **REQ-003** | `drawing_versions` 表 `drawing_code` 允许随新版本更新；新增 `drawing_attachments` 表；SE 响应中过滤 `ver` 字段 |
+| **REQ-004** | `markups` 表新增 `drawing_code` 字段（创建时自动写入）；SE 角色接口层 403；Markup 历史弹框新增 `+ Add Markup` 入口 |
+| **REQ-005** | SE PC 端图纸列表及版本详情不再显示系统版本号（Ver） |
 
 ### 文档清单
 | 类型 | 文件 |
 |------|------|
-| PC端需求 | `requirements/pc/REQ-014-pc.md` |
-| UI设计 | （待生成） |
-| 前端开发 | （待生成） |
-| 后端开发 | （待生成） |
-| QA测试 | （待生成） |
+| PC 端需求 | `requirements/pc/REQ-014-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-014-pc.md` · `outputs/ui/app/UI-REQ-014-app.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-014-pc.md` · `outputs/frontend/app/FRONTEND-REQ-014-app.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-014.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-014-pc.md` · `outputs/qa/app/QA-REQ-014-app.md` |
 
 ---
 
@@ -181,11 +184,11 @@
 ### 文档清单
 | 类型 | 文件 |
 |------|------|
-| PC端需求 | `requirements/pc/REQ-009-pc.md` |
-| UI设计 | `outputs/ui/pc/UI-REQ-009-pc.md` |
+| PC 端需求 | `requirements/pc/REQ-009-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-009-pc.md` |
 | 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-009-pc.md` |
-| 后端开发 | `outputs/backend/pc/BACKEND-REQ-009-pc.md` |
-| QA测试 | `outputs/qa/pc/QA-REQ-009-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-009.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-009-pc.md` |
 
 ---
 
@@ -210,11 +213,11 @@
 ### 文档清单
 | 类型 | 文件 |
 |------|------|
-| PC端需求 | `requirements/pc/REQ-008-pc.md` |
-| UI设计 | `outputs/ui/pc/UI-REQ-008-pc.md` |
-| 前端开发 | `outputs/frontend/FRONTEND-REQ-008-pc.md` |
-| 后端开发 | `outputs/backend/BACKEND-REQ-008-pc.md` |
-| QA测试 | `outputs/qa/QA-REQ-008-pc.md` |
+| PC 端需求 | `requirements/pc/REQ-008-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-008-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-008-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-008.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-008-pc.md` |
 
 ---
 
@@ -310,6 +313,7 @@
 | PC 端需求 | `requirements/pc/REQ-005-pc.md` |
 | UI 设计 | `outputs/ui/pc/UI-REQ-005-pc.md` |
 | 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-005-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-005.md` |
 | QA 测试 | `outputs/qa/pc/QA-REQ-005-pc.md` |
 
 ---
@@ -440,6 +444,7 @@ REQ-001 登录和首页（基础）
   ├── REQ-003 工程图纸管理（核心模块）
   │     ├── REQ-004 图纸局部更新 Markup
   │     │     └── REQ-005 SE PC 端图纸访问（扩展 REQ-003 + REQ-004）
+  │     │           └── REQ-014 图纸管理用户反馈迭代（迭代 REQ-003 + REQ-004 + REQ-005）
   │     ├── REQ-006 图纸二维码与公开状态页
   │     └── REQ-007 图纸两级审批流程（扩展 REQ-003，影响 REQ-006）
   └── REQ-008 公司层级工序模板配置
