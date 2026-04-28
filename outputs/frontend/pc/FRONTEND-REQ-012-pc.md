@@ -1,256 +1,259 @@
 # FRONTEND-REQ-012-pc.md
 
-## CM"我的任务"PC 端前端开发说明
+## CM"我的任务"PC 端前端说明
 
 > 对应需求：REQ-012
 > 平台：PC 端（Vue2 + Element UI）
-> 关联 UI 文档：UI-REQ-012-pc.md
+> 影响模块：CM 我的任务列表、工序任务侧滑弹框、任务详情页 Tab
 
 ---
 
-### 1. 功能概述
+### 1. 路由与页面结构
 
-为 CM 角色实现专属的"我的任务（CM）"菜单页面，包含：
-- 任务列表页（筛选 + 表格 + 操作列）
-- 工序任务创建/编辑侧滑弹框（Drawer）
-- 任务详情页（Tab 结构：任务信息 / 工序任务 / 问题上报）
-- 问题汇报弹框（Dialog）
+```
+/cm/my-tasks                    → CM 我的任务列表页
+/cm/my-tasks/:taskId            → 任务详情页（Tab 结构）
+```
 
----
-
-### 2. 技术栈
-
-| 项目 | 版本/说明 |
-|------|----------|
-| 框架 | Vue 2.x |
-| UI 组件库 | Element UI 2.x |
-| 路由 | Vue Router |
-| 状态管理 | Vuex（可选，与现有方案一致） |
-| HTTP 请求 | Axios |
-
----
-
-### 3. 页面与组件清单
-
-| 组件/页面文件 | 说明 |
-|--------------|------|
-| `views/cm/MyTask.vue` | CM 我的任务列表页 |
-| `views/cm/TaskDetail.vue` | 任务详情页（Tab 结构） |
-| `components/cm/ProcessTaskDrawer.vue` | 工序任务创建/编辑侧滑弹框（复用） |
-| `components/cm/IssueReportDialog.vue` | 问题汇报弹框 |
-
----
-
-### 4. 路由配置
-
-```js
-// 新增路由（仅 CM 角色可访问）
-{
-  path: '/progress/cm/my-task',
-  name: 'CMMyTask',
-  component: () => import('@/views/cm/MyTask.vue'),
-  meta: { roles: ['CM'] }
-},
-{
-  path: '/progress/cm/task/:taskId',
-  name: 'CMTaskDetail',
-  component: () => import('@/views/cm/TaskDetail.vue'),
-  meta: { roles: ['CM'] }
-}
+组件目录建议：
+```
+src/views/cm/
+  MyTaskList.vue                 # 列表页
+  MyTaskDetail.vue               # 详情页
+  components/
+    ProcessTaskDrawer.vue        # 工序任务创建/编辑侧滑弹框（复用）
+    IssueReportDialog.vue        # 问题汇报弹框
+    tabs/
+      TaskInfoTab.vue            # Tab1：任务信息
+      ProcessTaskTab.vue         # Tab2：工序任务列表
+      IssueListTab.vue           # Tab3：问题上报列表
 ```
 
 ---
 
-### 5. 功能实现细节
+### 2. 列表页（MyTaskList.vue）
 
-#### 5.1 任务列表页（MyTask.vue）
+#### 2.1 数据获取
 
-**筛选区：**
-- 任务状态多选下拉（`el-select multiple`）
-- WBS 输入搜索
-- 计划时间范围选择（`el-date-picker type="daterange"`）
-- 搜索 / 重置按钮
-- 筛选条件变更后自动触发接口请求
-
-**表格（`el-table`）：**
-- 字段：Activity ID、Activity Name（可点击跳转详情）、WBS、计划时间、实际时间、Deviation、Status、优先级、进度、操作
-- Deviation 超期（> 0）时单元格文字颜色显示红色
-- 进度列展示 `el-progress`（`type="line"` `show-text`）
-- 操作列：`el-button type="text"` "新建工序任务" | "汇报问题"
-- 分页：`el-pagination`，默认每页 20 条
-
-**事件处理：**
 ```js
-// 点击新建工序任务
-handleNewProcessTask(row) {
-  this.currentTask = row
-  this.drawerVisible = true
-  this.drawerMode = 'create'
-},
-// 点击汇报问题
-handleReportIssue(row) {
-  this.currentTask = row
-  this.issueDialogVisible = true
+// 接口：GET /api/cm/tasks
+// 参数：{ status, wbs, startDate, endDate, keyword, page, pageSize }
+fetchTasks() {
+  this.loading = true
+  getCmTaskList(this.queryParams).then(res => {
+    this.tableData = res.data.list
+    this.total = res.data.total
+  }).finally(() => { this.loading = false })
 }
+```
+
+#### 2.2 操作列按钮控制
+
+```js
+// 新建工序任务：任务已完成或已作废时禁用
+isCreateProcessDisabled(row) {
+  return ['completed', 'cancelled'].includes(row.status)
+},
+// 汇报问题：任务已作废时禁用
+isReportIssueDisabled(row) {
+  return row.status === 'cancelled'
+}
+```
+
+模板示例：
+```html
+<el-button
+  type="text"
+  :disabled="isCreateProcessDisabled(scope.row)"
+  @click="openProcessDrawer(scope.row)">
+  新建工序任务
+</el-button>
+<el-button
+  type="text"
+  :disabled="isReportIssueDisabled(scope.row)"
+  @click="openIssueDialog(scope.row)">
+  汇报问题
+</el-button>
 ```
 
 ---
 
-#### 5.2 工序任务创建/编辑侧滑弹框（ProcessTaskDrawer.vue）
+### 3. 工序任务侧滑弹框（ProcessTaskDrawer.vue）
 
-**Props：**
+#### 3.1 Props
+
 ```js
 props: {
   visible: Boolean,
-  mode: { type: String, default: 'create' }, // 'create' | 'edit'
-  parentTask: Object,   // 关联上级任务信息
-  editData: Object      // 编辑模式时传入的工序任务数据
+  taskId: String,          // 关联上级任务 ID
+  taskName: String,        // 关联上级任务名称（只读展示）
+  editData: Object         // 编辑模式传入现有工序数据，新建时为 null
 }
 ```
 
-**创建模式切换（引用模板 / 自定义）：**
+#### 3.2 创建方式切换
+
 ```js
 data() {
   return {
-    createMode: 'template', // 'template' | 'custom'
-    templateList: [],
+    createMode: 'template',  // 'template' | 'custom'
     selectedTemplates: [],
-    processTaskList: []   // 工序任务行列表（批量编辑）
-  }
-},
-methods: {
-  // 选择模板后生成工序任务行
-  handleTemplateConfirm() {
-    const rows = this.selectedTemplates.map(tpl => ({
-      name: tpl.name,
-      wbs: '',
-      startDate: null,
-      endDate: null,
-      priority: 'Medium',
-      weight: tpl.weight,   // 自动带出模板权重
-      weightFromTemplate: true,
-      assignedSE: null,
-      remark: ''
-    }))
-    this.processTaskList.push(...rows)
+    processTaskList: []      // 批量编辑列表
   }
 }
 ```
 
-**权重字段校验：**
+- 选择模板后点击"确认引用"，将模板数据填充到 `processTaskList`，可继续编辑
+- 自定义模式直接在 `processTaskList` 中增删行
+
+#### 3.3 权重字段校验
+
 ```js
-// 表单校验规则
 rules: {
   weight: [
-    { required: true, message: '权重为必填项', trigger: 'blur' },
-    { type: 'number', min: 1, max: 10, message: '权重范围为 1～10', trigger: 'blur' }
+    { required: true, message: '请输入权重', trigger: 'blur' },
+    { type: 'number', min: 1, max: 10, message: '权重范围 1～10', trigger: 'blur' }
   ]
 }
 ```
 
-**保存逻辑：**
-- 创建模式：调用 `POST /api/process-tasks/batch` 批量创建
-- 编辑模式：调用 `PUT /api/process-tasks/:id` 更新单条
+#### 3.4 提交
+
+```js
+handleSubmit() {
+  this.$refs.form.validate(valid => {
+    if (!valid) return
+    const api = this.editData ? updateProcessTask : createProcessTasks
+    api(this.taskId, this.processTaskList).then(() => {
+      this.$message.success('保存成功')
+      this.$emit('success')
+      this.$emit('update:visible', false)
+    })
+  })
+}
+```
 
 ---
 
-#### 5.3 任务详情页（TaskDetail.vue）
+### 4. 任务详情页 Tab 2：工序任务（ProcessTaskTab.vue）
 
-**Tab 组件：**
-```html
-<el-tabs v-model="activeTab">
-  <el-tab-pane label="任务信息" name="info">
-    <TaskInfoPanel :task="taskDetail" />
-  </el-tab-pane>
-  <el-tab-pane label="工序任务" name="process">
-    <ProcessTaskPanel :taskId="taskId" />
-  </el-tab-pane>
-  <el-tab-pane label="问题上报" name="issues">
-    <IssueListPanel :taskId="taskId" />
-  </el-tab-pane>
-</el-tabs>
-```
-
-**工序任务 Tab（ProcessTaskPanel）：**
+#### 4.1 表格列定义
 
 ```js
-// 已完成行置灰
+columns: [
+  { prop: 'name',           label: '工序名称' },
+  { prop: 'weight',         label: '权重' },
+  { prop: 'planStart',      label: '计划开始' },
+  { prop: 'planEnd',        label: '计划结束' },
+  { prop: 'actualStart',    label: '实际开始' },   // 只读，系统记录
+  { prop: 'actualEnd',      label: '实际结束' },   // 只读，系统记录
+  { prop: 'priority',       label: '优先级' },
+  { prop: 'assignedSe',     label: 'SE' },
+  { prop: 'status',         label: '状态' },
+  { label: '操作' }
+]
+```
+
+#### 4.2 状态标签渲染
+
+```js
+statusTagType(status) {
+  const map = {
+    not_started: 'info',    // 灰色
+    in_progress: '',         // 蓝色（Element UI 默认）
+    completed: 'success'     // 绿色
+  }
+  return map[status] || 'info'
+},
+statusLabel(status) {
+  const map = {
+    not_started: 'Not Started',
+    in_progress: 'In Progress',
+    completed: 'Completed'
+  }
+  return map[status] || status
+}
+```
+
+```html
+<el-tag :type="statusTagType(row.status)" size="small">
+  {{ statusLabel(row.status) }}
+</el-tag>
+```
+
+#### 4.3 Completed 行置灰
+
+```js
+// el-table 的 row-class-name 属性
 rowClassName({ row }) {
-  return row.status === 'completed' ? 'row-completed-locked' : ''
+  return row.status === 'completed' ? 'row-completed' : ''
 }
 ```
 
 ```css
-/* 样式 */
-.row-completed-locked {
-  background-color: #F5F5F5;
-  color: #AAAAAA;
-}
-.row-completed-locked .el-button {
-  color: #CCCCCC;
-  cursor: not-allowed;
+/* 全局或组件 scoped 样式 */
+.el-table .row-completed td {
+  background-color: #F5F5F5 !important;
+  color: #AAAAAA !important;
 }
 ```
 
-**进度计算展示（只读）：**
+#### 4.4 编辑按钮禁用（仅 Completed 行禁用）
+
+```html
+<el-button
+  type="text"
+  :disabled="row.status === 'completed'"
+  @click="openEditDrawer(row)">
+  编辑
+</el-button>
+```
+
+#### 4.5 进度展示
+
 ```js
+// 计算属性：Completed 权重之和 / 总权重 × 100%
 computed: {
   taskProgress() {
-    const total = this.processTasks.reduce((sum, t) => sum + t.weight, 0)
-    const completed = this.processTasks
+    const total = this.processTasks.reduce((s, t) => s + t.weight, 0)
+    const done = this.processTasks
       .filter(t => t.status === 'completed')
-      .reduce((sum, t) => sum + t.weight, 0)
-    return total > 0 ? Math.round((completed / total) * 100) : 0
+      .reduce((s, t) => s + t.weight, 0)
+    return total > 0 ? Math.round((done / total) * 100) : 0
   }
 }
 ```
 
+```html
+<div class="progress-bar">
+  任务进度：{{ taskProgress }}%
+  <el-progress :percentage="taskProgress" :show-text="false" />
+</div>
+```
+
 ---
 
-#### 5.4 问题汇报弹框（IssueReportDialog.vue）
+### 5. 问题汇报弹框（IssueReportDialog.vue）
 
-**Props：**
 ```js
-props: {
-  visible: Boolean,
-  task: Object
+handleSubmit() {
+  this.$refs.form.validate(valid => {
+    if (!valid) return
+    submitIssue({ taskId: this.taskId, ...this.form }).then(() => {
+      this.$message.success('问题已上报')
+      this.$emit('update:visible', false)
+    })
+  })
 }
 ```
 
-**表单字段：** 问题类型（下拉必填）、问题描述（文本域必填）、影响范围（可选）、建议方案（可选）、附件（`el-upload`，可选）
-
-**提交：** 调用 `POST /api/issue-reports`，成功后 `$emit('close')`
-
 ---
 
-### 6. API 接口调用清单
+### 6. 验收条件
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/api/cm/tasks` | GET | 获取 CM 任务列表（支持筛选/分页参数） |
-| `/api/cm/tasks/:id` | GET | 获取任务详情 |
-| `/api/process-task-templates` | GET | 获取工序模板列表（支持筛选） |
-| `/api/process-tasks/batch` | POST | 批量创建工序任务 |
-| `/api/process-tasks/:id` | PUT | 更新工序任务 |
-| `/api/process-tasks?taskId=:id` | GET | 获取某任务下的工序任务列表 |
-| `/api/issue-reports` | POST | 提交问题汇报 |
-| `/api/issue-reports?taskId=:id` | GET | 获取某任务下的问题汇报列表 |
-
----
-
-### 7. 权限控制
-
-- 菜单"我的任务（CM）"仅对角色为 CM 的用户显示（路由 meta.roles 控制）
-- 操作列按钮在前端根据 `userRole === 'CM'` 控制显示
-
----
-
-### 8. 验收条件
-
-- [ ] CM 登录后左侧菜单显示"我的任务（CM）"，其他角色不显示
-- [ ] 任务列表页筛选、分页、排序正常，Deviation 超期红色展示
-- [ ] 点击"新建工序任务"弹出侧滑弹框，引用模板自动带出权重，自定义时权重必填且范围 1～10
-- [ ] 批量保存工序任务后列表自动刷新，任务进度重新计算展示
-- [ ] 任务详情页 Tab 切换正常，工序任务 Tab 中已完成行置灰且编辑按钮 disabled
-- [ ] 工序任务 Tab 底部进度公式计算正确（已完成权重/全部权重×100%）
-- [ ] 问题汇报弹框提交后 Toast 提示，Dialog 关闭
+- [ ] 操作列"新建工序任务"在任务已完成/已作废时 disabled
+- [ ] 侧滑弹框权重字段校验 1～10，必填
+- [ ] 工序任务 Tab 状态列展示 Not Started / In Progress / Completed 三态标签
+- [ ] 工序任务 Tab 展示实际开始/实际结束列（只读，无数据显示"—"）
+- [ ] Completed 行背景 `#F5F5F5`，文字 `#AAAAAA`，编辑按钮 disabled
+- [ ] 进度计算公式正确（Completed 权重 / 总权重 × 100%）

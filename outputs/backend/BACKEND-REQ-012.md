@@ -1,154 +1,79 @@
 # BACKEND-REQ-012.md
 
-## CM 任务管理与工序任务后端开发说明
+## CM"我的任务"后端说明
 
-> 对应需求：REQ-012（CM 端）/ REQ-013（SE 端）
-> 说明：REQ-012 与 REQ-013 共享同一套数据模型和核心接口，后端统一在此文档描述
-
----
-
-### 1. 功能概述
-
-- 为 CM 提供任务列表查询、工序任务创建/编辑接口
-- 为 SE 提供工序任务查询、标记完成接口
-- 实现基于权重的任务进度自动计算逻辑
-- 问题汇报接口及消息通知触发
+> 对应需求：REQ-012 / REQ-013
+> 影响模块：CM 任务管理、工序任务 CRUD、工序任务状态流转、任务进度计算、问题上报
 
 ---
 
-### 2. 数据模型
+### 1. 数据库设计
 
-#### 2.1 工序任务表（process_tasks）
+#### 1.1 `process_tasks` 表（新增/变更）
 
-| 字段名 | 类型 | 说明 |
-|--------|------|------|
-| id | BIGINT | 主键，自增 |
-| parent_task_id | BIGINT | 关联上级任务 ID（cm_tasks 表） |
-| name | VARCHAR(200) | 工序任务名称 |
-| wbs | VARCHAR(100) | WBS 编号，可为空 |
-| template_id | BIGINT | 引用的工序模板 ID，自定义时为 NULL |
-| weight | TINYINT | 权重，范围 1～10，必填 |
-| start_date | DATE | 计划开始日期 |
-| end_date | DATE | 计划结束日期 |
-| priority | ENUM('High','Medium','Low') | 优先级 |
-| assigned_se_id | BIGINT | 分配的 SE 用户 ID |
-| status | ENUM('pending','completed') | 完成状态，默认 pending |
-| is_locked | TINYINT(1) | 是否锁定，0=否，1=是（SE 标记完成后置 1） |
-| remark | TEXT | 备注 |
-| created_by | BIGINT | 创建人（CM 用户 ID） |
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | BIGINT PK | 主键 |
+| task_id | BIGINT FK | 关联上级任务 ID |
+| name | VARCHAR(200) | 工序名称 |
+| wbs | VARCHAR(100) | WBS 编码（可空） |
+| plan_start | DATE | 计划开始时间 |
+| plan_end | DATE | 计划结束时间 |
+| actual_start_at | DATETIME | 实际开始时间（SE 点击 Start Task 时由系统记录，可空） |
+| actual_end_at | DATETIME | 实际结束时间（SE 点击 Mark as Complete 时由系统记录，可空） |
+| priority | ENUM('high','medium','low') | 优先级 |
+| weight | TINYINT | 权重，1～10 |
+| assigned_se_id | BIGINT FK | 分配的 SE 用户 ID |
+| status | ENUM('not_started','in_progress','completed') | 状态；默认 not_started |
+| is_locked | TINYINT(1) | 0=可编辑，1=锁定（status=completed 时自动置 1） |
+| remark | TEXT | 备注（可空） |
+| created_by | BIGINT | 创建人 |
 | created_at | DATETIME | 创建时间 |
 | updated_at | DATETIME | 更新时间 |
-| deleted_at | DATETIME | 软删除时间，NULL 表示未删除 |
 
-**索引：**
-- `idx_parent_task_id`：按上级任务查询工序列表
-- `idx_assigned_se_id`：SE 查询自己的工序任务
-
----
-
-#### 2.2 工序模板表（process_task_templates）
-
-| 字段名 | 类型 | 说明 |
-|--------|------|------|
-| id | BIGINT | 主键 |
-| name | VARCHAR(200) | 模板名称 |
-| specialty | VARCHAR(100) | 专业分类 |
-| process_type | VARCHAR(100) | 工序类型 |
-| area | VARCHAR(100) | 区域 |
-| default_weight | TINYINT | 默认权重，1～10 |
-| created_at | DATETIME | 创建时间 |
+> **状态流转（不可逆）：**
+> `not_started` → `in_progress`（Start Task）→ `completed`（Mark as Complete）
+> 状态变为 `completed` 时自动将 `is_locked` 置 1，后续所有修改接口对 is_locked=1 的记录返回 403
 
 ---
 
-#### 2.3 问题汇报表（issue_reports）
+### 2. 接口清单
 
-| 字段名 | 类型 | 说明 |
-|--------|------|------|
-| id | BIGINT | 主键 |
-| task_id | BIGINT | 关联任务 ID |
-| process_task_id | BIGINT | 关联工序任务 ID（SE 上报时填入，CM 上报时为 NULL） |
-| reporter_id | BIGINT | 上报人用户 ID |
-| reporter_role | ENUM('CM','SE') | 上报角色 |
-| issue_type | VARCHAR(100) | 问题类型 |
-| description | TEXT | 问题描述 |
-| impact | TEXT | 影响范围 |
-| suggestion | TEXT | 建议方案 |
-| attachments | JSON | 附件 URL 数组 |
-| status | ENUM('pending','processing','resolved') | 处理状态 |
-| created_at | DATETIME | 上报时间 |
-| updated_at | DATETIME | 更新时间 |
+#### 2.1 获取 CM 任务列表
 
----
-
-### 3. 进度计算逻辑
-
-**计算公式：**
-
-$$
-任务进度 = \frac{\sum(\text{已完成工序的 weight})}{\sum(\text{全部工序的 weight})} \times 100\%
-$$
-
-**触发时机：**
-- SE 调用标记完成接口后，服务端自动重新计算并更新上级任务的 `progress` 字段
-- CM 修改工序任务权重后，同样触发重新计算
-
-**实现伪代码：**
 ```
-function recalculateTaskProgress(parentTaskId):
-  tasks = SELECT * FROM process_tasks WHERE parent_task_id = parentTaskId AND deleted_at IS NULL
-  totalWeight = SUM(tasks.weight)
-  completedWeight = SUM(tasks.weight WHERE status = 'completed')
-  progress = totalWeight > 0 ? ROUND(completedWeight / totalWeight * 100) : 0
-  UPDATE cm_tasks SET progress = progress WHERE id = parentTaskId
+GET /api/cm/tasks
+权限：CM
 ```
 
-**注意事项：**
-- 权重为整型，进度四舍五入取整数百分比
-- 若任务下无工序任务，进度为 0
-- 进度字段由系统写入，不接受客户端直接传值
-
----
-
-### 4. API 接口设计
-
----
-
-#### 4.1 CM 任务列表
-
-**GET** `/api/cm/tasks`
-
-权限：仅 CM 角色
-
-Query 参数：
+查询参数：
 
 | 参数 | 类型 | 说明 |
 |------|------|------|
-| status | string | 任务状态筛选（可多选，逗号分隔） |
-| wbs | string | WBS 模糊搜索 |
-| startDateFrom | date | 计划开始时间起 |
-| startDateTo | date | 计划开始时间止 |
-| page | int | 页码，默认 1 |
-| pageSize | int | 每页条数，默认 20 |
+| status | string | 任务状态筛选 |
+| wbs | string | WBS 筛选 |
+| startDate | date | 计划开始时间范围-开始 |
+| endDate | date | 计划开始时间范围-结束 |
+| keyword | string | Activity Name 模糊搜索 |
+| page | int | 页码（默认 1） |
+| pageSize | int | 每页条数（默认 20） |
 
-Response:
+响应：
 ```json
 {
   "code": 0,
   "data": {
     "list": [
       {
-        "id": 1,
-        "activityId": "ACT-001",
+        "id": "ACT-001",
         "activityName": "基础施工",
-        "wbs": "1.2.3",
-        "plannedStart": "2025-06-01",
-        "plannedEnd": "2025-06-30",
-        "actualStart": null,
-        "actualEnd": null,
-        "deviation": 0,
-        "status": "In Progress",
-        "priority": "High",
-        "progress": 80
+        "wbs": "1.1.1",
+        "planStart": "2024-06-01",
+        "planEnd": "2024-06-30",
+        "deviation": 2,
+        "status": "in_progress",
+        "priority": "high",
+        "progress": 60
       }
     ],
     "total": 100
@@ -158,179 +83,220 @@ Response:
 
 ---
 
-#### 4.2 CM 任务详情
+#### 2.2 获取工序任务列表（任务详情页 Tab2 使用）
 
-**GET** `/api/cm/tasks/:id`
+```
+GET /api/cm/tasks/:taskId/process-tasks
+权限：CM
+```
 
-权限：仅 CM 角色，且 assigned_cm_id = 当前用户
-
----
-
-#### 4.3 工序模板列表
-
-**GET** `/api/process-task-templates`
-
-权限：CM 角色
-
-Query 参数：specialty、processType、area（可选筛选）
+响应字段含：`id, name, weight, planStart, planEnd, actualStartAt, actualEndAt, priority, assignedSe, status`
 
 ---
 
-#### 4.4 批量创建工序任务
+#### 2.3 创建工序任务（批量）
 
-**POST** `/api/process-tasks/batch`
+```
+POST /api/cm/tasks/:taskId/process-tasks
+权限：CM
+```
 
-权限：CM 角色
-
-Request Body:
+请求体：
 ```json
 {
-  "parentTaskId": 1,
-  "tasks": [
+  "processTasks": [
     {
       "name": "土方开挖",
-      "wbs": "1.2.3.1",
-      "templateId": 10,
+      "wbs": "1.1.1.1",
+      "planStart": "2024-06-01",
+      "planEnd": "2024-06-05",
+      "priority": "high",
       "weight": 3,
-      "startDate": "2025-06-01",
-      "endDate": "2025-06-05",
-      "priority": "High",
-      "assignedSeId": 101,
+      "assignedSeId": 1001,
       "remark": ""
     }
   ]
 }
 ```
 
-校验：
-- weight 必须在 1～10 之间
-- assignedSeId 必须是有效的 SE 用户
-- endDate 不早于 startDate
-
-成功后：
-- 为每个 SE 发送"新工序任务分配"消息通知
-- 触发上级任务进度重新计算
+校验规则：
+- `taskId` 对应任务的 status 不能为 `completed` 或 `cancelled`，否则返回 403
+- `weight` 必须在 1～10 之间
+- `planEnd` 不早于 `planStart`
 
 ---
 
-#### 4.5 更新工序任务
+#### 2.4 更新工序任务
 
-**PUT** `/api/process-tasks/:id`
-
-权限：CM 角色，且工序任务 is_locked = 0
-
-Request Body: 与创建接口字段一致（单条）
-
-校验：
-- 若 is_locked = 1（SE 已标记完成），返回 403，提示"该工序已锁定，无法编辑"
-
----
-
-#### 4.6 SE 工序任务列表
-
-**GET** `/api/se/my-tasks`
-
-权限：SE 角色
-
-Query 参数：status（pending/completed/空）、priority、startDateFrom、startDateTo、page、pageSize
-
-Response: 仅返回 assigned_se_id = 当前用户的工序任务
-
----
-
-#### 4.7 SE 工序任务详情
-
-**GET** `/api/se/process-tasks/:id`
-
-权限：SE 角色，且 assigned_se_id = 当前用户
-
----
-
-#### 4.8 SE 标记工序任务完成
-
-**POST** `/api/se/process-tasks/:id/complete`
-
-权限：SE 角色，且 assigned_se_id = 当前用户
-
-校验：
-- 工序任务当前 status 为 pending
-- is_locked = 0
-
-操作：
-1. 更新 status = 'completed'，is_locked = 1
-2. 记录完成时间
-3. 触发上级任务进度重新计算
-4. 发送通知给 CM（"工序 xxx 已完成"）
-
-Response:
-```json
-{ "code": 0, "message": "标记完成成功", "data": { "progress": 80 } }
+```
+PUT /api/process-tasks/:id
+权限：CM
 ```
 
+- 若 `is_locked = 1`（status = completed），返回 403，message: "该工序已完成并锁定，不可修改"
+
 ---
 
-#### 4.9 获取角标数量
+#### 2.5 Start Task（SE 端）
 
-**GET** `/api/se/my-tasks/badge-count`
-
-权限：SE 角色
-
-Response:
-```json
-{ "code": 0, "data": { "unfinished": 3, "unread": 1 } }
+```
+POST /api/se/process-tasks/:id/start
+权限：SE（仅分配给自己的工序任务）
 ```
 
----
+处理逻辑：
+1. 校验 `status = not_started`，否则返回 400，message: "当前状态不允许执行此操作"
+2. 更新：`status = in_progress`，`actual_start_at = NOW()`
+3. 返回更新后的 `actualStart`
 
-#### 4.10 提交问题汇报
-
-**POST** `/api/issue-reports`
-
-权限：CM 或 SE 角色
-
-Request Body:
+响应：
 ```json
 {
-  "taskId": 1,
-  "processTaskId": null,
-  "issueType": "进度延误",
-  "description": "因天气原因...",
-  "impact": "延误 3 天",
-  "suggestion": "建议延长工期",
-  "attachments": ["https://..."]
+  "code": 0,
+  "data": {
+    "id": 2001,
+    "status": "in_progress",
+    "actualStart": "2024-06-02 09:30:00"
+  }
 }
 ```
 
-成功后：
-- CM 汇报 → 发送通知给对应 PM
-- SE 汇报 → 发送通知给对应 CM
+---
+
+#### 2.6 Mark as Complete（SE 端）
+
+```
+POST /api/se/process-tasks/:id/complete
+权限：SE（仅分配给自己的工序任务）
+```
+
+处理逻辑：
+1. 校验 `status = in_progress`，否则返回 400，message: "请先开始任务"
+2. 更新：`status = completed`，`actual_end_at = NOW()`，`is_locked = 1`
+3. 触发上级任务进度重新计算（异步或同步均可）
+4. 返回更新后的 `actualEnd`
+
+响应：
+```json
+{
+  "code": 0,
+  "data": {
+    "id": 2001,
+    "status": "completed",
+    "actualEnd": "2024-06-05 17:00:00"
+  }
+}
+```
 
 ---
 
-#### 4.11 问题汇报列表
+#### 2.7 SE 获取工序任务列表（My Task）
 
-**GET** `/api/issue-reports`
+```
+GET /api/se/process-tasks
+权限：SE（仅返回分配给当前 SE 的工序任务）
+```
 
-Query 参数：taskId（必填）
+查询参数：
 
-权限：任务相关 CM / PM 可查看
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| status | string | not_started / in_progress / completed，不传返回全部 |
+| keyword | string | 工序名称模糊搜索 |
+| page | int | 页码 |
+| pageSize | int | 每页条数 |
 
 ---
 
-### 5. 非功能需求
+#### 2.8 SE 获取工序任务详情
 
-- **性能：** 任务列表接口响应时间 < 500ms；进度重新计算须在同一事务内完成
-- **安全：** 所有接口需 JWT 认证；SE 只能操作自己的工序任务，CM 只能操作自己负责任务下的工序
-- **数据一致性：** 标记完成与进度更新须在同一数据库事务中完成，避免进度不一致
-- **扩展性：** process_tasks 表预留 `ext_json` JSON 字段，供后续迭代扩展
+```
+GET /api/se/process-tasks/:id
+权限：SE（仅限分配给自己的）
+```
+
+响应含：`id, name, parentTaskId, parentTaskName, planStart, planEnd, actualStartAt, actualEndAt, priority, weight, status, remark`
+
+---
+
+#### 2.9 汇报问题
+
+```
+POST /api/issues
+权限：CM / SE
+```
+
+请求体：
+```json
+{
+  "taskId": "ACT-001",
+  "issueType": "safety",
+  "description": "...",
+  "affectedScope": "...",
+  "suggestion": "...",
+  "attachments": []
+}
+```
+
+---
+
+### 3. 任务进度计算
+
+**公式：**
+
+$$\text{进度} = \frac{\sum_{i \in \text{completed}} w_i}{\sum_{i \in \text{all}} w_i} \times 100\%$$
+
+**触发时机：**
+- SE 调用 `/complete` 接口成功后，重新计算上级任务进度并更新 `tasks.progress` 字段
+
+**SQL 示例：**
+```sql
+SELECT
+  ROUND(
+    SUM(CASE WHEN status = 'completed' THEN weight ELSE 0 END) * 100.0
+    / SUM(weight),
+    0
+  ) AS progress
+FROM process_tasks
+WHERE task_id = :taskId
+  AND deleted_at IS NULL
+```
+
+---
+
+### 4. 权限矩阵
+
+| 接口 | PM | CM | SE |
+|------|----|----|-----|
+| GET /api/cm/tasks | ✅（只读） | ✅ | — |
+| GET /api/cm/tasks/:id/process-tasks | ✅ | ✅ | — |
+| POST /api/cm/tasks/:id/process-tasks | — | ✅ | — |
+| PUT /api/process-tasks/:id | — | ✅ | — |
+| POST /api/se/process-tasks/:id/start | — | — | ✅ |
+| POST /api/se/process-tasks/:id/complete | — | — | ✅ |
+| GET /api/se/process-tasks | — | — | ✅ |
+| GET /api/se/process-tasks/:id | — | — | ✅ |
+| POST /api/issues | — | ✅ | ✅ |
+
+---
+
+### 5. 错误码约定
+
+| Code | HTTP | 说明 |
+|------|------|------|
+| 400 | 400 | 参数校验失败 / 状态不允许操作 |
+| 403 | 403 | 无权限 / 记录已锁定 |
+| 404 | 404 | 资源不存在 |
+| 0 | 200 | 成功 |
 
 ---
 
 ### 6. 验收条件
 
-- [ ] CM 任务列表接口返回数据正确，支持所有筛选参数
-- [ ] 批量创建工序任务时权重校验生效（1～10，必填）
-- [ ] SE 标记完成后 is_locked = 1，进度自动重新计算并写入上级任务
-- [ ] 权限校验：SE 只能看到/操作自己的工序任务，CM 只能编辑未锁定工序
-- [ ] 消息通知在对应操作完成后正确发送
-- [ ] 进度计算公式正确：已完成权重之和 / 全部权重之和 × 100%（四舍五入整数）
+- [ ] `process_tasks` 表含 `actual_start_at`、`actual_end_at` 字段
+- [ ] `status` ENUM 为 `not_started` / `in_progress` / `completed`
+- [ ] `/start` 接口：校验 not_started，写入 actual_start_at
+- [ ] `/complete` 接口：校验 in_progress，写入 actual_end_at，is_locked=1
+- [ ] PUT 接口：is_locked=1 时返回 403
+- [ ] 进度计算仅统计 status=completed 的工序权重
+- [ ] 创建工序任务时校验上级任务状态不为 completed/cancelled

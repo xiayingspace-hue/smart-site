@@ -1,185 +1,235 @@
 # FRONTEND-REQ-013-app.md
 
-## SE"My Task"APP 端前端开发说明
+## SE"My Task"APP 端前端说明
 
 > 对应需求：REQ-013
 > 平台：APP 端（UNIAPP + Vue2）
-> 关联 UI 文档：UI-REQ-013-app.md
+> 影响模块：My Task 列表页、工序任务详情页
 
 ---
 
-### 1. 功能概述
+### 1. 页面结构
 
-为 SE 角色在 APP 端实现"My Task"工序任务管理功能，包含：
-- 首页 Progress Management 模块角色动态入口
-- 工序任务列表页（筛选 + 卡片列表）
-- 工序任务详情页（只读信息 + 操作区）
-- 标记完成确认弹框（含锁定提示）
-- 问题上报表单页
+```
+pages/
+  myTask/
+    index.vue          # My Task 列表页
+    detail.vue         # 工序任务详情页
+```
 
----
-
-### 2. 技术栈
-
-| 项目 | 版本/说明 |
-|------|----------|
-| 框架 | UNIAPP + Vue 2.x |
-| UI 组件库 | UNIAPP 内置组件 / uni-ui |
-| 路由 | uni-app 页面路由 |
-| HTTP 请求 | uni.request / 封装的 request 工具 |
-
----
-
-### 3. 页面清单
-
-| 页面文件 | 说明 |
-|---------|------|
-| `pages/my-task/index.vue` | My Task 工序任务列表页 |
-| `pages/my-task/detail.vue` | 工序任务详情页 |
-| `pages/my-task/issue-report.vue` | 问题上报表单页 |
-
----
-
-### 4. 页面注册（pages.json）
-
+路由（pages.json）：
 ```json
-{
-  "pages": [
-    {
-      "path": "pages/my-task/index",
-      "style": { "navigationBarTitleText": "My Task" }
-    },
-    {
-      "path": "pages/my-task/detail",
-      "style": { "navigationBarTitleText": "工序任务详情" }
-    },
-    {
-      "path": "pages/my-task/issue-report",
-      "style": { "navigationBarTitleText": "问题上报" }
-    }
-  ]
-}
+{ "path": "pages/myTask/index",  "style": { "navigationBarTitleText": "My Task" } },
+{ "path": "pages/myTask/detail", "style": { "navigationBarTitleText": "工序任务详情" } }
 ```
 
 ---
 
-### 5. 功能实现细节
+### 2. My Task 列表页（index.vue）
 
-#### 5.1 首页 Progress Management 模块
-
-在首页组件中根据用户角色动态渲染入口：
+#### 2.1 状态枚举
 
 ```js
-computed: {
-  progressModuleItems() {
-    const role = this.$store.getters.userRole
-    if (role === 'SE') return [{ label: 'My Task', icon: 'task', path: '/pages/my-task/index' }]
-    if (role === 'CM') return [{ label: 'CM Tasks', icon: 'cm-task', path: '/pages/cm/index' }]
-    if (role === 'PM') return [{ label: 'PM Tasks', icon: 'pm-task', path: '/pages/pm/index' }]
-    return []
+const STATUS = {
+  NOT_STARTED: 'not_started',
+  IN_PROGRESS:  'in_progress',
+  COMPLETED:    'completed'
+}
+
+const STATUS_LABEL = {
+  not_started: 'Not Started',
+  in_progress: 'In Progress',
+  completed:   'Completed'
+}
+
+const STATUS_COLOR = {
+  not_started: '#909399',
+  in_progress: '#E6A23C',
+  completed:   '#67C23A'
+}
+```
+
+#### 2.2 顶部 Tab 筛选
+
+```js
+data() {
+  return {
+    tabs: [
+      { label: 'All',          value: '' },
+      { label: 'Not Started',  value: 'not_started' },
+      { label: 'In Progress',  value: 'in_progress' },
+      { label: 'Completed',    value: 'completed' }
+    ],
+    activeTab: '',
+    taskList: [],
+    keyword: ''
+  }
+},
+methods: {
+  onTabChange(value) {
+    this.activeTab = value
+    this.fetchTasks()
+  },
+  fetchTasks() {
+    getMyTaskList({ status: this.activeTab, keyword: this.keyword })
+      .then(res => { this.taskList = res.data.list })
   }
 }
 ```
 
-**角标（Badge）：**
-- 读取未完成工序任务数量或未读消息数
-- 调用接口：`GET /api/se/my-tasks/badge-count`，返回 `{ unfinished: 3, unread: 1 }`
-- 有数量时在图标右上角显示红色数字角标，为 0 时隐藏
+#### 2.3 卡片状态标签
 
----
-
-#### 5.2 工序任务列表页（index.vue）
-
-**数据加载：**
-```js
-async loadTasks() {
-  const { data } = await request.get('/api/se/my-tasks', {
-    params: {
-      status: this.filterStatus,    // '' | 'pending' | 'completed'
-      priority: this.filterPriority,
-      startDateFrom: this.dateRange[0],
-      startDateTo: this.dateRange[1],
-      page: this.page,
-      pageSize: 20
-    }
-  })
-  this.taskList = data.list
-  this.total = data.total
-}
-```
-
-**筛选区：**
-- 状态 Tab：全部 / 未完成 / 已完成（切换时重新请求）
-- 优先级下拉：High / Medium / Low / 全部
-- 日期范围：`uni-datetime-picker`
-
-**卡片渲染：**
 ```html
-<view v-for="task in taskList" :key="task.id" class="task-card"
-      @click="goToDetail(task.id)">
-  <text class="task-name">{{ task.name }}</text>
-  <text class="parent-task">上级：{{ task.parentTaskName }}</text>
-  <text class="date">{{ task.startDate }} ~ {{ task.endDate }}</text>
-  <view class="footer">
-    <uni-tag :text="task.priority" :type="priorityType(task.priority)" />
-    <uni-tag :text="task.status === 'completed' ? '已完成' : '未完成'"
-             :type="task.status === 'completed' ? 'success' : 'default'" />
-  </view>
+<view class="status-tag" :style="{ color: getStatusColor(item.status) }">
+  {{ getStatusLabel(item.status) }}
 </view>
 ```
 
-**下拉刷新：**
 ```js
-onPullDownRefresh() {
-  this.page = 1
-  this.loadTasks().finally(() => uni.stopPullDownRefresh())
+methods: {
+  getStatusLabel(status) { return STATUS_LABEL[status] || status },
+  getStatusColor(status) { return STATUS_COLOR[status] || '#909399' }
 }
 ```
 
 ---
 
-#### 5.3 工序任务详情页（detail.vue）
+### 3. 工序任务详情页（detail.vue）
 
-**路由传参：**
+#### 3.1 数据结构
+
 ```js
-// 列表页跳转
-uni.navigateTo({ url: `/pages/my-task/detail?taskId=${task.id}` })
-// 详情页接收
-onLoad(options) {
-  this.taskId = options.taskId
-  this.loadDetail()
+data() {
+  return {
+    task: {
+      id: '',
+      name: '',
+      parentTaskId: '',
+      parentTaskName: '',
+      planStart: '',
+      planEnd: '',
+      actualStart: '',    // 系统记录，只读
+      actualEnd: '',      // 系统记录，只读
+      priority: '',
+      weight: null,
+      status: 'not_started',
+      remark: ''
+    },
+    showCompleteConfirm: false
+  }
 }
 ```
 
-**标记完成按钮控制：**
+#### 3.2 实际时间展示
+
 ```html
-<button :disabled="task.status === 'completed'"
-        :class="{ 'btn-disabled': task.status === 'completed' }"
-        @click="handleMarkComplete">
-  {{ task.status === 'completed' ? '已完成' : '标记完成' }}
-</button>
+<view class="field-row">
+  <text class="label">实际开始：</text>
+  <text class="value">{{ task.actualStart || '—' }}</text>
+</view>
+<view class="field-row">
+  <text class="label">实际结束：</text>
+  <text class="value">{{ task.actualEnd || '—' }}</text>
+</view>
 ```
 
 ---
 
-#### 5.4 标记完成确认逻辑
+### 4. 操作区按钮（三态逻辑）
+
+#### 4.1 按钮 disabled 计算属性
+
+```js
+computed: {
+  isStartTaskDisabled() {
+    return this.task.status !== 'not_started'
+  },
+  isMarkCompleteDisabled() {
+    return this.task.status !== 'in_progress'
+  }
+}
+```
+
+#### 4.2 按钮模板
+
+```html
+<view class="action-area">
+  <!-- Start Task：仅 not_started 可点 -->
+  <button
+    :disabled="isStartTaskDisabled"
+    :class="['btn-primary', { 'btn-disabled': isStartTaskDisabled }]"
+    @click="handleStartTask">
+    Start Task
+  </button>
+
+  <!-- Mark as Complete：仅 in_progress 可点 -->
+  <button
+    :disabled="isMarkCompleteDisabled"
+    :class="['btn-primary', { 'btn-disabled': isMarkCompleteDisabled }]"
+    @click="handleMarkComplete">
+    Mark as Complete
+  </button>
+
+  <!-- Report Issue：始终可点 -->
+  <button class="btn-outline" @click="handleReportIssue">
+    Report Issue
+  </button>
+</view>
+```
+
+---
+
+### 5. Start Task 处理（无确认弹框）
+
+```js
+async handleStartTask() {
+  if (this.isStartTaskDisabled) return
+  try {
+    const res = await startProcessTask(this.task.id)
+    // 更新本地状态
+    this.task.status = 'in_progress'
+    this.task.actualStart = res.data.actualStart  // 后端返回实际开始时间
+    uni.showToast({ title: '任务已开始', icon: 'success' })
+  } catch (e) {
+    uni.showToast({ title: '操作失败，请重试', icon: 'none' })
+  }
+}
+```
+
+---
+
+### 6. Mark as Complete 处理（有确认弹框）
 
 ```js
 handleMarkComplete() {
+  if (this.isMarkCompleteDisabled) return
+  this.showCompleteConfirm = true
+},
+
+async confirmMarkComplete() {
+  this.showCompleteConfirm = false
+  try {
+    const res = await completeProcessTask(this.task.id)
+    this.task.status = 'completed'
+    this.task.actualEnd = res.data.actualEnd  // 后端返回实际结束时间
+    uni.showToast({ title: '已标记为完成', icon: 'success' })
+  } catch (e) {
+    uni.showToast({ title: '操作失败，请重试', icon: 'none' })
+  }
+}
+```
+
+确认弹框使用 uni-app 的 `uni.showModal` 或自定义组件：
+```js
+// 使用 uni.showModal（推荐，兼容性好）
+handleMarkComplete() {
+  if (this.isMarkCompleteDisabled) return
   uni.showModal({
-    title: '确认标记完成？',
-    content: '标记完成后将锁定该工序，如需修改请联系 CM，确认继续？',
-    confirmText: '确认完成',
-    cancelText: '取消',
+    title: '确认完成',
+    content: '确认将此工序任务标记为完成？完成后将无法修改。',
     success: async (res) => {
       if (res.confirm) {
-        try {
-          await request.post(`/api/se/process-tasks/${this.taskId}/complete`)
-          this.task.status = 'completed'
-          uni.showToast({ title: '已标记完成', icon: 'success' })
-        } catch (e) {
-          uni.showToast({ title: '操作失败，请重试', icon: 'none' })
-        }
+        await this.confirmMarkComplete()
       }
     }
   })
@@ -188,75 +238,78 @@ handleMarkComplete() {
 
 ---
 
-#### 5.5 问题上报表单（issue-report.vue）
+### 7. Report Issue 处理
 
-**路由传参：**
 ```js
-// 详情页点击"问题上报"
-uni.navigateTo({ url: `/pages/my-task/issue-report?taskId=${this.taskId}&taskName=${this.task.name}` })
-```
-
-**表单字段：**
-```js
-data() {
-  return {
-    form: {
-      taskId: '',
-      issueType: '',
-      description: '',
-      impact: '',
-      suggestion: '',
-      attachments: []
-    }
-  }
-}
-```
-
-**附件上传（`uni.chooseImage`）：**
-```js
-async handleChooseFile() {
-  const { tempFilePaths } = await uni.chooseImage({ count: 5 })
-  // 调用上传接口，获取 URL 后追加到 attachments
-}
-```
-
-**提交：**
-```js
-async handleSubmit() {
-  await request.post('/api/issue-reports', this.form)
-  uni.showToast({ title: '上报成功，已通知 CM', icon: 'success' })
-  setTimeout(() => uni.navigateBack(), 1500)
+handleReportIssue() {
+  // 跳转至问题上报页或弹出底部 Sheet
+  uni.navigateTo({
+    url: `/pages/reportIssue/index?taskId=${this.task.id}`
+  })
 }
 ```
 
 ---
 
-### 6. API 接口调用清单
+### 8. API 封装
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/api/se/my-tasks/badge-count` | GET | 获取未完成数/未读数（首页角标） |
-| `/api/se/my-tasks` | GET | 获取 SE 工序任务列表（支持筛选/分页） |
-| `/api/se/process-tasks/:id` | GET | 获取工序任务详情 |
-| `/api/se/process-tasks/:id/complete` | POST | 标记工序任务完成 |
-| `/api/issue-reports` | POST | 提交问题上报 |
+```js
+// src/api/seTask.js
+
+// 获取 My Task 列表
+export const getMyTaskList = (params) =>
+  request.get('/api/se/process-tasks', { params })
+
+// 获取工序任务详情
+export const getProcessTaskDetail = (id) =>
+  request.get(`/api/se/process-tasks/${id}`)
+
+// Start Task
+export const startProcessTask = (id) =>
+  request.post(`/api/se/process-tasks/${id}/start`)
+
+// Mark as Complete
+export const completeProcessTask = (id) =>
+  request.post(`/api/se/process-tasks/${id}/complete`)
+
+// Report Issue
+export const submitIssue = (data) =>
+  request.post('/api/issues', data)
+```
 
 ---
 
-### 7. 权限控制
+### 9. 按钮样式
 
-- My Task 入口仅对 SE 角色显示（首页根据角色动态渲染）
-- 标记完成、问题上报接口服务端同样需校验角色为 SE，且只能操作分配给自己的工序任务
+```css
+.btn-primary {
+  background-color: #1890FF;
+  color: #FFFFFF;
+  border-radius: 4px;
+  padding: 20rpx 40rpx;
+}
+.btn-disabled {
+  background-color: #CCCCCC;
+  color: #FFFFFF;
+  pointer-events: none;
+}
+.btn-outline {
+  background-color: transparent;
+  color: #1890FF;
+  border: 2rpx solid #1890FF;
+  border-radius: 4px;
+  padding: 20rpx 40rpx;
+}
+```
 
 ---
 
-### 8. 验收条件
+### 10. 验收条件
 
-- [ ] SE 登录后首页 Progress Management 显示 My Task 入口，CM/PM 不显示
-- [ ] My Task 入口显示未完成数量角标
-- [ ] 工序任务列表正确加载，卡片字段显示完整
-- [ ] 状态 Tab 筛选切换正常，下拉刷新有效
-- [ ] 点击卡片进入详情页，所有字段只读
-- [ ] 未完成工序标记完成按钮可点，已完成置灰
-- [ ] 点击标记完成弹出确认框，确认后调接口成功，按钮置灰，Toast 提示
-- [ ] 问题上报表单提交后返回详情页，Toast 成功提示
+- [ ] 列表页 Tab 筛选：All / Not Started / In Progress / Completed 正确过滤
+- [ ] 卡片状态标签颜色：灰 / 橙 / 绿 三态对应
+- [ ] 详情页展示实际开始/结束时间（只读，未记录显示"—"）
+- [ ] Start Task：仅 not_started 状态可点，点击后无弹框，直接变 in_progress，actualStart 更新
+- [ ] Mark as Complete：仅 in_progress 状态可点，点击后弹 uni.showModal 确认，确认后变 completed，actualEnd 更新
+- [ ] Completed 状态：Start Task + Mark as Complete 均 disabled
+- [ ] Report Issue 在所有状态下可点击
