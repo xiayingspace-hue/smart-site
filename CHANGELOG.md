@@ -378,34 +378,6 @@
 
 ---
 
-## REQ-002 · 设备加油管理
-
-- **状态**: 草稿
-- **涉及端**: APP（数据录入）/ PC（数据查看与管理）
-- **依赖**: REQ-001
-
-### 新增内容
-- APP 端加油信息录入（设备选择、油品、加油量、里程/工时、照片）
-- PC 管理端加油记录列表、搜索、导出
-- 加油数据统计（按设备、按时间段）
-- 数据模型：`FuelRecord`、设备关联
-
-### 对已有需求的影响
-- 无（独立业务模块）
-
-### 文档清单
-| 类型 | 文件 |
-|------|------|
-| 共享需求 | `requirements/shared/REQ-002-shared.md` |
-| PC 端需求 | `requirements/pc/REQ-002-pc.md` |
-| APP 端需求 | `requirements/app/REQ-002-app.md` |
-| UI 设计 | `outputs/ui/pc/UI-REQ-002-pc.md` · `outputs/ui/app/UI-REQ-002-app.md` |
-| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-002-pc.md` · `outputs/frontend/app/FRONTEND-REQ-002-app.md` |
-| 后端开发 | `outputs/backend/BACKEND-REQ-002.md` |
-| QA 测试 | `outputs/qa/pc/QA-REQ-002-pc.md` · `outputs/qa/app/QA-REQ-002-app.md` |
-
----
-
 ## REQ-001 · 登录和首页功能
 
 - **状态**: 草稿
@@ -440,7 +412,6 @@
 
 ```
 REQ-001 登录和首页（基础）
-  ├── REQ-002 设备加油管理（独立模块）
   ├── REQ-003 工程图纸管理（核心模块）
   │     ├── REQ-004 图纸局部更新 Markup
   │     │     └── REQ-005 SE PC 端图纸访问（扩展 REQ-003 + REQ-004）
