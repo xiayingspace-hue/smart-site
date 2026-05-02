@@ -1,319 +1,506 @@
-# PC 管理端 — 登录页面
+---
+doc_type: requirement
+req_id: REQ-001-pc
+req_title: "PC 管理端 — 登录页面"
+version: 0.2.0
+status: draft
+priority: P0
+product: SMART SITE SYSTEM
+owner: ""
+created_at: 2026-03-01
+updated_at: 2026-05-02
+
+depends_on: []
+related_to:
+  - REQ-001-shared
+  - REQ-001-app
+blocks:
+  - REQ-002-pc
+
+generate:
+  data_contract: false
+  ui_spec: true
+  frontend_spec: true
+  backend_spec: false
+  qa_spec: true
+---
+
+# 需求文档：PC 管理端 — 登录页面
 
 > **端**: PC 管理端（桌面浏览器 Web 管理后台）
-> **共享需求**: [REQ-001-shared.md](../shared/REQ-001-shared.md)（业务规则、API 接口、会话管理）
-> **本文档仅包含**: PC 端登录页面的布局、交互方式和样式
+> **本文档仅包含**: PC 端登录页面的功能需求、交互行为和验收标准
+> **视觉规格（颜色 / 尺寸 / 间距）**: 见 [UI-REQ-001-pc.md](../../outputs/ui/pc/UI-REQ-001-pc.md)
 > **管理后台框架**: 见 [REQ-002-pc.md](./REQ-002-pc.md)（Header / Sidebar / Main Content）
+> **共享需求**: 业务规则、API 接口、会话管理见 [REQ-001-shared.md](../shared/REQ-001-shared.md)
+> **技术栈**: 见 [background/tech-stack.md](../../background/tech-stack.md)
 
-## 基本信息
+---
 
-- **需求ID**: REQ-001-pc
-- **需求标题**: PC 管理端登录页面
-- **产品**: SMART SITE SYSTEM
-- **品牌名称**: SMART CONSTRUCTION（PC 端品牌标识）
-- **平台**: PC 管理端（桌面浏览器）
-- **技术框架**: Vue 2 + Element UI
-- **优先级**: 高
-- **状态**: 草稿
+## 1. 背景与目标
 
-## 技术说明
+### 1.1 业务背景
 
-> PC 端技术栈详见 [background/tech-stack.md §1](../../background/tech-stack.md)
-> 后端技术栈详见 [background/tech-stack.md §4](../../background/tech-stack.md)
+PC 管理端（Back Office）面向总承包商（MAINCON）和分包商（SUBCON）的管理人员，是进入整个后台管理系统的唯一入口。用户登录后可查看和管理项目信息、人员、设备、考勤等各项业务数据。
 
-## 需求描述
+### 1.2 业务目标
 
-### 背景与目标
+为 PC 管理端提供安全、清晰的登录页面，支持 MAINCON 和 SUBCON 两种角色登录，通过 URL 路径自动识别租户，无需用户手动输入企业账号。
 
-PC 管理端（Back Office）面向系统管理员、项目经理和管理人员，提供完整的后台管理功能。用户通过桌面浏览器登录后，可查看和管理项目信息、人员、设备、考勤等各项业务数据。本文档定义 PC 端的登录页面和登录后的管理后台页面框架（布局、导航、通用组件），具体业务页面内容在后续需求中细化。
+### 1.3 非目标（Out of Scope）
 
-### 用户故事
+- 登录后的管理后台框架布局（见 REQ-002-pc）
+- Token 刷新、会话过期逻辑（见 REQ-001-shared）
+- 忘记密码 / 注册功能（当前版本不支持）
+
+---
+
+## 2. 用户与角色
+
+### 2.1 角色定义
+
+| 角色 ID | 角色名 | 描述 | 典型场景 |
+|--------|-------|------|---------|
+| ROLE-001 | MAINCON 管理员 | 总承包商管理人员 | 通过 MAINCON Tab 登录后台 |
+| ROLE-002 | SUBCON 管理员 | 分包商管理人员 | 通过 SUBCON Tab 登录后台 |
+
+### 2.2 用户故事
+
+#### US-001：MAINCON 管理员登录
 
 ```
-作为 项目经理 / 系统管理员
-我想要 在桌面浏览器上登录 Smart Construction Back Office 管理后台
-以便 我可以管理和查看项目数据、人员信息、设备状态等各项业务
+作为 MAINCON 管理员
+我想要 在 PC 浏览器上通过账号密码登录 Smart Construction 管理后台
+以便 我可以查看和管理项目数据、人员信息、设备状态等各项业务
 ```
 
-## 功能需求
+**优先级**: P0
 
-### 1. 登录页面
-
-#### 1.1 页面整体布局
+#### US-002：SUBCON 管理员登录
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                                                                             │
-│                        (全屏城市夜景背景图)                                   │
-│                                                                             │
-│                    ┌─────────────────────────────┐                          │
-│                    │                             │                          │
-│                    │  SMART CONSTRUCTION         │                          │
-│                    │  BACK OFFICE                │                          │
-│                    │                             │                          │
-│                    │  Account Login Page    文A   │                          │
-│                    │                             │                          │
-│                    │  MAINCON     SUBCON         │                          │
-│                    │  ─────────                  │                          │
-│                    │                             │                          │
-│                    │  ┌─────────────────────┐    │                          │
-│                    │  │ Please fill in account│   │                          │
-│                    │  └─────────────────────┘    │                          │
-│                    │                             │                          │
-│                    │  ┌─────────────────────┐    │                          │
-│                    │  │ Please fill in password 👁│  │                          │
-│                    │  └─────────────────────┘    │                          │
-│                    │                             │                          │
-│                    │  ☑ Remember the password    │                          │
-│                    │                             │                          │
-│                    │  ┌─────────────────────┐    │                          │
-│                    │  │       Login         │    │                          │
-│                    │  └─────────────────────┘    │                          │
-│                    │                             │                          │
-│                    └─────────────────────────────┘                          │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+作为 SUBCON 管理员
+我想要 切换到 SUBCON Tab 并通过账号密码登录管理后台
+以便 我可以查看分配给本分包商的项目数据和任务
 ```
 
-#### 1.2 背景
+**优先级**: P0
 
-- **背景图**: 全屏城市天际线夜景照片（新加坡城市夜景风格）
-- **图片处理**: 轻微暗色滤镜叠加，使白色登录卡片更突出
-- **填充方式**: `background-size: cover; background-position: center;`
-- **备用背景色**: 深蓝灰色渐变（#1a2332 → #2c3e50），当背景图加载失败时使用
+#### US-003：语言切换
 
-#### 1.3 登录卡片
+```
+作为 任意管理员
+我想要 在登录页切换界面语言（中文 / English）
+以便 我可以用熟悉的语言完成登录操作
+```
 
-| 属性 | 规格 |
-|------|------|
-| 位置 | 页面水平垂直居中 |
-| 宽度 | 400-440px |
-| 背景 | #FFFFFF |
-| 圆角 | 16-20px |
-| 阴影 | 0 8px 32px rgba(0,0,0,0.12) |
-| 内边距 | 上 40px，左右 40px，下 36px |
+**优先级**: P1
 
-#### 1.4 品牌标识区
+---
 
-| 属性 | 规格 |
-|------|------|
-| 主标题 | "SMART CONSTRUCTION"，20-22px，#212121，粗体（700），大写字母 |
-| 副标题 | "BACK OFFICE"，14-16px，#333333，粗体（700），大写字母 |
-| 主副标题间距 | 4px |
-| 下边距 | 24px（与 Account Login Page 行） |
+## 3. 角色与权限矩阵
 
-#### 1.5 Account Login Page 行
+| 操作 | MAINCON 管理员 | SUBCON 管理员 |
+|-----|:---:|:---:|
+| 访问登录页 | ✅ | ✅ |
+| MAINCON Tab 登录 | ✅ | ❌ |
+| SUBCON Tab 登录 | ❌ | ✅ |
+| 语言切换 | ✅ | ✅ |
 
-| 属性 | 规格 |
-|------|------|
-| 左侧文字 | "Account Login Page"，14px，#333333，粗体（600） |
-| 右侧图标 | 语言切换图标（文A 样式），20px，#666666 |
-| 布局 | 左右两端对齐（space-between） |
-| 下边距 | 24px（与 Tab 栏） |
-| 语言切换交互 | 点击图标弹出下拉菜单，可选 English / 中文（简体） |
+---
 
-#### 1.6 登录角色 Tab 切换
+## 4. 核心实体与数据生命周期
 
-| 属性 | 规格 |
-|------|------|
-| Tab 数量 | 2 个：MAINCON / SUBCON |
-| 布局 | 水平排列，左对齐 |
-| Tab 间距 | 32px |
-| 选中 Tab | 文字 #4A90D9（蓝色），14px，粗体（600），大写字母 |
-| 选中下划线 | 2px 实线，#4A90D9，宽度等于文字宽度，底部紧贴 |
-| 未选中 Tab | 文字 #999999，14px，常规（400），大写字母 |
-| Tab 栏底部线 | 1px #E8E8E8，全宽 |
-| 下边距 | 28px（与表单区域） |
+### 4.1 实体清单
 
-**Tab 说明**：
-- **MAINCON（总承包商）**: 对应 `/system/auth/login` 接口（标准登录）
-- **SUBCON（分包商）**: 对应 `/system/auth/subcontractor/login` 接口（分包商登录）
-- 两个 Tab 共享相同的表单布局，仅调用不同的后端接口
+| 实体 ID | 实体名 | 描述 | 关键属性（业务语义） |
+|--------|-------|------|------------------|
+| ENT-001 | tenantCode | URL 路径中的租户标识 | 从 URL `/mcc/login` 解析，只读 |
+| ENT-002 | 登录凭证 | 用户提交的账号 + 密码 | username、password，不持久化 |
+| ENT-003 | 会话 Token | 登录成功后持有 | 见 REQ-001-shared |
 
-#### 1.7 登录表单
+### 4.2 实体关系
 
-**租户（企业账号）识别方式**：
+- `tenantCode` → 映射到后端 `tenantId`（登录成功后由后端返回）
+- 登录凭证 → 提交给后端校验，不在前端持久化原始密码
 
-PC 端的企业账号（租户标识）**通过 URL 路径参数自动获取**，用户无需手动输入。
+---
 
-- **URL 格式**: `https://smartsite.mcc.sg/{tenantCode}/login`
-- **示例**: `https://smartsite.mcc.sg/mcc/login` → 租户标识为 `mcc`
-- **前端逻辑**:
-  1. 页面加载时从 URL 路径中解析 `tenantCode`（如 `/mcc/login` → `mcc`）
-  2. 将 `tenantCode` 保存到前端状态（Vuex / 内存变量）
-  3. 登录请求时，自动将 `tenantCode` 作为请求参数或 Header（`X-Tenant-Code: mcc`）传递给后端
-  4. 登录成功后，后端返回的 `tenantId` 保存到本地存储，后续 API 请求携带 `X-Tenant-Id`
-- **异常处理**:
-  - URL 中无 `tenantCode` → 显示错误页面 "Invalid access URL, please contact your administrator"
-  - `tenantCode` 对应的租户不存在或已禁用 → 登录时后端返回错误，前端显示提示
+## 5. 状态机
 
-> **与 APP 端的差异**: APP 端通过表单字段 "Company Account" 手动输入企业账号；PC 端通过 URL 路径自动识别，登录表单仅需账号 + 密码两个字段。
+### 5.1 登录页面状态
 
-**MAINCON Tab 下的表单字段**：
+| 状态 ID | 状态名 | 描述 | 是否终态 |
+|--------|-------|------|---------|
+| S-001 | 初始化 | 页面加载，解析 URL 中的 tenantCode | 否 |
+| S-002 | URL 无效 | tenantCode 不存在，显示错误整页 | 是 |
+| S-003 | 空表单 | tenantCode 有效，等待用户输入 | 否 |
+| S-004 | 表单填写中 | 用户正在输入账号密码 | 否 |
+| S-005 | 校验失败 | 前端必填校验不通过，输入框标红 | 否 |
+| S-006 | 请求中 | 接口调用中，按钮 Loading | 否 |
+| S-007 | 登录失败 | 接口返回错误，显示 Toast | 否 |
+| S-008 | 登录成功 | 跳转管理后台首页 | 是 |
 
-| 字段 | Placeholder | 类型 | 说明 |
+### 5.2 状态转换表
+
+| From | To | 触发动作 | 守卫条件 | 副作用 |
+|------|-----|---------|---------|-------|
+| S-001 | S-002 | 页面加载完成 | URL 中无有效 tenantCode | 显示错误整页 |
+| S-001 | S-003 | 页面加载完成 | tenantCode 有效 | 渲染登录卡片 |
+| S-003 | S-004 | 用户输入 | — | — |
+| S-004 | S-005 | 点击 Login | 账号或密码为空 | 空字段标红 + "required" |
+| S-004 | S-006 | 点击 Login | 表单校验通过 | 按钮变 Loading，禁止重复点击 |
+| S-005 | S-004 | 用户继续输入 | — | 错误提示消失 |
+| S-006 | S-007 | 接口返回失败 | — | Toast 显示错误信息 |
+| S-006 | S-008 | 接口返回成功 | — | 保存 Token，跳转首页 |
+| S-007 | S-004 | — | — | 按钮恢复可点击 |
+
+### 5.3 非法转换
+
+- 不允许 S-006（请求中）再次点击 Login（按钮已禁用）
+- 不允许 S-002（URL 无效）进入登录表单
+
+---
+
+## 6. 业务流程
+
+### 6.1 主流程（MAINCON 登录）
+
+1. 用户访问 `https://smartsite.mcc.sg/{tenantCode}/login`
+2. 前端从 URL 路径解析 `tenantCode`
+3. `tenantCode` 无效 → 显示错误整页，流程终止
+4. `tenantCode` 有效 → 渲染登录卡片，默认选中 MAINCON Tab
+5. 用户输入账号和密码
+6. 点击 Login → 前端校验：账号、密码不能为空
+7. 校验不通过 → 空字段标红 + 显示 "required"，流程回到第 5 步
+8. 校验通过 → 调用 `POST /system/auth/login`，附带 `tenantCode`
+9. 接口返回失败 → Toast 显示错误信息，回到第 5 步
+10. 接口返回成功 → 保存 Token 和 tenantId，跳转管理后台首页
+
+### 6.2 主流程图（Mermaid）
+
+```mermaid
+flowchart TD
+    A([用户访问登录页]) --> B[解析 URL tenantCode]
+    B --> C{tenantCode 有效？}
+    C -- 否 --> D([显示无效 URL 错误页，流程终止])
+    C -- 是 --> E[渲染登录卡片]
+    E --> F[用户输入账号密码]
+    F --> G[点击 Login]
+    G --> H{前端校验通过？}
+    H -- 否 --> I[标红空字段 + required]
+    I --> F
+    H -- 是 --> J[调用登录接口]
+    J --> K{接口响应}
+    K -- 失败 --> L[Toast 显示错误]
+    L --> F
+    K -- 成功 --> M[保存 Token + tenantId]
+    M --> N([跳转管理后台首页])
+```
+
+### 6.3 异常流程
+
+| 异常场景 | 触发条件 | 系统响应 | 用户感知 |
+|---------|---------|---------|---------|
+| URL 无效 | tenantCode 不存在或租户已禁用 | 显示错误整页，阻止渲染登录表单 | "Invalid access URL, please contact your administrator" |
+| 必填字段为空 | 点击 Login 时账号或密码为空 | 空字段边框变红，显示 "required" | 输入框下方红色提示 |
+| 账号或密码错误 | 接口返回认证失败 | Toast 显示后端返回的错误信息 | Toast 提示 |
+| 网络超时 | 接口请求超时 | Toast 显示网络错误提示 | Toast 提示，按钮恢复可点 |
+
+---
+
+## 7. 功能需求详述
+
+### 7.1 F-001：页面整体布局
+
+**关联用户故事**: US-001、US-002
+
+全屏背景图（城市天际线夜景，新加坡风格） + 居中登录卡片。
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   (全屏城市夜景背景图)                         │
+│              ┌─────────────────────────┐                    │
+│              │  SMART CONSTRUCTION     │                    │
+│              │  BACK OFFICE            │                    │
+│              │  Account Login Page 文A  │                    │
+│              │  MAINCON    SUBCON      │                    │
+│              │  ─────────              │                    │
+│              │  [账号输入框]            │                    │
+│              │  [密码输入框        👁]  │                    │
+│              │  ☑ Remember the password│                    │
+│              │  [     Login     ]      │                    │
+│              └─────────────────────────┘                    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> 视觉规格（颜色、尺寸、间距）见 [UI-REQ-001-pc.md](../../outputs/ui/pc/UI-REQ-001-pc.md) §3、§4。
+
+### 7.2 F-002：品牌标识区
+
+**关联用户故事**: US-001、US-002
+
+- 主标题："SMART CONSTRUCTION"，全大写
+- 副标题："BACK OFFICE"，全大写
+
+> 视觉规格（字号、字重、颜色、间距）见 [UI-REQ-001-pc.md](../../outputs/ui/pc/UI-REQ-001-pc.md) §4.3。
+
+### 7.3 F-003：语言切换
+
+**关联用户故事**: US-003
+
+- 入口：卡片内"Account Login Page"行右侧，语言切换图标
+- 交互：点击弹出下拉菜单，选项：English / 中文（简体）
+- 切换范围：登录卡片内所有文本即时刷新
+
+> 视觉规格（图标尺寸、颜色、布局）见 [UI-REQ-001-pc.md](../../outputs/ui/pc/UI-REQ-001-pc.md) §4。
+
+### 7.4 F-004：MAINCON / SUBCON Tab 切换
+
+**关联用户故事**: US-001、US-002
+
+- Tab 数量：2 个：MAINCON / SUBCON
+- 布局：水平排列，左对齐
+- 默认选中：MAINCON
+
+> 视觉规格（颜色、字重、底线样式、间距）见 [UI-REQ-001-pc.md](../../outputs/ui/pc/UI-REQ-001-pc.md) §4。
+
+**接口映射**：
+- MAINCON → `POST /system/auth/login`
+- SUBCON → `POST /system/auth/subcontractor/login`
+
+### 7.5 F-005：租户识别（tenantCode）
+
+**关联用户故事**: US-001、US-002
+
+PC 端租户通过 **URL 路径自动识别**，用户无需手动输入。
+
+- **URL 格式**：`https://smartsite.mcc.sg/{tenantCode}/login`
+- **解析逻辑**：页面加载时读取 URL 路径第一段作为 `tenantCode`
+- **存储**：保存到 Vuex / 内存变量，登录请求时附带
+
+**异常处理**：
+- URL 中无 `tenantCode` → 整页显示错误，阻止登录
+- 租户不存在或已禁用 → 后端返回错误，前端 Toast 提示
+
+### 7.6 F-006：登录表单
+
+**关联用户故事**: US-001、US-002
+
+| 字段 | Placeholder | 类型 | 约束 |
 |------|-------------|------|------|
-| 账号 | "Please fill in account" | text | 用户账号（username） |
-| 密码 | "Please fill in password" | password | 用户密码 |
-
-**SUBCON Tab 下的表单字段**：
-
-| 字段 | Placeholder | 类型 | 说明 |
-|------|-------------|------|------|
-| 账号 | "Please fill in account" | text | 分包商账号 |
-| 密码 | "Please fill in password" | password | 分包商密码 |
-
-**输入框样式**：
-
-| 属性 | 规格 |
-|------|------|
-| 宽度 | 100%（卡片内宽） |
-| 高度 | 44-48px |
-| 背景 | #FFFFFF |
-| 边框 | 1px #D9D9D9（默认）/ 1px #4A90D9（聚焦）/ 1px #FF4D4F（错误） |
-| 圆角 | 6-8px |
-| 内边距 | 水平 12px |
-| 文字 | 14px，#333333 |
-| Placeholder | 14px，#BDBDBD |
-| 字段间距 | 20px（账号与密码之间） |
+| 账号 | "Please fill in account" | text | 必填 |
+| 密码 | "Please fill in password" | password | 必填 |
 
 **密码输入框附加**：
-- 右侧显示 **密码可见/隐藏切换图标**（👁 眼睛图标）
-- 默认隐藏密码（掩码显示 ••••••）
-- 点击眼睛图标切换明文/掩码显示
-- 图标样式：20px，#BDBDBD（默认）/ #666666（hover）
+- 右侧显示眼睛图标（👁），默认掩码显示
+- 点击切换明文 / 掩码
 
-**错误状态**：
+> 视觉规格（输入框尺寸、边框颜色、错误态样式）见 [UI-REQ-001-pc.md](../../outputs/ui/pc/UI-REQ-001-pc.md) §4。
 
-| 属性 | 规格 |
-|------|------|
-| 边框 | 1px #FF4D4F（红色） |
-| 错误提示 | 输入框下方 4px，红色文字 "required"，12px，#FF4D4F |
-| 触发条件 | 点击 Login 时字段为空 |
+### 7.7 F-007：记住密码
 
-#### 1.8 记住密码
+**关联用户故事**: US-001、US-002
 
-| 属性 | 规格 |
-|------|------|
-| 位置 | 密码输入框下方，间距 16px |
-| 布局 | 水平排列，Checkbox + 文字 |
-| Checkbox | 16×16px，选中时背景 #4A90D9，白色勾选图标 |
-| 文字 | "Remember the password"，14px，#4A90D9 |
-| Checkbox 与文字间距 | 8px |
-| 默认状态 | 选中（checked） |
-| 功能 | 选中时本地存储用户名，下次自动填充；密码以安全方式存储或仅记住账号 |
+- 位置：密码输入框下方
+- 默认状态：选中（checked）
+- 功能：选中 → Token 存 `localStorage`；未选中 → 存 `sessionStorage`
 
-#### 1.9 登录按钮
+> 视觉规格（Checkbox 尺寸、颜色、文字样式）见 [UI-REQ-001-pc.md](../../outputs/ui/pc/UI-REQ-001-pc.md) §4。
 
-| 属性 | 规格 |
-|------|------|
-| 文字 | "Login"，白色，16px，粗体 |
-| 背景 | #4A90D9（蓝色）/ hover 加深为 #357ABD |
-| 宽度 | 100%（卡片内宽） |
-| 高度 | 44-48px |
-| 圆角 | 6-8px |
-| 上边距 | 24px（与 Remember the password） |
-| cursor | pointer |
+### 7.8 F-008：登录按钮
 
-**登录按钮状态**：
+**关联用户故事**: US-001、US-002
 
-| 状态 | 样式 |
-|------|------|
-| 默认 | 背景 #4A90D9，白色文字 |
-| Hover | 背景 #357ABD（加深） |
-| 按下 | 背景 #2A6FA8（更深） |
-| Loading | 背景 #4A90D9，白色旋转加载图标，禁止点击 |
-| 禁用 | 背景 #4A90D9 透明度 0.6，cursor: not-allowed |
+- 点击触发前端校验，通过后调用登录接口
+- Loading 态：接口请求中禁止重复点击
+- 禁用态：Loading 中 `cursor: not-allowed`
 
-#### 1.10 登录流程
-
-**MAINCON 登录**：
-1. 页面加载 → 从 URL 路径解析 `tenantCode`（如 `/mcc/login` → `mcc`）
-2. 若 URL 中无有效 `tenantCode` → 显示错误页面，阻止登录
-3. 用户选择 MAINCON Tab（默认选中）
-4. 输入账号（username）和密码
-5. 点击 "Login"
-6. 前端验证：账号和密码不能为空
-7. 验证不通过 → 对应输入框标红 + 显示 "required"
-8. 验证通过 → 调用 `POST /system/auth/login`，请求中附带 `tenantCode`
-9. 登录成功 → 保存 Token 和 Tenant ID，跳转管理后台首页
-10. 登录失败 → 显示错误提示
-
-**SUBCON 登录**：
-1. 页面加载 → 同上，从 URL 路径解析 `tenantCode`
-2. 用户切换到 SUBCON Tab
-3. 输入账号和密码
-4. 点击 "Login"
-5. 前端验证：账号和密码不能为空
-6. 验证通过 → 调用 `POST /system/auth/subcontractor/login`，请求中附带 `tenantCode`
-7. 登录成功 → 保存 Token 和 Tenant ID，跳转管理后台首页
-8. 登录失败 → 显示错误提示
+> 视觉规格（按钮颜色、各状态样式）见 [UI-REQ-001-pc.md](../../outputs/ui/pc/UI-REQ-001-pc.md) §4。
 
 ---
 
-## API 接口定义
+## 8. 验收标准（Acceptance Criteria）
 
-> 详见 [REQ-001-shared.md](../shared/REQ-001-shared.md) — 第 4 节「API 接口定义」
->
-> 登录相关接口：
-> - MAINCON 登录: `POST /system/auth/login`
-> - SUBCON 登录: `POST /system/auth/subcontractor/login`
+### AC-001-pc-001：MAINCON 登录成功
+
+**关联用户故事**: US-001
+
+```
+Given  用户访问有效 tenantCode 的登录页，选中 MAINCON Tab
+When   填写正确账号密码，点击 Login
+Then   按钮进入 Loading 态，接口成功后跳转管理后台首页，Token 保存至本地
+```
+
+### AC-001-pc-002：SUBCON 登录成功
+
+**关联用户故事**: US-002
+
+```
+Given  用户访问有效 tenantCode 的登录页，切换到 SUBCON Tab
+When   填写正确账号密码，点击 Login
+Then   调用 subcontractor/login 接口，成功后跳转管理后台首页
+```
+
+### AC-001-pc-003：必填校验
+
+```
+Given  账号或密码任一为空
+When   点击 Login
+Then   空字段输入框边框变红，下方显示 "required"，不发起接口请求
+```
+
+### AC-001-pc-004：URL 无效
+
+```
+Given  URL 中无有效 tenantCode
+When   页面加载完成
+Then   显示错误整页 "Invalid access URL, please contact your administrator"，不渲染登录表单
+```
+
+### AC-001-pc-005：登录失败
+
+```
+Given  账号或密码错误
+When   点击 Login，接口返回错误
+Then   按钮恢复可点击，Toast 显示后端返回的错误信息
+```
+
+### AC-001-pc-006：密码可见切换
+
+```
+Given  密码输入框已输入内容
+When   点击眼睛图标
+Then   切换明文 / 掩码显示，图标状态同步变化
+```
+
+### AC-001-pc-007：记住密码
+
+```
+Given  勾选 Remember the password
+When   登录成功
+Then   Token 存储到 localStorage；取消勾选时存储到 sessionStorage
+```
+
+### AC-001-pc-008：语言切换
+
+```
+Given  用户在登录页点击 "文A" 图标
+When   选择中文（简体）或 English
+Then   登录卡片内所有文本即时切换为对应语言
+```
 
 ---
 
-## 样式要求汇总
+## 9. 非功能需求
 
-| 属性 | 值 |
-|------|-----|
-| 背景图 | 城市天际线夜景（新加坡风格），暗色叠加 |
-| 登录卡片 | 白色 #FFFFFF，圆角 16-20px，阴影 |
-| 主品牌色 | #4A90D9（蓝色，用于选中状态、按钮、链接） |
-| 错误色 | #FF4D4F（红色，用于校验失败提示） |
-| 输入框 | 有边框式（bordered），圆角 6-8px |
-| 按钮 | 蓝色背景 #4A90D9，圆角 6-8px |
+### 9.1 性能
 
----
+| 指标 | 目标值 |
+|-----|-------|
+| 登录页首屏加载 | ≤ 2s（正常网络） |
+| 登录接口响应 | ≤ 1s（P95） |
 
-## 验收标准
+### 9.2 安全
 
-- [ ] 页面全屏显示城市夜景背景图
-- [ ] 页面中央显示白色圆角登录卡片
-- [ ] 卡片顶部显示 "SMART CONSTRUCTION" + "BACK OFFICE" 品牌标识
-- [ ] 显示 "Account Login Page" 文字和右侧语言切换图标（文A）
-- [ ] 显示 MAINCON / SUBCON 两个 Tab 切换
-- [ ] 默认选中 MAINCON Tab，蓝色文字 + 蓝色下划线
-- [ ] 切换到 SUBCON Tab 时样式正确切换
-- [ ] 显示账号输入框，Placeholder "Please fill in account"
-- [ ] 显示密码输入框，Placeholder "Please fill in password"
-- [ ] 密码输入框右侧显示眼睛图标，点击可切换明文/掩码
-- [ ] 输入框为有边框样式（bordered），非下划线样式
-- [ ] 显示 "Remember the password" 复选框，默认选中
-- [ ] 显示 "Login" 按钮，蓝色背景全宽
-- [ ] 账号或密码为空时点击 Login，输入框边框变红 + 显示 "required"
-- [ ] 页面加载时从 URL 路径正确解析 tenantCode（如 `/mcc/login` → `mcc`）
-- [ ] URL 中无有效 tenantCode 时显示错误页面
-- [ ] MAINCON 登录请求中正确附带 tenantCode，调用 `/system/auth/login`
-- [ ] SUBCON 登录请求中正确附带 tenantCode，调用 `/system/auth/subcontractor/login`
-- [ ] 登录成功后保存 Token 和 Tenant ID 并跳转管理后台首页
-- [ ] 登录失败显示错误提示
-- [ ] 语言切换功能正常
+- 密码字段不允许浏览器自动填充原始明文（`autocomplete="new-password"`）
+- Token 不暴露在 URL 中
+- HTTPS 传输
+
+### 9.3 兼容性
+
+- 浏览器：Chrome 80+、Firefox 78+、Safari 14+、Edge 80+
+- 最低分辨率：1280×720px
+- 国际化：中文（简体）/ English
 
 ---
 
-## 相关需求
+## 10. 数据量级与扩展性
 
-- [REQ-001-shared.md](../shared/REQ-001-shared.md)：登录和首页跨端共享需求（业务规则、API、会话管理）
-- [REQ-002-pc.md](./REQ-002-pc.md)：PC 端管理后台框架（Header / Sidebar / Main Content）
-- [REQ-001-app.md](../app/REQ-001-app.md)：APP 移动端登录和首页
+| 维度 | 说明 |
+|-----|------|
+| 并发登录 | 取决于租户规模，无前端特殊处理 |
+| 租户数 | 由后端支撑，前端无感知 |
 
-## 备注
+---
 
-- PC 端品牌标识为 "SMART CONSTRUCTION" + "BACK OFFICE"，与 APP 端的 "NOVASYNC" + "SMART SITE" 品牌标识不同
-- PC 端企业账号（租户标识）通过 URL 路径自动识别（如 `https://smartsite.mcc.sg/mcc/login`），无需用户手动输入；APP 端通过表单字段 "Company Account" 手动输入
-- PC 端登录表单仅需账号 + 密码两个字段，APP 端需企业账号 + 用户账号 + 密码三个字段
-- PC 端登录按钮文案为 "Login"，APP 端为 "Sign In"
+## 11. 依赖与外部系统
+
+| 依赖 | 用途 | 集成方式 |
+|-----|------|---------|
+| REQ-001-shared | 登录 API、会话管理规则 | 直接引用 |
+| REQ-002-pc | 登录成功后的跳转目标 | 路由跳转 |
+
+---
+
+## 12. 数据迁移
+
+无。
+
+---
+
+## 13. 上线操作清单（Launch Checklist）
+
+### 13.1 上线前
+
+- [ ] 确认各租户 tenantCode 已在后端配置
+- [ ] 确认登录背景图资源已上传 CDN
+- [ ] 确认 HTTPS 证书有效
+
+### 13.2 上线后
+
+- [ ] 用 MAINCON 账号完整走通登录流程
+- [ ] 用 SUBCON 账号完整走通登录流程
+- [ ] 验证无效 tenantCode 显示错误整页
+- [ ] 通知相关运营/客服团队
+
+---
+
+## 14. 灰度与发布策略
+
+随 REQ-001 基础框架整体发布，无独立灰度需求。
+
+---
+
+## 15. 成功指标（北极星）
+
+| 指标 | 目标 |
+|-----|------|
+| 登录成功率 | ≥ 99%（排除账号密码错误） |
+| 登录页报错率 | ≤ 0.1% |
+
+---
+
+## 16. Open Questions（待定项）
+
+| OQ ID | 问题 | 影响 | Owner | 截止 |
+|------|------|------|-------|------|
+| OQ-001 | 记住密码是否需要加密存储账号？当前方案仅记住账号不记密码 | F-007 | PM | — |
+
+---
+
+## 17. Figma / 原型链接
+
+- Figma 设计稿：<!-- 填写 REQ-001 登录页 Frame 链接，参见 rules/ui-rules.md §8 -->
+- 交互原型：
+
+---
+
+## 18. 变更历史
+
+| 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
+|-----|------|-------|---------|------------|
+| 0.1.0 | 2026-03-01 | — | 初稿（原始格式） | 全部 |
+| 0.2.0 | 2026-05-02 | agent | 拆分为登录页（REQ-001-pc）和管理后台框架（REQ-002-pc）；升级为新模板格式；技术说明改为引用 tech-stack.md | UI、Frontend、QA |
+
+---
+
+## 19. 备注
+
+- PC 端品牌标识为 "SMART CONSTRUCTION" + "BACK OFFICE"，与 APP 端的 "NOVASYNC" + "SMART SITE" 不同
+- PC 端通过 URL 路径自动识别租户，APP 端通过表单字段 "Company Account" 手动输入
+- PC 端登录表单仅账号 + 密码两个字段，APP 端需企业账号 + 用户账号 + 密码三个字段
+- PC 端登录按钮文案 "Login"，APP 端为 "Sign In"
 - PC 端输入框为有边框样式（bordered），APP 端为下划线样式（underline）
-- PC 端主色调为 #4A90D9（蓝色），APP 端为 #6892FF（蓝色），两端色调有差异
-- PC 端新增 "Remember the password" 功能，APP 端无此功能
-- PC 端新增 MAINCON / SUBCON Tab 切换，APP 端仅有标准登录 + 扫码登录
-
+- PC 端主色调 #4A90D9，APP 端 #6892FF
+- PC 端有 "Remember the password" 功能，APP 端无
+- PC 端有 MAINCON / SUBCON Tab 切换，APP 端仅有标准登录 + 扫码登录
