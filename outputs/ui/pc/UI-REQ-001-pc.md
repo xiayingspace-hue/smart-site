@@ -127,7 +127,7 @@ owner: ""
 | 按钮 Hover | `--color-primary-hover` | 待确认（估算 `#096dd9`） |
 | 按钮 Active | `--color-primary-active` | 待确认（估算 `#0050b3`） |
 | 错误状态 | `--color-error` | `#FF4D4F` |
-| 输入框默认边框 | `--color-border-default` | `#D9D9D9` |
+| 输入框默认边框 | `--border-color`（DS 原生） | `#D8E2F0` ✅ Figma |
 | 输入框 聚焦边框 | `--Primary-Color`（DS 原生） | `#1890FF` ✅ Figma |
 | 输入框 背景 | `--fill-color-blank`（DS 原生） | `#FFF` ✅ Figma |
 | 输入框 placeholder 文字 | `--text-color-placeholder`（DS 原生） | `#B7C1D1` ✅ Figma |
@@ -139,9 +139,8 @@ owner: ""
 | 品牌主标题 / 副标题文字 | `--text-color-primary-dark`（DS 原生） | `#344050` ✅ Figma |
 | 语言行标题文字（Account Login Page） | `--text-color-primary-dark`（DS 原生） | `#344050` ✅ Figma |
 | 语言图标 | `--color-icon-muted` | `#666666` |
-| 卡片背景 | `--Vertical-Menu-White`（DS 原生）/ `--color-bg-card` | `#FFFFFF` |
-| 备用背景渐变起点 | `--color-bg-fallback-start` | `#1a2332` |
-| 备用背景渐变终点 | `--color-bg-fallback-end` | `#2c3e50` |
+| 卡片背景 | `--Vertical-Menu-White`（DS 原生） | `#FFFFFF` ✅ Figma |
+| 页面背景 | — | `linear-gradient(70deg, rgba(8,24,38,0.60) 17.79%, rgba(0,37,66,0.60) 65.66%, rgba(3,147,255,0.60) 91.96%)` ✅ Figma |
 
 ### 4.2 间距与尺寸
 
@@ -157,9 +156,14 @@ owner: ""
 | 登录卡片 | gap（sections 间距） | `32px` | Figma ✅ |
 | 登录卡片 | 圆角 | `8px` | Figma ✅ |
 | 登录卡片 | 背景色 Token | `--Vertical-Menu-White` = `#FFF` | Figma ✅ |
-| 登录卡片 | 宽度 | 待确认 | 设计稿未提供，需补充 |
-| 登录卡片 | 阴影 | 待确认 | 设计稿未提供，需补充 |
-| 品牌主副标题间距 | margin-bottom | 待确认 | 估算值，需设计稿确认 |
+| 登录卡片 | 宽度 | `336px` | Figma ✅ |
+| 登录卡片 | 阴影 | なし（无阴影） | Figma ✅ |
+| 品牌标识区（容器） | display | `flex` | Figma ✅ |
+| 品牌标识区（容器） | width | `184px` | Figma ✅ |
+| 品牌标识区（容器） | flex-direction | `column` | Figma ✅ |
+| 品牌标识区（容器） | justify-content | `center` | Figma ✅ |
+| 品牌标识区（容器） | align-items | `flex-start` | Figma ✅ |
+| 品牌主副标题间距 | gap | 无（两行文字同一文本块，间距由 `line-height: 14px` 控制） | Figma ✅ |
 | 品牌区下边距（到 Account Login Page） | margin-bottom | `16px` | Figma ✅ |
 | input-group（Tab + 表单 + Checkbox） | gap（内部各行间距） | `24px` | Figma ✅ |
 | Tab 行（容器） | display | `flex` | Figma ✅ |
@@ -178,7 +182,8 @@ owner: ""
 | 输入框 | align-items | `center` | Figma ✅ |
 | 输入框 | align-self | `stretch`（与卡片同宽） | Figma ✅ |
 | 输入框 | 圆角 | `4px` | Figma ✅ |
-| 输入框 | border（默认 / 聚焦） | `1px solid var(--Primary-Color, #1890FF)` | Figma ✅ |
+| 输入框 | border（默认态） | `1px solid var(--border-color, #D8E2F0)` | Figma ✅ |
+| 输入框 | border（聚焦态） | `1px solid var(--Primary-Color, #1890FF)` | Figma ✅ |
 | 输入框 | 背景色 Token | `--fill-color-blank` = `#FFF` | Figma ✅ |
 | 输入框 | box-shadow（聚焦态） | `0 0 0 2px rgba(64, 158, 255, 0.00)` | Figma ✅ |
 | 错误提示 | margin-top | 待确认 | 估算值，需设计稿确认 |
