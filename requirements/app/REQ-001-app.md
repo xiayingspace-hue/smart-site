@@ -16,31 +16,8 @@
 
 ## 技术说明
 
-> 后端技术栈和系统架构详见 [REQ-001-shared.md](../shared/REQ-001-shared.md)
-
-### APP 端技术栈
-- **主框架**: UNIAPP（跨平台移动开发框架）
-- **核心技术**: Vue 2（MVVM 框架）
-- **编程语言**: JavaScript（ES6+）
-- **样式预处理**: SCSS（Sassy CSS）
-- **包管理工具**: npm（Node Package Manager）
-
-### 平台支持
-- **iOS**: 通过 UNIAPP 打包为 iOS 应用（支持 iOS 12+）
-- **Android**: 通过 UNIAPP 打包为 Android 应用（支持 Android 8+）
-- **一套代码**: 同一套 Vue 2 代码库可编译为 iOS 和 Android 版本
-
-### 开发工具
-- **编辑器**: VS Code + UNIAPP 扩展或 HBuilderX
-- **包管理**: npm（安装依赖、管理版本）
-- **调试**: UNIAPP 的模拟器或真机调试
-- **打包**: UNIAPP 官方打包或云端打包服务
-
-### APP 端项目结构
-- **前端代码**: 使用 JavaScript 编写业务逻辑
-- **样式代码**: 使用 SCSS 编写样式，可利用变量、混合、嵌套等高级特性
-- **依赖管理**: 通过 package.json 和 npm 管理所有依赖包
-- **编译流程**: 开发时使用热更新，打包时由 UNIAPP 编译为平台特定代码
+> APP 端技术栈详见 [background/tech-stack.md §2](../../background/tech-stack.md)
+> 后端技术栈详见 [background/tech-stack.md §4](../../background/tech-stack.md)
 
 ## 需求描述
 

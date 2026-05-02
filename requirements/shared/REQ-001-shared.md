@@ -31,14 +31,8 @@
   - 权限管理和数据访问都需要进行租户验证
 
 ### 1.2 后端技术栈
-- **编程语言**: Java
-- **Web 框架**: Spring Cloud（微服务架构框架）
-- **数据库**: MySQL
-- **API 接口技术**: RESTful API
-- **服务器 & 部署**: Docker（容器化部署）
-- **中间件 / 消息队列**: RabbitMQ
-- **缓存**: Redis
-- **搜索引擎**: Elasticsearch
+
+> 详见 [background/tech-stack.md §4](../../background/tech-stack.md)
 
 ## 2. 业务规则
 

@@ -11,7 +11,8 @@ background/
 ├── business-context.md         # 业务背景
 ├── market-analysis.md          # 市场分析
 ├── user-research.md            # 用户研究
-└── key-decisions.md            # 关键决策记录
+├── key-decisions.md            # 关键决策记录
+└── tech-stack.md               # 各端技术栈（单一事实源）
 ```
 
 ## 各文件说明
@@ -45,6 +46,11 @@ background/
 - 决策的理由
 - 决策的影响
 - 后续跟进计划
+
+### tech-stack.md
+- 各端技术栈的单一事实源（PC / APP / H5 / 后端）
+- 跨端通用约定（认证、多租户、请求 Header 等）
+- 所有需求文档的"技术说明"章节应引用本文档，不重复列举
 
 ## 如何使用
 
