@@ -53,13 +53,17 @@ owner: ""
 ```
 登录页（/login）
 └── 登录卡片
-    ├── 品牌标识区（SMART CONSTRUCTION / BACK OFFICE）
-    ├── 语言切换行（Account Login Page + 文A 图标）
-    ├── Tab 区（MAINCON / SUBCON）
-    ├── 登录表单（账号 + 密码）
-    ├── 记住密码
+    ├── 品牌标题区（brand-header）          ← ⚠️ 品牌区 + 语言行是同一个分组，不是卡片的平级子节点
+    │   ├── 品牌标识区（SMART / CONSTRUCTION / BACK OFFICE，共三行）
+    │   └── 语言切换行（Account Login Page + 文A 图标）
+    ├── input-group（Tab + 表单 + Checkbox）
     └── Login 按钮
 ```
+
+> ⚠️ **间距关键说明**：
+> - 登录卡片的 `gap: 32px` 作用于**品牌标题区、input-group、Login 按钮**这三个直接子节点之间
+> - 品牌标识区与语言切换行之间的间距为 `16px`，由 **brand-header 内部** 的 `gap: 16px` 控制
+> - **禁止**将品牌标识区和语言切换行作为卡片的平级子节点，否则卡片 `gap: 32px` 会错误地应用到两者之间，导致 Account Login Page 与上方距离变为 32px 甚至更大
 
 ### 2.2 导航与入口
 
@@ -89,7 +93,8 @@ owner: ""
 ┌─────────────────────────────────────────────────────────────┐
 │                   (全屏城市夜景背景图)                         │
 │              ┌─────────────────────────┐                    │
-│              │  SMART CONSTRUCTION     │                    │
+│              │  SMART                  │                    │
+│              │  CONSTRUCTION           │                    │
 │              │  BACK OFFICE            │                    │
 │              │  Account Login Page 文A  │                    │
 │              │  MAINCON    SUBCON      │                    │
@@ -142,7 +147,7 @@ owner: ""
 | Remember Password 文字 | `--Primary-Color`（DS 原生） | `#1890FF` ✅ Figma |
 | Tab 选中文字 / 选中底线 | `--Primary-Color`（DS 原生） | `#1890FF` ✅ Figma |
 | Tab 底线（未选中侧） | `--text-color-placeholder`（DS 原生） | `#B7C1D1` ✅ Figma |
-| 品牌主标题 / 副标题文字 | `--text-color-primary-dark`（DS 原生） | `#344050` ✅ Figma |
+| 品牌三行文字（SMART / CONSTRUCTION / BACK OFFICE） | `--text-color-primary-dark`（DS 原生） | `#344050` ✅ Figma |
 | 语言行标题文字（Account Login Page） | `--text-color-primary-dark`（DS 原生） | `#344050` ✅ Figma |
 | 语言图标 | `--color-icon-muted` | `#666666` |
 | 卡片背景 | `--Vertical-Menu-White`（DS 原生） | `#FFFFFF` ✅ Figma |
@@ -169,8 +174,10 @@ owner: ""
 | 品牌标识区（容器） | flex-direction | `column` | Figma ✅ |
 | 品牌标识区（容器） | justify-content | `center` | Figma ✅ |
 | 品牌标识区（容器） | align-items | `flex-start` | Figma ✅ |
-| 品牌主副标题间距 | gap | 无（两行文字同一文本块，间距由 `line-height: 14px` 控制） | Figma ✅ |
-| 品牌区下边距（到 Account Login Page） | margin-bottom | `16px` | Figma ✅ |
+| 品牌标识区内三行文字间距 | gap | `0`（三行文字各为独立元素，行间距由每行 `line-height: 14px` 自然控制，无额外 gap） | Figma ✅ |
+| 品牌标题区（brand-header） | display | `flex` | Figma ✅ |
+| 品牌标题区（brand-header） | flex-direction | `column` | Figma ✅ |
+| 品牌标题区（brand-header） | gap | `16px`（⚠️ 品牌标识区到 Account Login Page 行的间距由此控制，不是 margin-bottom，不是卡片 gap） | Figma ✅ |
 | input-group（Tab + 表单 + Checkbox） | gap（内部各行间距） | `24px` | Figma ✅ |
 | Tab 行（容器） | display | `flex` | Figma ✅ |
 | Tab 行（容器） | align-items | `center` | Figma ✅ |
@@ -178,10 +185,13 @@ owner: ""
 | 两 Tab 整体（含底线） | display | `flex` | Figma ✅ |
 | 两 Tab 整体（含底线） | width | `240px` | Figma ✅ |
 | 两 Tab 整体（含底线） | align-items | `flex-start` | Figma ✅ |
-| 两 Tab 整体（含底线） | border-bottom | `1px solid var(--text-color-placeholder, #B7C1D1)` | Figma ✅ |
-| Tab 选中指示线 | height | `2px` | Figma ✅ |
-| Tab 选中指示线 | align-self | `stretch` | Figma ✅ |
-| Tab 选中指示线 | background | `var(--Primary-Color, #1890FF)` | Figma ✅ |
+| 两 Tab 整体（含底线） | border-bottom | ⚠️ **不设置**（灰色底线由单个 Tab 项的 `border-bottom` 承担，见下方说明） | — |
+| 单个 Tab 项 | flex | `1`（两个 tab 均分 240px 宽度） | Figma ✅ |
+| 单个 Tab 项 | display | `flex` | Figma ✅ |
+| 单个 Tab 项 | flex-direction | `column` | Figma ✅ |
+| 单个 Tab 项 | align-items | `flex-start`（⚠️ **文字靠左**，禁止 `center`） | Figma ✅ |
+| 单个 Tab 项（未选中） | border-bottom | `2px solid var(--text-color-placeholder, #B7C1D1)`（灰色底线） | Figma ✅ |
+| 单个 Tab 项（选中） | border-bottom | `2px solid var(--Primary-Color, #1890FF)`（⚠️ 覆盖灰色底线为蓝色，**蓝线与灰线共用同一条 border-bottom，不另外添加子元素**，否则两条线高度不同会错位） | Figma ✅ |
 | 输入框 | display | `flex` | Figma ✅ |
 | 输入框 | 高度 | `32px` | Figma ✅ |
 | 输入框 | padding | `5px 95px 5px 16px` | Figma ✅ |
@@ -227,8 +237,9 @@ owner: ""
 
 | 用途 | DS Token | 字号 | 行高 | 字重 | 颜色 | 来源 |
 |-----|---------|------|------|------|------|------|
-| 品牌主标题（SMART CONSTRUCTION） | `700 Bold` | 14px | 14px | 700 | `#344050`（`--text-color-primary-dark`） | Figma ✅ |
-| 品牌副标题（BACK OFFICE） | `700 Bold` | 14px | 14px | 700 | `#344050`（`--text-color-primary-dark`） | Figma ✅ |
+| 品牌第一行（SMART） | `700 Bold` | 14px | 14px | 700 | `#344050`（`--text-color-primary-dark`） | Figma ✅ |
+| 品牌第二行（CONSTRUCTION） | `700 Bold` | 14px | 14px | 700 | `#344050`（`--text-color-primary-dark`） | Figma ✅ |
+| 品牌第三行（BACK OFFICE） | `700 Bold` | 14px | 14px | 700 | `#344050`（`--text-color-primary-dark`） | Figma ✅ |
 | 语言行标题（Account Login Page） | `700 SemiBold/B1-14-Base` | 14px | 22px | 700 | `#344050`（`--text-color-primary-dark`） | Figma ✅ |
 | 语言图标 | 待确认 | 20px | — | — | `#666666` | 估算 |
 | Tab 未选中文字 | `400 Regular` | 14px | 20px | 400 | `#5E6E82`（`--text-color-primary-light`） | Figma ✅ |
@@ -294,8 +305,9 @@ owner: ""
 
 | 场景 | 文案（zh-CN） | 文案（en） |
 |-----|-------------|----------|
-| 品牌主标题 | SMART CONSTRUCTION | SMART CONSTRUCTION |
-| 品牌副标题 | BACK OFFICE | BACK OFFICE |
+| 品牌第一行 | SMART | SMART |
+| 品牌第二行 | CONSTRUCTION | CONSTRUCTION |
+| 品牌第三行 | BACK OFFICE | BACK OFFICE |
 | 语言行标题 | 账号登录页 | Account Login Page |
 | Tab — 总承包商 | MAINCON | MAINCON |
 | Tab — 分包商 | SUBCON | SUBCON |
