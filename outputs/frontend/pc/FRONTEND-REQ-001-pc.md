@@ -201,7 +201,7 @@ methods: {
 | 表单临时 | 组件 `data` | 账号、密码、记住密码开关 |
 | 语言偏好 | `localStorage` + `vue-i18n` | `lang: 'zh-CN' / 'en'` |
 
-### 5.2 Vuex auth module 관련 action
+### 5.2 Vuex auth module 关键 action
 
 ```js
 // store/modules/auth.js
