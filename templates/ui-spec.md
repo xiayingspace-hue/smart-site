@@ -122,6 +122,21 @@ owner: ""                           # UI 设计师
 ### 4.2 间距与栅格
 
 <!-- 列出本需求新增的间距/栅格规则 -->
+<!--
+  ⚠️ 填写规则（见 ui-rules.md §3.10）：
+  1. 每个 flex 容器必须同时声明：尺寸、外间距、justify-content、align-items、子元素布局（5维度）
+  2. 含文字的组件行，必须在本表内联 font-size（至少）+ line-height + font-weight + color
+     不可仅在 §4.3 字体表中单独声明，否则 agent 生成 CSS 时会遗漏导致继承浏览器默认 16px
+  示例格式：
+  | [组件名] | font-size   | 14px（⚠️ 必须显式设置，禁止继承父级或浏览器默认 16px） | §4.3 ✅ |
+  | [组件名] | line-height | 22px | §4.3 ✅ |
+  | [组件名] | font-weight | 400  | §4.3 ✅ |
+  | [组件名] placeholder | color | #XXXXXX（--token-name） | §4.3 ✅ |
+-->
+
+| 组件 | 属性 | 值 | 来源 |
+|-----|------|----|------|
+| | | | |
 
 ---
 

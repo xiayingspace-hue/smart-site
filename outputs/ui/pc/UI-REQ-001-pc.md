@@ -1,7 +1,7 @@
 ---
 doc_type: ui_spec
 req_id: REQ-001-pc
-version: 0.1.0
+version: 0.1.3
 status: draft
 generated_from: REQ-001-pc.md@0.2.0
 generated_at: 2026-05-02
@@ -66,7 +66,13 @@ owner: ""
 | 入口位置 | 链接到 | 触发场景 |
 |---------|-------|---------|
 | Login 按钮（成功） | 管理后台首页 | 登录成功后路由跳转 |
-| 语言图标（文A） | — | 弹出语言下拉菜单 |
+| 语言图标（文A） | — | 弹出语言下拉菜单（⚠️ 必须是 click 触发的下拉菜单，选项：English / 中文；**禁止**直接在行内并排显示语言文字按钮） |
+
+> ⚠️ **语言切换区域默认态说明**：
+> - 页面默认只渲染**一个「文A」图标**，当前语言名称和备选语言名称**均不显示在页面上**
+> - 点击「文A」图标后，弹出下拉菜单，菜单中才出现 `English` / `中文` 两个选项
+> - 下拉收起后，页面恢复为仅显示「文A」图标的状态
+> - **错误实现示例**（禁止）：`文A  English  中文` 三个元素并排显示在页面上
 
 ---
 
@@ -186,7 +192,14 @@ owner: ""
 | 输入框 | border（聚焦态） | `1px solid var(--Primary-Color, #1890FF)` | Figma ✅ |
 | 输入框 | 背景色 Token | `--fill-color-blank` = `#FFF` | Figma ✅ |
 | 输入框 | box-shadow（聚焦态） | `0 0 0 2px rgba(64, 158, 255, 0.00)` | Figma ✅ |
-| 错误提示 | margin-top | 待确认 | 估算值，需设计稿确认 |
+| 输入框 | **font-size** | **`14px`**（⚠️ 必须显式设置，禁止继承父级或浏览器默认 16px） | Figma ✅ §4.3 |
+| 输入框 | **line-height** | **`22px`** | Figma ✅ §4.3 |
+| 输入框 | **font-weight** | **`400`** | Figma ✅ §4.3 |
+| 输入框 placeholder | **color** | **`#B7C1D1`**（`--text-color-placeholder`） | Figma ✅ §4.3 |
+| 错误提示 | position | `absolute`（⚠️ **不占文档流**，不影响相邻输入框间距） | Figma |
+| 错误提示 | margin-top | `2px`（相对输入框底部，偏移量） | 估算，需设计稿确认 |
+| 错误提示 | 颜色 | `#FF4D4F`（`--color-error`） | Figma ✅ |
+| input-group（⚠️ 间距说明） | gap | `24px` 为各行之间**唯一**间距来源；错误提示绝对定位，**不得**额外占据行高或 margin，否则视觉间距翻倍 | Figma ✅ |
 | Remember Password 行 | display | `flex` | Figma ✅ |
 | Remember Password 行 | align-items | `center` | Figma ✅ |
 | Remember Password 行 | gap | `8px` | Figma ✅ |
@@ -340,4 +353,7 @@ owner: ""
 
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
+| 0.1.3 | 2026-05-03 | agent | 在 §4.2 输入框行内补充 font-size/line-height/font-weight/placeholder color，防止 agent 跨表遗漏导致继承浏览器默认 16px |
+| 0.1.2 | 2026-05-03 | agent | 补充语言切换默认态约束：页面只显示「文A」图标，禁止并排显示语言文字；明确下拉菜单仅在点击后展开 |
+| 0.1.1 | 2026-05-03 | agent | 补充两条实现约束：①语言切换明确为 click 触发下拉菜单，禁止行内并排；②错误提示 position:absolute 不占文档流，gap:24px 为唯一间距来源 |
 | 0.1.0 | 2026-05-02 | agent | 从 REQ-001-pc.md v0.2.0 抽取视觉规格，初稿 |

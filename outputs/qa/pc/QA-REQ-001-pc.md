@@ -1,101 +1,333 @@
-# QA 测试说明文档 — REQ-001 PC 端多租户登录与会话管理
+---
+doc_type: qa_spec
+req_id: REQ-001-pc
+version: 0.2.0
+status: draft
+generated_from: REQ-001-pc.md@0.2.0
+frontend_spec_ref: FRONTEND-REQ-001-pc.md@0.2.0
+generated_at: 2026-05-03
+owner: ""
+---
 
-> **来源需求**: REQ-001-shared + REQ-001-pc
-> **平台**: PC 端（Chrome / Edge，1280px+）
-> **生成日期**: 2026-04-08
+# QA 测试说明：PC 管理端 — 登录页面
+
+> **本文档供 QA 工程师及其 agent 使用**。
+>
+> ⚠️ **测试范围边界**：本文档仅覆盖 REQ-001-pc（登录页面）。管理后台框架测试见 QA-REQ-002-pc.md。
 
 ---
 
-## 1. 测试目标
+## 0. 溯源块
 
-验证 PC 端多租户登录、Token 生命周期管理、权限信息加载以及框架页布局的正确性与安全性。
-
----
-
-## 2. 测试场景与用例
-
-### 场景 1：总包商登录
-
-| ID | 前置条件 | 测试步骤 | 预期结果 |
-|----|---------|---------|---------|
-| TC-001-PC-01 | 租户 `mcc` 存在且启用，用户名 `admin` 有效 | 访问 `/mcc/login`，输入正确用户名+密码，点击 Login | 跳转到后台首页，顶部显示品牌名 "SMART CONSTRUCTION BACK OFFICE"，左侧菜单根据权限渲染 |
-| TC-001-PC-02 | 同上 | 输入错误密码 | 提示 "Username or password incorrect"，不跳转 |
-| TC-001-PC-03 | 同上 | 输入不存在的 tenantCode（URL 改为 `/zzz/login`）| 提示 "Tenant not found"，不跳转 |
-| TC-001-PC-04 | 账号已被禁用 | 输入该账号登录 | 提示 "Account is disabled" |
-| TC-001-PC-05 | 5 分钟内连续错误 5 次 | 第 6 次尝试 | 提示账号临时锁定，显示剩余等待时间 |
-
-### 场景 2：分包商登录
-
-| ID | 前置条件 | 测试步骤 | 预期结果 |
-|----|---------|---------|---------|
-| TC-001-PC-06 | 分包商账号存在 | 切换到 SUBCON Tab，填写租户码+账号+密码，登录 | 登录成功，进入后台（仅分包商可用菜单）|
-| TC-001-PC-07 | 总包商账号 | 在 SUBCON Tab 使用总包商账号登录 | 返回错误，提示 "Not a subcontractor account" |
-
-### 场景 3：Token 生命周期
-
-| ID | 测试步骤 | 预期结果 |
-|----|---------|---------|
-| TC-001-PC-08 | 登录后等待 Access Token 过期（1h）或手动修改本地存储 Token | 再次发起 API 请求时，前端自动调用 refresh-token 换新 Token，用户无感知 |
-| TC-001-PC-09 | Refresh Token 过期或从 localStorage 删除 refreshToken | 前端跳转回登录页，提示 "Session expired, please login again" |
-| TC-001-PC-10 | 登录后点击用户头像 → 退出 | 调用 logout 接口，清除本地 Token，跳转登录页 |
-
-### 场景 4：权限与菜单
-
-| ID | 测试步骤 | 预期结果 |
-|----|---------|---------|
-| TC-001-PC-11 | 以有完整权限的用户登录 | 侧边栏显示全部功能菜单 |
-| TC-001-PC-12 | 以仅有 `equipment:refueling:query` 权限的用户登录 | 只看到加油管理相关菜单，无创建/删除按钮 |
-| TC-001-PC-13 | 直接访问无权限的路由（如 `/drawing-management`）| 跳转 403 页面或重定向至首页 |
-
-### 场景 5：项目切换
-
-| ID | 测试步骤 | 预期结果 |
-|----|---------|---------|
-| TC-001-PC-14 | 用户关联多个项目，登录后在顶部项目下拉框切换项目 | 页面刷新，所有数据按新项目过滤，`Project-Id` Header 更新 |
-| TC-001-PC-15 | 用户只关联一个项目 | 项目下拉框不可操作（或自动选中）|
+| 项 | 值 |
+|---|---|
+| 来源需求 | REQ-001-pc @ v0.2.0 |
+| 前端说明 | FRONTEND-REQ-001-pc @ v0.2.0 |
+| 共享规则 | REQ-001-shared |
+| 覆盖 Story | US-001、US-002、US-003 |
+| 覆盖 AC | AC-001-pc-001 ~ AC-001-pc-008 + REQ-001-shared §3 会话管理 |
+| 上次同步时间 | 2026-05-03 |
 
 ---
 
-## 3. 界面验收
+## 1. 测试范围
 
-| ID | 检查项 | 预期结果 |
-|----|--------|---------|
-| UI-001-PC-01 | 登录卡片宽度 | 400–440px，水平+垂直居中 |
-| UI-001-PC-02 | 页面标题 | "SMART CONSTRUCTION BACK OFFICE" |
-| UI-001-PC-03 | 侧边栏宽度 | 展开 220–240px，收起仅显示图标 |
-| UI-001-PC-04 | 顶部导航栏高度 | 56–64px |
-| UI-001-PC-05 | 🔔 通知角标 | 有未读时显示红色数字角标 |
+| 类型 | 内容 |
+|-----|-----|
+| ✅ 纳入 | 登录页渲染、MAINCON/SUBCON 切换、表单校验、登录成功/失败流程、记住密码、无效租户、语言切换、Token 自动刷新、Refresh Token 过期处理、有效 Token 自动进入首页 |
+| ❌ 排除 | 登录后页面（后台框架，属 REQ-002-pc）、接口内部逻辑（后端测试范围）、登出交互（属 REQ-002-pc，仅测试 storage 清除） |
 
 ---
 
-## 4. 非功能测试
+## 2. 测试环境
 
-| 类型 | 测试点 |
-|------|-------|
-| 性能 | 登录接口响应时间 P99 < 500ms |
-| 安全 | 密码字段 `type=password`，网络传输使用 HTTPS |
-| 安全 | Token 不在 URL 中传递 |
-| 兼容性 | Chrome 最新版、Edge 最新版均可正常登录 |
-| 可用性 | 表单回车键可触发登录 |
-
----
-
-## 5. 测试数据
-
-| 数据 | 值 |
-|------|---|
-| 有效租户 | `mcc` |
-| 有效总包商账号 | `admin` / `password123` |
-| 有效分包商账号 | `sub_user1` / `password123` |
-| 无效租户 | `zzz` |
-| 禁用账号 | `disabled_user` |
+| 项 | 值 |
+|---|---|
+| 环境 | dev |
+| 浏览器 | Chrome latest（主）、Firefox latest（次）、Edge latest（次） |
+| E2E 框架 | Cypress |
+| 分辨率 | 1440×900、1920×1080 |
+| 测试账号 | dev 环境 MAINCON/SUBCON 各一个有效账号 + 一个无效账号 |
 
 ---
 
-## 6. 验收标准
+## 3. 测试用例
 
-- [ ] 所有 Happy Path 用例（TC-001-PC-01/06）通过
-- [ ] 错误提示语言与需求文档一致
-- [ ] Token 自动刷新无感知（TC-001-PC-08）
-- [ ] 退出后无法使用旧 Token 访问 API（返回 401）
-- [ ] 权限控制精确到按钮级别
+### AC-001-pc-001：MAINCON 登录成功
+
+| 字段 | 值 |
+|-----|---|
+| AC ID | AC-001-pc-001 |
+| 优先级 | P0 |
+| 类型 | E2E |
+
+**前置条件**：访问 `/:tenantCode/login`，tenantCode 有效，Tab 为 MAINCON（默认）
+
+| # | 步骤 | 期望结果 |
+|---|-----|---------|
+| 1 | 输入有效账号 + 密码 | 输入框正常展示内容 |
+| 2 | 点击 Login | 按钮进入 Loading 态，不可重复点击 |
+| 3 | 接口返回 200 | 跳转至 `/:tenantCode/home` |
+| 4 | 检查 localStorage | `token` 和 `tenantId` 已写入（默认记住密码=勾选） |
+
+**失败条件**：未跳转、token 未写入、按钮可重复点击
+
+---
+
+### AC-001-pc-002：SUBCON 登录成功
+
+| 字段 | 值 |
+|-----|---|
+| AC ID | AC-001-pc-002 |
+| 优先级 | P0 |
+| 类型 | E2E |
+
+**前置条件**：同上，切换 Tab 至 SUBCON
+
+| # | 步骤 | 期望结果 |
+|---|-----|---------|
+| 1 | 点击 SUBCON Tab | Tab 切换，SUBCON 高亮 |
+| 2 | 输入有效账号 + 密码 | — |
+| 3 | 点击 Login | 调用 `/system/auth/subcontractor/login`（非 MAINCON 接口） |
+| 4 | 接口返回 200 | 跳转至 `/:tenantCode/home` |
+
+**验证点**：Network 面板确认请求 URL 为 subcontractor 接口
+
+---
+
+### AC-001-pc-003：前端表单必填校验
+
+| 字段 | 值 |
+|-----|---|
+| AC ID | AC-001-pc-003 |
+| 优先级 | P1 |
+| 类型 | 功能 |
+
+| # | 步骤 | 期望结果 |
+|---|-----|---------|
+| 1 | 账号留空，密码留空，点击 Login | 账号、密码字段下均出现 "required" 提示，不发起请求 |
+| 2 | 填写账号，密码留空，点击 Login | 仅密码字段出现 "required" 提示 |
+| 3 | 不点 Login，仅在账号框 blur | 不出现任何校验提示（trigger 为 submit） |
+| 4 | 填写账号和密码后点击 Login | 校验通过，发起请求 |
+
+---
+
+### AC-001-pc-004：无效租户 URL
+
+| 字段 | 值 |
+|-----|---|
+| AC ID | AC-001-pc-004 |
+| 优先级 | P1 |
+| 类型 | 功能 |
+
+| # | 步骤 | 期望结果 |
+|---|-----|---------|
+| 1 | 访问 `/login`（无 tenantCode） | 显示 InvalidTenantPage 整页错误，不显示登录卡片 |
+| 2 | 访问 `//login` | 同上 |
+| 3 | 访问 `/:validTenantCode/login` | 正常显示登录卡片 |
+
+---
+
+### AC-001-pc-005：登录失败错误提示
+
+| 字段 | 值 |
+|-----|---|
+| AC ID | AC-001-pc-005 |
+| 优先级 | P0 |
+| 类型 | 功能 |
+
+| # | 步骤 | 期望结果 |
+|---|-----|---------|
+| 1 | 输入错误密码，点击 Login | 接口返回 4xx，Toast 弹出服务端 message 内容 |
+| 2 | 断开网络，点击 Login | Toast 显示"网络错误，请重试" |
+| 3 | Toast 显示后 | 按钮恢复可点状态 |
+
+---
+
+### AC-001-pc-006：密码显示/隐藏
+
+| 字段 | 值 |
+|-----|---|
+| AC ID | AC-001-pc-006 |
+| 优先级 | P2 |
+| 类型 | UI |
+
+| # | 步骤 | 期望结果 |
+|---|-----|---------|
+| 1 | 在密码框中输入内容，默认状态 | 显示为黑点（隐藏） |
+| 2 | 点击眼睛图标 | 密码明文可见，图标变为眼睛划线状 |
+| 3 | 再次点击 | 恢复隐藏 |
+
+---
+
+### AC-001-pc-007：记住密码
+
+| 字段 | 值 |
+|-----|---|
+| AC ID | AC-001-pc-007 |
+| 优先级 | P1 |
+| 类型 | 功能 |
+
+| # | 步骤 | 期望结果 |
+|---|-----|---------|
+| 1 | 默认进入页面 | "记住密码" Checkbox 已勾选 |
+| 2 | 勾选状态下登录成功 | `localStorage` 中有 `token` |
+| 3 | 取消勾选后登录成功 | `sessionStorage` 中有 `token`，`localStorage` 无 |
+| 4 | 取消勾选登录，关闭 Tab 重开 | 需重新登录（session 已清） |
+
+---
+
+### AC-001-pc-008：语言切换
+
+| 字段 | 值 |
+|-----|---|
+| AC ID | AC-001-pc-008 |
+| 优先级 | P2 |
+| 类型 | 功能 |
+
+| # | 步骤 | 期望结果 |
+|---|-----|---------|
+| 1 | 点击语言切换图标 | 出现下拉菜单（含语言选项） |
+| 2 | 切换为中文 | 页面文案切换为中文，无刷新 |
+| 3 | 刷新页面 | 语言仍为中文（localStorage 持久化） |
+| 4 | 切回英文 | 页面文案切换为英文 |
+
+---
+
+### SESSION-001：有效 Token 自动进入首页（REQ-001-shared §2.2）
+
+| 字段 | 值 |
+|-----|---|
+| 来源 | REQ-001-shared §2.2 首页数据加载流程 |
+| 优先级 | P0 |
+| 类型 | E2E |
+
+| # | 步骤 | 期望结果 |
+|---|-----|---------|
+| 1 | 登录成功（记住密码=勾选），关闭 Tab | localStorage 中有 token |
+| 2 | 重新打开 `/:tenantCode/login` | 自动跳转至 `/:tenantCode/home`，不停留在登录页 |
+| 3 | sessionStorage 中有 token（未记住），重开 Tab | 停留在登录页（session 已清） |
+
+---
+
+### SESSION-002：Access Token 自动刷新（REQ-001-shared §3.2）
+
+| 字段 | 值 |
+|-----|---|
+| 来源 | REQ-001-shared §3.2 令牌过期处理 |
+| 优先级 | P1 |
+| 类型 | 集成（Mock） |
+
+**前置条件**：已登录，Mock 服务器第一次返回 401，第二次返回正常响应。
+
+| # | 步骤 | 期望结果 |
+|---|-----|---------|
+| 1 | 触发任意 API 请求，Mock 返回 401 | 前端自动发起 `POST /system/auth/refresh-token` |
+| 2 | refresh 成功 | 原请求自动重发，用户无感知（无 Toast、无跳转） |
+| 3 | 期间多个请求同时遇到 401 | 只发出一次 refresh 请求，其他请求排队等待，不重复刷新 |
+| 4 | localStorage 的 token 已更新为新 token | ✅ |
+
+---
+
+### SESSION-003：Refresh Token 过期（REQ-001-shared §3.2）
+
+| 字段 | 值 |
+|-----|---|
+| 来源 | REQ-001-shared §3.2 令牌过期处理 |
+| 优先级 | P0 |
+| 类型 | 集成（Mock） |
+
+**前置条件**：已登录，Mock 服务器对 refresh-token 接口也返回 401/过期错误。
+
+| # | 步骤 | 期望结果 |
+|---|-----|---------|
+| 1 | 触发 API 请求，收到 401 | 前端发起 refresh-token |
+| 2 | refresh-token 接口也返回失败 | 清除 localStorage / sessionStorage 中所有 token |
+| 3 | 跳转至登录页 | ✅ |
+| 4 | Toast 显示 | "Login expired, please sign in again" |
+
+---
+
+## 4. 边界值测试
+
+| 测试项 | 输入值 | 期望结果 |
+|-------|-------|---------|
+| 账号最大长度 | 256 字符 | 界面无崩溃，请求正常发出（服务端校验） |
+| 密码特殊字符 | `"<script>alert(1)</script>"` | 正常作为字符串发送，不执行脚本 |
+| 账号含空格 | `" admin "` | 不做前端 trim，原样传递（待 REQ 确认是否需 trim） |
+| 并发点击 | 快速连点 Login 3 次 | 只发出 1 次请求（disabled 生效） |
+
+---
+
+## 5. 安全测试
+
+| 测试项 | 方法 | 期望结果 |
+|-------|-----|---------|
+| 密码明文 XSS | 密码输入 `<img src=x onerror=alert(1)>` | 正常渲染为文本，不执行脚本 |
+| Token 泄露 | 登录成功后查看 URL | URL 中无 token |
+| 浏览器自动填充 | 打开登录页 | 密码框不被浏览器自动填入（autocomplete="new-password"） |
+| 重放攻击（人工） | 复制登录请求重放 | 由后端处理（非前端范围） |
+
+---
+
+## 6. 回归测试矩阵
+
+当以下文件变更时，需重新执行对应用例：
+
+| 变更范围 | 必须回归的用例 |
+|---------|-------------|
+| `LoginForm.vue` | AC-001, AC-002, AC-003, AC-005 |
+| `LoginPage.vue` | AC-004 |
+| `store/modules/auth.js` | AC-001, AC-002, AC-007, SESSION-001, SESSION-002, SESSION-003 |
+| `utils/request.js` | AC-005, SESSION-002, SESSION-003 |
+| `LanguageSwitcher.vue` | AC-008 |
+| i18n 文案 | AC-008 + 视觉回归（全页文案） |
+
+---
+
+## 7. 自动化测试计划
+
+### 7.1 Cypress E2E 文件规划
+
+```
+cypress/
+  e2e/
+    login/
+      maincon-login.cy.js       // AC-001
+      subcon-login.cy.js        // AC-002
+      form-validation.cy.js     // AC-003
+      invalid-tenant.cy.js      // AC-004
+      login-error.cy.js         // AC-005
+      password-toggle.cy.js     // AC-006
+      remember-password.cy.js   // AC-007
+      language-switch.cy.js     // AC-008
+    session/
+      auto-enter-home.cy.js     // SESSION-001
+      token-refresh.cy.js       // SESSION-002（需 Mock Server）
+      refresh-token-expired.cy.js // SESSION-003（需 Mock Server）
+```
+
+### 7.2 CI 执行策略
+
+| 触发时机 | 执行范围 |
+|---------|---------|
+| PR 合并到 dev | 全量 E2E（login/ 目录） |
+| 仅文案 / 样式变更 | P2 用例可跳过，P0/P1 必跑 |
+
+---
+
+## 8. 已知风险 / 待确认项
+
+| ID | 描述 | 状态 |
+|----|-----|------|
+| QA-OQ-001 | 账号是否需要前端 trim 空格？ | ❓ 待确认 |
+| QA-OQ-002 | 无效 tenantCode 的具体判定逻辑（空字符串 vs URL格式错误 vs 未注册租户）？ | ❓ 待确认 |
+
+---
+
+## 9. 变更历史
+
+| 版本 | 日期 | 修改人 | 变更摘要 |
+|-----|------|-------|---------|
+| 0.2.0 | 2026-05-03 | agent | 对齐 REQ-001-shared 会话管理：新增 SESSION-001（有效Token自动进入首页）、SESSION-002（Access Token自动刷新）、SESSION-003（Refresh Token过期处理）；扩展测试范围、回归矩阵、Cypress文件规划 |
+| 0.1.0 | 2026-05-03 | agent | 从 REQ-001-pc.md v0.2.0 重写，升级为新模板格式；仅覆盖登录页 |

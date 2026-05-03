@@ -1,482 +1,557 @@
-# 前端开发说明文档 — PC 管理端登录与管理后台框架
+---
+doc_type: frontend_spec
+req_id: REQ-001-pc
+version: 0.2.0
+status: draft
+generated_from: REQ-001-pc.md@0.2.0
+ui_spec_ref: UI-REQ-001-pc.md@0.1.0
+generated_at: 2026-05-03
+owner: ""
+---
 
-> **来源需求**: [REQ-001-pc.md](../../../requirements/pc/REQ-001-pc.md) + [REQ-001-shared.md](../../../requirements/shared/REQ-001-shared.md)
-> **产品**: SMART SITE SYSTEM
-> **平台**: PC 管理端（Vue 2 + Element UI，桌面浏览器，1280px+）
-> **生成日期**: 2026-04-08
+# 前端开发说明：PC 管理端 — 登录页面
+
+> **本文档供前端开发工程师及其 agent 使用**。
+>
+> ⚠️ **重要约定**：
+> - 所有 UI 样式（颜色 / 间距 / 字体）引用 [UI-REQ-001-pc.md](../../ui/pc/UI-REQ-001-pc.md)，本文档不重复定义。
+> - 所有 API 字段定义引用 [REQ-001-shared.md](../../../requirements/shared/REQ-001-shared.md)，本文档只列调用方式。
+> - 代码注释中必须标注覆盖的 AC ID（如 `// AC-001-pc-001`）。
+
+---
+
+## 0. 溯源块
+
+| 项 | 值 |
+|---|---|
+| 来源需求 | REQ-001-pc @ v0.2.0 |
+| UI 设计 | UI-REQ-001-pc @ v0.1.0 |
+| 共享规则 | REQ-001-shared |
+| 覆盖 Story | US-001、US-002、US-003 |
+| 覆盖 AC | AC-001-pc-001 ~ AC-001-pc-008 |
+| 上次同步时间 | 2026-05-03 |
 
 ---
 
 ## 1. 功能概述
 
-本模块实现 PC 管理端的登录页面与登录后管理后台框架，涵盖：
-
-| 功能模块 | 说明 |
-|---------|------|
-| 登录页面 | 全屏背景 + 居中登录卡片，支持 MAINCON / SUBCON 双角色登录，URL 自动解析租户 |
-| 租户识别 | 从 URL 路径自动解析 `tenantCode`（如 `/mcc/login` → `mcc`） |
-| 记住密码 | 勾选后本地存储账号，下次自动填充 |
-| 管理后台框架 | 固定顶部导航栏 + 可折叠左侧菜单 + 主内容区域 |
-| 项目切换器 | 顶部右侧，切换项目后全局刷新 `Project-Id` |
-| 通知铃铛 | 显示 Todo/通知数量，点击打开通知面板 |
-| 用户下拉菜单 | 个人中心 / 修改密码 / 退出登录 |
-| 多语言切换 | English / 中文，语言偏好保存本地，即时刷新 |
-| Token 刷新 | 401 自动刷新，Refresh Token 过期跳回登录页 |
+实现 PC 管理端登录页面，包含：租户识别（URL 解析）、MAINCON / SUBCON Tab 切换、账号密码表单、记住密码、登录接口调用、语言切换。登录成功后跳转至管理后台框架（REQ-002-pc）。
 
 ---
 
-## 2. 技术栈与约定
+## 2. 技术栈
 
-| 项目 | 规范 |
-|------|------|
-| 框架 | Vue 2 + Vue Router + Vuex |
-| UI 组件库 | Element UI 2.x |
-| HTTP | Axios，统一封装 `request.js`，自动附带 `Authorization` / `X-Tenant-Id` / `Project-Id` / `lang` Header |
-| 国际化 | Vue I18n，key 命名见第 7 节 |
-| 状态管理 | Vuex module：`user`（用户信息、Token）、`app`（全局布局状态） |
-| 路由守卫 | 全局 `beforeEach`：无 Token → 跳转 `/:tenantCode/login`；有 Token → 放行 |
-| 代码风格 | ESLint + Prettier，与项目现有配置一致 |
-| 本地存储 key | `access_token`、`refresh_token`、`tenant_id`、`tenant_name`、`project_id`、`lang` |
+### 2.1 已有技术栈（继承）
+
+- **框架**：Vue 2
+- **语言**：JavaScript
+- **UI 库**：Element UI
+- **状态管理**：Vuex
+- **路由**：Vue Router 3
+- **HTTP**：Axios（含请求拦截器）
+- **国际化**：vue-i18n
+- **构建**：Webpack
+
+### 2.2 本需求新增依赖
+
+| 包 | 版本 | 用途 | 评估 |
+|---|------|------|------|
+| 无新增 | — | — | — |
 
 ---
 
-## 3. 文件与目录结构
+## 3. 路由设计
+
+| 路径 | 组件 | 权限 | 关联 Story |
+|-----|------|-----|-----------|
+| `/:tenantCode/login` | `LoginPage` | 公开（未登录可访问） | US-001、US-002 |
+
+**URL state 同步**：
+- `tenantCode` 从路由 params 读取，不写入 query string
+- Tab 状态（MAINCON / SUBCON）不需要 URL 同步（页面刷新默认 MAINCON）
+- 登录成功后跳转：`/:tenantCode/home`
+
+---
+
+## 4. 组件结构
+
+### 4.1 组件树
 
 ```
-src/
-├── views/
-│   ├── login/
-│   │   └── index.vue              # 登录页面
-│   └── layout/
-│       └── index.vue              # 管理后台框架（AppLayout）
-├── layout/
-│   └── components/
-│       ├── AppHeader.vue          # 顶部导航栏
-│       ├── AppSidebar.vue         # 左侧导航菜单
-│       ├── ProjectSelector.vue    # 项目切换器
-│       ├── NotificationBell.vue   # 通知铃铛 + 面板
-│       └── UserDropdown.vue       # 用户下拉菜单
-├── store/
-│   └── modules/
-│       ├── user.js                # 用户信息 / Token / 权限 Vuex module
-│       └── app.js                 # 布局状态（sidebarCollapsed、lang、currentProject）
-├── api/
-│   └── auth.js                    # 登录 / 刷新 Token / 登出 / 权限信息 API 封装
-├── router/
-│   └── index.js                   # 路由配置 + 全局守卫
-└── utils/
-    ├── request.js                 # Axios 封装（含 Token 刷新拦截器）
-    └── tenant.js                  # URL 租户解析工具
+<LoginPage>                        // 页面级，处理 tenantCode 解析
+├── <InvalidTenantPage>            // URL 无效时渲染，替换整页
+└── <LoginCard>                    // 登录卡片
+    ├── <BrandSection>             // 品牌标识区（SMART CONSTRUCTION / BACK OFFICE）
+    ├── <LanguageSwitcher>         // 语言切换行（Account Login Page + 文A 图标）
+    ├── <LoginTabs>                // MAINCON / SUBCON Tab
+    ├── <LoginForm>                // 表单容器
+    │   ├── <el-input> 账号
+    │   ├── <el-input type="password"> 密码（含眼睛图标）
+    │   └── <RememberPassword>    // 记住密码 Checkbox
+    └── <el-button type="primary"> // Login 按钮
 ```
+
+### 4.2 关键组件说明
+
+#### `<LoginPage>`
+
+**关联 AC**：AC-001-pc-004
+
+**职责**：
+- 从 `$route.params.tenantCode` 读取租户标识
+- tenantCode 为空时渲染 `<InvalidTenantPage>`，否则渲染 `<LoginCard>`
+- 将 `tenantCode` 写入 Vuex（`auth/setTenantCode`）
+
+**不该做**：不处理登录逻辑，只做路由与租户初始化。
 
 ---
 
-## 4. 页面与组件详细说明
+#### `<LoginTabs>`
 
-### 4.1 登录页面 `login/index.vue`
+**关联 AC**：AC-001-pc-001、AC-001-pc-002
 
-#### 4.1.1 数据状态
+**Props**：
+```js
+props: {
+  value: { type: String, default: 'MAINCON' } // 'MAINCON' | 'SUBCON'
+}
+// emits: input
+```
 
-| 变量 | 类型 | 初始值 | 说明 |
-|------|------|--------|------|
-| `activeTab` | String | `'MAINCON'` | 当前登录 Tab：`'MAINCON'` / `'SUBCON'` |
-| `loginForm` | Object | `{ username: '', password: '' }` | 表单数据 |
-| `rememberPassword` | Boolean | `true` | 记住密码 |
-| `loading` | Boolean | `false` | 登录按钮 loading 状态 |
-| `tenantCode` | String | `''` | 从 URL 解析出的租户标识 |
-| `tenantError` | Boolean | `false` | URL 中无有效 tenantCode 时为 true |
+**职责**：渲染 MAINCON / SUBCON 两个 Tab，默认选中 MAINCON，切换时 $emit('input')。
 
-#### 4.1.2 生命周期
+---
 
-```javascript
-created() {
-  // 1. 从 URL 路径解析 tenantCode
-  this.tenantCode = parseTenantCode(this.$route.params.tenantCode)
-  if (!this.tenantCode) {
-    this.tenantError = true
-    return
-  }
-  // 2. 若有记住的账号，自动填充 username
-  const savedUsername = localStorage.getItem('remembered_username')
-  if (savedUsername) {
-    this.loginForm.username = savedUsername
-  }
+#### `<LoginForm>`
+
+**关联 AC**：AC-001-pc-001 ~ AC-001-pc-003、AC-001-pc-005 ~ AC-001-pc-007
+
+**Props**：
+```js
+props: {
+  tabType: { type: String, required: true },  // 'MAINCON' | 'SUBCON'
+  tenantCode: { type: String, required: true }
 }
 ```
 
-#### 4.1.3 核心方法
-
-| 方法 | 说明 |
-|------|------|
-| `handleLogin()` | 触发 el-form 验证 → 调用对应登录 API → 保存 Token → 获取权限信息 → 跳转首页 |
-| `switchTab(tab)` | 切换 MAINCON / SUBCON，重置表单 |
-| `handleLoginSuccess(data)` | 保存 `access_token`、`refresh_token`、`tenant_id`、`tenant_name` 到 localStorage，提交到 Vuex |
-| `fetchPermissionInfo()` | 调用 `/system/auth/get-permission-info`，获取项目列表和权限，存入 Vuex `user` module |
-| `toggleLang()` | 弹出语言选择菜单，切换 Vue I18n locale，保存到 localStorage `lang` |
-
-#### 4.1.4 登录流程
-
-```
-页面加载
-  → parseTenantCode() from URL params
-  → 无 tenantCode → 显示错误页"Invalid access URL..."，停止
-  → 有 tenantCode → 正常渲染登录卡片
-用户填写表单 → 点击 Login
-  → el-form.validate()
-  → 验证失败 → 输入框标红 + 显示 "required"，停止
-  → 验证通过 → loading = true，禁用按钮
-  → MAINCON: POST /system/auth/login（附带 tenantCode）
-  → SUBCON: POST /system/auth/subcontractor/login（附带 tenantCode）
-  → 成功: handleLoginSuccess() → fetchPermissionInfo() → $router.push('/')
-  → 失败: loading = false，显示后端错误信息，清空密码字段
-```
-
-#### 4.1.5 表单验证规则
-
-```javascript
-loginRules: {
-  username: [
-    { required: true, message: 'required', trigger: 'submit' }
-  ],
-  password: [
-    { required: true, message: 'required', trigger: 'submit' }
-  ]
-}
-```
-
-> 后端字段长度验证在 shared 文档中定义，前端仅做非空验证，错误提示显示在输入框下方红色文字 "required"。
-
-#### 4.1.6 记住密码逻辑
-
-```javascript
-// 登录成功后
-if (this.rememberPassword) {
-  localStorage.setItem('remembered_username', this.loginForm.username)
-} else {
-  localStorage.removeItem('remembered_username')
-}
-```
+**职责**：
+- 管理账号、密码表单字段
+- 前端必填校验（触发时机：点击 Login）
+- 根据 `tabType` 调用对应登录接口
+- 处理 Loading 态、禁止重复点击
+- 登录成功：调用 `this.$store.dispatch('auth/saveToken')`，路由跳转
+- 登录失败：`this.$message.error(msg)` Toast
 
 ---
 
-### 4.2 管理后台框架 `AppLayout`
+#### `<LanguageSwitcher>`
 
-#### 4.2.1 整体结构
+**关联 AC**：AC-001-pc-008
+
+**职责**：点击图标弹出 `el-dropdown`，切换语言调用 `this.$i18n.locale = lang`，语言偏好存 `localStorage`。
+
+**实现约束（来自实测问题修正）**：
+
+> ⚠️ 语言切换**必须使用 `el-dropdown` 下拉菜单**，禁止直接渲染中/英文按钮（否则无下拉交互）。
 
 ```vue
-<template>
-  <div class="app-layout">
-    <AppHeader />
-    <div class="app-body">
-      <AppSidebar />
-      <main class="main-content">
-        <router-view />
-      </main>
-    </div>
-  </div>
-</template>
+<!-- LanguageSwitcher.vue -->
+<el-dropdown trigger="click" @command="handleLangChange">
+  <span class="lang-trigger">
+    <svg-icon icon-class="lang" />  <!-- 文A 图标 -->
+  </span>
+  <el-dropdown-menu slot="dropdown">
+    <el-dropdown-item command="en">English</el-dropdown-item>
+    <el-dropdown-item command="zh-CN">中文</el-dropdown-item>
+  </el-dropdown-menu>
+</el-dropdown>
 ```
 
-#### 4.2.2 布局尺寸
-
-| 区域 | 规格 |
-|------|------|
-| Header 高度 | 56px，固定顶部（`position: fixed; top: 0`） |
-| Sidebar 宽度（展开） | 220px |
-| Sidebar 宽度（折叠） | 64px |
-| Main 内边距 | 16px 或 24px |
-| z-index: Header | 1000 |
-| z-index: Sidebar | 900 |
-
----
-
-### 4.3 顶部导航栏 `AppHeader.vue`
-
-#### 4.3.1 Props / 数据
-
-从 Vuex `app` module 读取：`sidebarCollapsed`、`currentProject`  
-从 Vuex `user` module 读取：`userInfo`、`projectList`、`notificationCount`
-
-#### 4.3.2 组件结构
-
-```
-AppHeader
-  ├── Logo 区域（品牌图标 + "Smart construction site"，折叠时隐藏文字）
-  ├── 侧边栏折叠按钮（≡ 图标）
-  ├── 面包屑导航（动态，基于 $route.matched）
-  └── 右侧工具区
-      ├── ProjectSelector.vue
-      ├── 数据统计图标（跳转 Dashboard）
-      ├── NotificationBell.vue
-      └── UserDropdown.vue
-```
-
-#### 4.3.3 折叠按钮
-
-```javascript
-toggleSidebar() {
-  this.$store.commit('app/TOGGLE_SIDEBAR')
-}
-```
-Sidebar 展开/折叠通过 CSS transition 实现宽度过渡动画（`transition: width 0.3s ease`）。
-
----
-
-### 4.4 项目切换器 `ProjectSelector.vue`
-
-#### 4.4.1 数据
-
-```javascript
-computed: {
-  projectList() { return this.$store.state.user.projectInfos },
-  currentProject() { return this.$store.state.app.currentProject }
+```js
+methods: {
+  handleLangChange(lang) {
+    this.$i18n.locale = lang
+    localStorage.setItem('lang', lang)
+  }
 }
 ```
 
-#### 4.4.2 切换逻辑
-
-```javascript
-handleSelectProject(project) {
-  // 1. 更新 Vuex 当前项目
-  this.$store.commit('app/SET_CURRENT_PROJECT', project)
-  // 2. 更新 localStorage
-  localStorage.setItem('project_id', project.id)
-  // 3. 触发全局事件，各页面监听并刷新数据
-  this.$bus.$emit('project-changed', project.id)
-  // 4. 关闭下拉
-  this.dropdownVisible = false
-}
-```
-
-> `request.js` 中的 Axios 请求拦截器自动从 Vuex / localStorage 读取 `Project-Id` 并附加到所有请求 Header。
+- `trigger="click"`：点击图标触发，不使用 hover
+- 选项固定为 `English` / `中文` 两项，顺序不变
+- 当前语言不需要高亮（设计稿无此要求）
+- ⚠️ **默认态只渲染图标**：`<el-dropdown>` 的 trigger slot 中只放「文A」图标，**不得**在 trigger slot 或图标旁边显示当前语言名称文字（如 "English"）或备选语言文字（如 "中文"）——语言文字只出现在下拉菜单的 `el-dropdown-item` 中
 
 ---
 
-### 4.5 通知铃铛 `NotificationBell.vue`
+#### `<RememberPassword>`
 
-- 点击铃铛弹出通知面板（Popover / Drawer）
-- 角标数量从 Vuex `user.todoCount` 读取
-- 通知面板数据调用 `/system/notice/page`（或 Todo 相关 API）
-- 超过 99 显示 "99+"
+**关联 AC**：AC-001-pc-007
+
+**职责**：默认选中（checked），值传递给 `<LoginForm>`，决定 Token 存储位置（localStorage / sessionStorage）。
 
 ---
 
-### 4.6 用户下拉菜单 `UserDropdown.vue`
+## 5. 状态管理
 
-| 菜单项 | 操作 |
-|--------|------|
-| 个人中心 | `$router.push('/profile')` |
-| 修改密码 | 弹出修改密码 Dialog |
-| 退出登录 | 调用 `POST /system/auth/logout` → 清除所有本地数据 → `$router.push('/:tenantCode/login')` |
+### 5.1 状态分层
 
-**退出登录逻辑**:
-```javascript
-async handleLogout() {
-  await this.$store.dispatch('user/logout')
-  // store action 内部: 调用 API → 清除 localStorage → reset Vuex state
-  this.$router.push(`/${this.tenantCode}/login`)
+| 状态类型 | 存放位置 | 内容 |
+|---------|---------|------|
+| 全局认证 | Vuex `auth` module | `tenantCode`、`tenantId`、`token`、`tokenStorage` |
+| 表单临时 | 组件 `data` | 账号、密码、记住密码开关 |
+| 语言偏好 | `localStorage` + `vue-i18n` | `lang: 'zh-CN' / 'en'` |
+
+### 5.2 Vuex auth module 관련 action
+
+```js
+// store/modules/auth.js
+
+// AC-001-pc-001 / AC-001-pc-002 / AC-001-pc-007
+// REQ-001-shared §3.1：登录成功后保存 accessToken + refreshToken + tenantId + tenantName
+saveToken({ commit }, { accessToken, refreshToken, tenantId, tenantName, remember }) {
+  commit('SET_TOKEN', accessToken)
+  commit('SET_REFRESH_TOKEN', refreshToken)
+  commit('SET_TENANT_ID', tenantId)
+  const storage = remember ? localStorage : sessionStorage
+  storage.setItem('token', accessToken)
+  storage.setItem('refreshToken', refreshToken)
+  storage.setItem('tenantId', tenantId)
+  storage.setItem('tenantName', tenantName)
+},
+
+// REQ-001-shared §3.3：登出时清除所有本地登录信息
+logout({ commit, dispatch }) {
+  return request.post('/system/auth/logout').finally(() => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('tenantId')
+    localStorage.removeItem('tenantName')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('refreshToken')
+    sessionStorage.removeItem('tenantId')
+    commit('SET_TOKEN', '')
+    commit('SET_REFRESH_TOKEN', '')
+    commit('SET_TENANT_ID', '')
+  })
+},
+
+clearToken({ commit }) {
+  localStorage.removeItem('token')
+  localStorage.removeItem('refreshToken')
+  sessionStorage.removeItem('token')
+  sessionStorage.removeItem('refreshToken')
+  commit('SET_TOKEN', '')
+  commit('SET_REFRESH_TOKEN', '')
 }
 ```
 
 ---
 
-## 5. Vuex 状态管理
+## 6. API 接入
 
-### 5.1 `store/modules/user.js`
+> 接口字段完整定义参见 [REQ-001-shared.md](../../../requirements/shared/REQ-001-shared.md)。
 
-| State | 类型 | 说明 |
-|-------|------|------|
-| `accessToken` | String | 当前有效的 Access Token |
-| `refreshToken` | String | 刷新令牌 |
-| `tenantId` | String | 租户 ID |
-| `tenantName` | String | 租户名称 |
-| `userInfo` | Object | 用户信息（id, nickname, avatar, mobile, signatureUrl） |
-| `roles` | Array | 角色列表 |
-| `permissions` | Array | 权限标识列表 |
-| `projectInfos` | Array | 用户可访问的项目列表 |
-| `todoCount` | Number | 待处理 Todo 数量 |
+### 6.1 调用清单
 
-| Action | 说明 |
-|--------|------|
-| `login(loginReqVO)` | 调用登录 API，保存 Token 到 state + localStorage |
-| `getPermissionInfo()` | 调用 `/system/auth/get-permission-info`，填充 userInfo / roles / permissions / projectInfos |
-| `logout()` | 调用登出 API，清除所有状态和 localStorage |
-| `refreshToken()` | 调用 `/system/auth/refresh-token`，更新 accessToken |
+| 接口 | 调用位置 | 触发时机 |
+|-----|---------|---------|
+| `POST /system/auth/login` | `<LoginForm>` | 点击 Login，MAINCON Tab |
+| `POST /system/auth/subcontractor/login` | `<LoginForm>` | 点击 Login，SUBCON Tab |
+| `GET /system/auth/get-permission-info` | 登录成功后（`auth/saveToken` action 内） | 获取用户信息 + 项目列表，写入 Vuex 后再跳转 |
+| `POST /system/auth/refresh-token` | Axios 响应拦截器（自动触发） | 收到 401 时自动刷新 Token |
+| `POST /system/auth/logout` | `auth/logout` action | 用户点击登出（REQ-002-pc 范围，此处仅定义 action） |
 
-### 5.2 `store/modules/app.js`
+### 6.2 请求拦截器
 
-| State | 类型 | 说明 |
-|-------|------|------|
-| `sidebarCollapsed` | Boolean | 侧边栏是否折叠，默认 false |
-| `lang` | String | 当前语言，默认 `'en'` |
-| `currentProject` | Object \| null | 当前选中项目 |
-
----
-
-## 6. API 封装 `api/auth.js`
-
-```javascript
-// 账号密码登录（MAINCON）
-export const loginByPassword = (data) =>
-  request.post('/system/auth/login', data)
-
-// 分包商登录（SUBCON）
-export const loginSubcontractor = (data) =>
-  request.post('/system/auth/subcontractor/login', data)
-
-// 刷新 Token
-export const refreshToken = (refreshToken) =>
-  request.post('/system/auth/refresh-token', null, { params: { refreshToken } })
-
-// 获取用户权限信息
-export const getPermissionInfo = () =>
-  request.get('/system/auth/get-permission-info')
-
-// 登出
-export const logout = () =>
-  request.post('/system/auth/logout')
+```js
+// utils/request.js
+// REQ-001-shared §3.1：所有请求必须携带 Authorization / X-Tenant-Id / lang
+service.interceptors.request.use(config => {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+  const tenantId = localStorage.getItem('tenantId') || sessionStorage.getItem('tenantId')
+  if (token) config.headers['Authorization'] = `Bearer ${token}`
+  if (tenantId) config.headers['X-Tenant-Id'] = tenantId
+  config.headers['lang'] = localStorage.getItem('lang') || 'en'
+  // Project-Id 由各业务页面按需注入，登录页不传
+  return config
+})
 ```
 
----
+### 6.3 响应拦截器 — 401 自动 Token 刷新
 
-## 7. Axios 请求拦截器（`utils/request.js`）
+> ⚠️ 来自 REQ-001-shared §3.2，必须实现，否则用户会在 Access Token（1h）过期后被强制重新登录。
 
-### 7.1 请求拦截
+```js
+// utils/request.js
+// REQ-001-shared §3.2：401 → 自动用 refreshToken 换新 accessToken → 重发原请求
+let isRefreshing = false
+let pendingQueue = []
 
-```javascript
-config.headers['Authorization'] = `Bearer ${store.state.user.accessToken}`
-config.headers['X-Tenant-Id'] = store.state.user.tenantId
-config.headers['Project-Id'] = store.state.app.currentProject?.id || localStorage.getItem('project_id')
-config.headers['lang'] = store.state.app.lang || 'en'
-```
-
-### 7.2 响应拦截（Token 刷新）
-
-```javascript
-response.interceptors.response.use(
+service.interceptors.response.use(
   res => res.data,
-  async error => {
-    if (error.response?.status === 401) {
-      // 尝试刷新 Token
+  async err => {
+    const status = err.response?.status
+    const originalRequest = err.config
+
+    if (status === 401 && !originalRequest._retry) {
+      const refreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken')
+
+      if (!refreshToken) {
+        // Refresh Token 不存在 → 直接跳转登录
+        store.dispatch('auth/clearToken')
+        router.push(`/${store.state.auth.tenantCode}/login`)
+        return Promise.reject(err)
+      }
+
+      if (isRefreshing) {
+        // 其他请求排队等待刷新完成
+        return new Promise(resolve => {
+          pendingQueue.push(newToken => {
+            originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+            resolve(service(originalRequest))
+          })
+        })
+      }
+
+      isRefreshing = true
+      originalRequest._retry = true
+
       try {
-        await store.dispatch('user/refreshToken')
-        return request(error.config) // 重试原请求
-      } catch {
-        // Refresh Token 也失效 → 跳转登录
-        store.dispatch('user/logout')
-        router.push(`/${store.state.user.tenantCode}/login`)
+        const res = await service.post('/system/auth/refresh-token', null, {
+          params: { refreshToken }
+        })
+        const newToken = res.data.accessToken
+        // 更新存储
+        const storage = localStorage.getItem('refreshToken') ? localStorage : sessionStorage
+        storage.setItem('token', newToken)
+        store.commit('auth/SET_TOKEN', newToken)
+        // 唤醒排队请求
+        pendingQueue.forEach(cb => cb(newToken))
+        pendingQueue = []
+        // 重发原请求
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+        return service(originalRequest)
+      } catch (refreshErr) {
+        // Refresh Token 过期 → 清除登录状态，跳转登录
+        store.dispatch('auth/clearToken')
+        router.push(`/${store.state.auth.tenantCode}/login`)
+        Message.error('Login expired, please sign in again')
+        return Promise.reject(refreshErr)
+      } finally {
+        isRefreshing = false
       }
     }
-    return Promise.reject(error)
+
+    // 非 401 错误
+    const msg = err.response?.data?.message || '网络错误，请重试'
+    Message.error(msg)
+    return Promise.reject(err)
   }
 )
 ```
 
+### 6.4 登录成功后的完整流程
+
+```js
+// LoginForm.vue — handleLogin 方法
+// REQ-001-shared §2.1 步骤 6：登录成功后先调用 get-permission-info，再跳转
+
+async handleLogin() {
+  // 1. 调用登录接口
+  const loginRes = await loginApi({ username, password, tabType })
+  const { accessToken, refreshToken, tenantId, tenantName } = loginRes.data
+
+  // 2. 保存 Token（AC-001-pc-007）
+  await this.$store.dispatch('auth/saveToken', {
+    accessToken, refreshToken, tenantId, tenantName,
+    remember: this.rememberPassword
+  })
+
+  // 3. 获取用户权限信息（写入 Vuex，后续页面使用）
+  await this.$store.dispatch('auth/getPermissionInfo')
+
+  // 4. 跳转首页（AC-001-pc-001 / AC-001-pc-002）
+  this.$router.push(`/${this.tenantCode}/home`)
+}
+```
+
 ---
 
-## 8. 路由配置
+## 7. 表单校验
 
-```javascript
-// router/index.js
-const routes = [
-  {
-    path: '/:tenantCode/login',
-    name: 'Login',
-    component: () => import('@/views/login/index.vue'),
-    meta: { public: true }
-  },
-  {
-    path: '/',
-    component: AppLayout,
-    children: [
-      { path: '', redirect: '/home' },
-      { path: 'home', name: 'Home', component: () => import('@/views/home/index.vue') },
-      // ... 其他业务页面路由
-    ]
+```js
+// AC-001-pc-003
+rules: {
+  username: [{ required: true, message: 'required', trigger: 'submit' }],
+  password: [{ required: true, message: 'required', trigger: 'submit' }]
+}
+```
+
+- 触发时机：仅在点击 Login 时触发（`trigger: 'submit'`），不在 blur 触发
+- 错误提示文案：`'required'`（中英文均同）
+- 错误态：`el-form-item` 显示红色提示文字
+
+**⚠️ 表单间距修正（来自实测问题）**：
+
+`el-form-item` 默认保留 error 文字占位高度（`margin-bottom` 约 18~22px），与 UI Spec 的 `gap: 24px` 叠加后视觉间距过宽。必须通过以下方式消除 Element UI 默认的 error 占位：
+
+```scss
+// LoginForm 组件 scoped 样式
+.login-form {
+  // 使用 flex + gap 控制间距，由 UI Spec gap 24px 决定
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  .el-form-item {
+    margin-bottom: 0; // 覆盖 Element UI 默认 margin，由 flex gap 统一管理间距
   }
-]
 
-// 全局路由守卫
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('access_token')
-  if (to.meta.public) {
-    next()
-  } else if (!token) {
-    const tenantCode = localStorage.getItem('tenant_code') || 'mcc'
-    next(`/${tenantCode}/login`)
-  } else {
-    next()
+  // error 文字绝对定位，不占据文档流
+  .el-form-item__error {
+    position: absolute; // 不影响相邻 form-item 的位置
+    padding-top: 2px;
   }
-})
+}
+```
+
+**禁止**使用 `el-form` 的 `label-position` + 默认 `margin-bottom` 来控制间距，否则与设计稿不符。
+
+---
+
+## 8. DS 与 Element UI 对应说明
+
+> UI Spec 基于 Ant Design 描述，但项目使用 Element UI。以下为组件映射：
+
+| UI Spec 组件 | Element UI 实现 | 差异处理 |
+|------------|----------------|---------|
+| `Input`（bordered） | `el-input` | 聚焦色通过覆盖 CSS 变量为 `#1890FF`；⚠️ **必须显式设置 `font-size: 14px`**，`el-input` 不会自动继承，否则使用浏览器默认 16px，placeholder 显示偏大 |
+| `Input.Password` | `el-input` + `show-password` | 内置眼睛图标，可直接使用 |
+| `Checkbox` | `el-checkbox` | 选中色通过 `--el-color-primary` 覆盖 |
+| `Button type="primary"` | `el-button type="primary"` | 宽度需自定义 `240px` |
+| Tab 下划线样式 | 自定义实现 | Element UI tabs 样式不完全匹配，需自定义下划线 |
+| `Dropdown` | `el-dropdown` | 可直接使用 |
+| `message` | `this.$message` | 可直接使用 |
+
+---
+
+## 9. 性能预算
+
+| 指标 | 目标 | 说明 |
+|-----|------|-----|
+| 登录页首屏 FCP | ≤ 2s | 来自 REQ-001-pc §9.1 |
+| 登录接口响应 P95 | ≤ 1s | 来自 REQ-001-pc §9.1 |
+| 背景图加载 | 异步，不阻塞交互 | 先渲染卡片，背景图懒加载 |
+
+---
+
+## 10. 安全
+
+- 密码输入框：`autocomplete="new-password"`（防浏览器自动填充）
+- Token 不写入 URL
+- 密码明文不持久化（提交后清空表单）
+
+---
+
+## 11. 国际化
+
+- i18n 库：vue-i18n
+- 文案来源：[UI-REQ-001-pc.md](../../ui/pc/UI-REQ-001-pc.md) §9
+- 当前支持：`zh-CN`、`en`
+- 默认语言：`en`
+- 语言偏好存 `localStorage('lang')`
+
+**关键文案 key**：
+
+```js
+// locales/en.js
+module.exports = {
+  login: {
+    brandTitle: 'SMART CONSTRUCTION',
+    brandSubtitle: 'BACK OFFICE',
+    pageTitle: 'Account Login Page',
+    tabMaincon: 'MAINCON',
+    tabSubcon: 'SUBCON',
+    accountPlaceholder: 'Please fill in account',
+    passwordPlaceholder: 'Please fill in password',
+    rememberPassword: 'Remember the password',
+    loginBtn: 'Login',
+    required: 'required',
+    invalidUrl: 'Invalid access URL, please contact your administrator'
+  }
+}
 ```
 
 ---
 
-## 9. 国际化（i18n）
+## 12. 弱网与异常策略
 
-### 9.1 Key 命名规范
-
-```
-login.title              → "Account Login Page"
-login.tab.maincon        → "MAINCON"
-login.tab.subcon         → "SUBCON"
-login.form.username      → "Please fill in account"
-login.form.password      → "Please fill in password"
-login.btn.submit         → "Login"
-login.rememberPassword   → "Remember the password"
-login.error.required     → "required"
-login.error.invalidUrl   → "Invalid access URL, please contact your administrator"
-nav.logout               → "Logout"
-nav.profile              → "Profile"
-nav.changePassword       → "Change Password"
-```
+| 场景 | 策略 |
+|-----|------|
+| 登录接口超时（> 10s） | Axios timeout 10s，超时后 Toast 提示，按钮恢复可点 |
+| 网络断开 | catch 后 Toast 提示"网络错误，请重试" |
+| 重复点击 Login | `:loading="isLoading"` + `:disabled="isLoading"` 禁止重复提交 |
+| Access Token 过期（401） | 响应拦截器自动用 refreshToken 换新 token，无感重试原请求（见 §6.3） |
+| Refresh Token 过期 | 跳转登录页，Toast 提示"Login expired, please sign in again"，清除所有本地存储 |
 
 ---
 
-## 10. 样式规范
+## 13. 测试要求
 
-### 10.1 登录页
-
-| 元素 | 样式 |
-|------|------|
-| 背景 | 全屏城市夜景图，`background-size: cover`；加载失败回退 `#1a2332 → #2c3e50` |
-| 登录卡片 | 宽 420px，白色背景，圆角 16px，阴影 `0 8px 32px rgba(0,0,0,0.12)`，水平垂直居中 |
-| 输入框 | 高 44px，圆角 6px，边框 `1px #D9D9D9`，聚焦 `1px #4A90D9`，错误 `1px #FF4D4F` |
-| 登录按钮 | 100% 宽，高 44px，背景 `#4A90D9`，hover `#357ABD` |
-| Tab 选中 | `#4A90D9`，2px 下划线 |
-| 错误提示 | `12px #FF4D4F`，显示在输入框下方 4px |
-
-### 10.2 管理后台框架
-
-| 元素 | 样式 |
-|------|------|
-| Header 背景 | `#FFFFFF`，底部边框 `1px #E8E8E8` |
-| Sidebar 背景 | 深色主题（`#001428` 或当前项目主色，与 Element UI NavMenu 一致） |
-| 菜单选中项 | 品牌蓝色高亮 `#4A90D9` |
-| Sidebar 过渡 | `transition: width 0.3s ease` |
+| 层级 | 框架 | 覆盖范围 |
+|-----|------|---------|
+| 单元 | Jest | Vuex auth module、tenantCode 解析逻辑、表单校验规则 |
+| 集成 | Jest + Vue Test Utils | `<LoginForm>` 完整提交流程（Mock Axios） |
+| E2E | Cypress（QA 维护） | 完整登录流程，见 QA Spec |
 
 ---
 
-## 11. 验收标准
+## 14. AC 覆盖检查表
 
-### 登录页
-- [ ] URL 中无有效 `tenantCode` → 显示错误提示页面，无法进入登录
-- [ ] URL 含 `tenantCode` → 正常显示登录卡片
-- [ ] 点击 Login 时账号/密码为空 → 输入框红色 + 显示 "required"，阻止提交
-- [ ] 调用登录 API 失败 → 显示后端返回错误信息，清空密码字段，按钮解除 loading
-- [ ] 登录成功 → 保存 Token + Tenant 信息，跳转首页
-- [ ] 记住密码勾选 → 下次打开自动填充账号
-- [ ] MAINCON 与 SUBCON Tab 切换 → 表单重置，调用各自接口
-- [ ] 语言切换 → 所有文本即时切换，偏好保存到 localStorage
+| AC ID | 实现位置 | 状态 |
+|------|---------|------|
+| AC-001-pc-001 | `<LoginForm>` MAINCON 分支 → `auth/saveToken` → `auth/getPermissionInfo` → router.push | TODO |
+| AC-001-pc-002 | `<LoginForm>` SUBCON 分支（调用 `subcontractor/login`） | TODO |
+| AC-001-pc-003 | `<LoginForm>` rules（trigger: submit，必填） | TODO |
+| AC-001-pc-004 | `<LoginPage>` tenantCode 校验 → `<InvalidTenantPage>` | TODO |
+| AC-001-pc-005 | Axios 响应拦截器 → `Message.error`（非 401 错误） | TODO |
+| AC-001-pc-006 | `el-input` `show-password` prop | TODO |
+| AC-001-pc-007 | `<RememberPassword>` → `auth/saveToken(remember)` → localStorage / sessionStorage | TODO |
+| AC-001-pc-008 | `<LanguageSwitcher>` → `this.$i18n.locale` | TODO |
+| REQ-001-shared §3.2 | Axios 401 响应拦截器 → 自动 refresh → 无感重试 | TODO |
+| REQ-001-shared §3.2 | Refresh Token 过期 → clearToken → 跳转登录页 | TODO |
+| REQ-001-shared §3.1 | `auth/saveToken` 保存 accessToken + refreshToken + tenantId + tenantName | TODO |
+| REQ-001-shared §3.3 | `auth/logout` 调用后端 API + 清除全部本地存储 | TODO |
 
-### 管理后台框架
-- [ ] 侧边栏折叠/展开按钮正常切换，带 CSS 过渡动画
-- [ ] 面包屑导航随路由自动更新
-- [ ] 项目切换器正确显示项目列表，切换后全局 `Project-Id` Header 更新
-- [ ] 通知角标显示 Todo 数量，超过 99 显示 "99+"
-- [ ] 用户下拉菜单 → 退出登录正确清除本地数据并跳回登录页
+---
 
-### Token 与会话
-- [ ] API 返回 401 → 自动刷新 Token 后重试请求
-- [ ] Refresh Token 过期 → 清除本地数据，跳转登录页，提示 "Login expired, please sign in again"
-- [ ] 所有请求自动附带 `Authorization`、`X-Tenant-Id`、`Project-Id`、`lang` Header
+## 15. 与后端的联调约定
+
+- **联调前置**：REQ-001-shared 接口定义已确认
+- **Mock**：基于接口约定本地 Mock，前端可独立开发
+- **联调环境**：dev 环境
+- **接口变更**：任何字段变更需先通知前端
+
+---
+
+## 16. 验收条件
+
+- [ ] 所有 AC 在 §14 表中标记完成
+- [ ] 单元 + 集成测试通过
+- [ ] E2E 由 QA 跑通（不阻塞前端提测）
+- [ ] 无 console 错误 / 警告
+- [ ] 已部署到 dev 环境可联调
+- [ ] 语言切换在中英文下均正常渲染
+- [ ] 无效 tenantCode 显示错误整页（不显示登录卡片）
+
+---
+
+## 17. 变更历史
+
+| 版本 | 日期 | 修改人 | 变更摘要 |
+|-----|------|-------|---------|
+| 0.2.0 | 2026-05-03 | agent | 补全 REQ-001-shared 会话管理要求：saveToken 增加 refreshToken/tenantName；新增 401 自动刷新拦截器（§6.3）；新增登录后 get-permission-info 调用（§6.4）；补充 logout action；AC 覆盖表扩展 shared 层条目 |
+| 0.1.3 | 2026-05-03 | agent | DS映射表补充 el-input 必须显式设置 font-size:14px，禁止继承浏览器默认 16px |
+| 0.1.2 | 2026-05-03 | agent | 补充 LanguageSwitcher 默认态约束：trigger slot 只放图标，禁止在图标旁显示当前/备选语言文字 |
+| 0.1.1 | 2026-05-03 | agent | 补充两条实测问题修正：LanguageSwitcher 必须用 el-dropdown；LoginForm 使用 flex gap + margin-bottom:0 消除 el-form-item error 占位 |
+| 0.1.0 | 2026-05-03 | agent | 从 REQ-001-pc.md v0.2.0 重写，升级为新模板格式；仅覆盖登录页，后台框架拆至 FRONTEND-REQ-002-pc.md |
