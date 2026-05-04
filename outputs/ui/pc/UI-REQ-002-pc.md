@@ -173,7 +173,7 @@ Logo 区域应作为 `Sidebar` 的顶端子区域实现，控制折叠/展开行
 | 折叠 | 点击 ≡ 后 | 仅显示图标，宽度收窄，主内容区扩展 |
 | 菜单项 — 默认 | 未选中、未 Hover | 图标 + 文字，无高亮 |
 | 菜单项 — Hover | 鼠标悬停 | 背景色 `#E8F7FF`，文字 / 图标颜色不变 |
-| 菜单项 — 选中 | 当前路由对应项 | 图标 + 文字高亮，左侧显示选中竖线 |
+| 菜单项 — 选中 | 当前路由对应项 | 图标 + 文字高亮（不显示左侧竖线） |
 | 子菜单 — 展开 | 点击有子菜单的一级项 | 子菜单展开，一级项箭头向下；一级菜单项 + 所有子菜单项背景色变为 `#EDF2F9` |
 | 子菜单 — 折叠 | 点击已展开的一级项 | 子菜单收起，一级项箭头向右 |
 | 折叠态 Tooltip | Hover 折叠态菜单图标 | 显示菜单名称 Tooltip |
@@ -353,36 +353,32 @@ Logo 区域应作为 `Sidebar` 的顶端子区域实现，控制折叠/展开行
 | Sidebar 菜单项（展开态）箭头图标 | width | `8.695px` | Figma ✅ |
 | Sidebar 菜单项（展开态）箭头图标 | height | `4.582px` | Figma ✅ |
 | Sidebar 菜单项（展开态）箭头图标 | fill | `#344050`（`--text-color-primary-dark`） | Figma ✅ |
-| Sidebar 选中指示竖线 | 颜色 | `--Primary-Color` / `#1890FF` | Figma ✅ |
-| Sidebar 选中指示竖线 | 宽度 | `4px`（竖线宽度） | Figma ✅ |
-| Sidebar 选中指示竖线 | 放置位置 | 靠左 0px（与 Sidebar 左侧对齐），高度与菜单项高度一致 | Figma ✅ |
-| Sidebar 选中指示竖线 | 折叠态行为 | 折叠态仍显示竖线（高度等于菜单项高度），位置靠左，与图标左侧对齐；竖线宽度同 `4px` | Figma ✅ |
+| Sidebar 菜单项（选中） | 背景色 | `--Primary-Color` / `#1890FF` | Figma ✅ |
+| Sidebar 菜单项（选中） | 文字/图标颜色 | `--Vertical-Menu-White` / `#FFFFFF` | Figma ✅ |
+| Sidebar 菜单项（选中） | 放置/折叠态行为 | 背景填满菜单项区域；折叠态同样对图标区域进行高亮，视觉一致 | Figma ✅ |
 
 实现建议（CSS 示例）：
 
 ```scss
-.sidebar-menu .menu-item {
-  position: relative;
-}
-
-.sidebar-menu .menu-item.is-active::before {
-  content: '';
-  position: absolute;
-  left: 0;             // 靠左对齐
-  top: 0;
-  bottom: 0;
-  width: 4px;         // 指示竖线宽度
+.sidebar-menu .menu-item.is-active {
   background: var(--Primary-Color, #1890FF);
-  border-radius: 0 2px 2px 0;
+  color: var(--Vertical-Menu-White, #FFFFFF);
+  transition: background 100ms ease, color 100ms ease;
 }
 
-/* 折叠态：menu-item 宽度缩窄，竖线依然靠左显示 */
-.sidebar.collapsed .sidebar-menu .menu-item.is-active::before {
-  left: 0;            // 仍然贴紧侧边栏左侧
+/* 确保图标/文字继承高亮色 */
+.sidebar-menu .menu-item.is-active .menu-item-icon,
+.sidebar-menu .menu-item.is-active .menu-item-text {
+  color: inherit;
+}
+
+/* 折叠态：高亮仍可通过背景或仅高亮图标，保持过渡一致 */
+.sidebar.collapsed .sidebar-menu .menu-item.is-active {
+  background: var(--Primary-Color, #1890FF);
 }
 ```
 
-实现要点：不要把选中竖线当作菜单项的独立图层（如额外的 DOM 节点）去绝对定位在容器底部，推荐用 pseudo-element `::before` 或 `border-left`，保证在展开/折叠切换时竖线与菜单项高度与对齐关系一致。
+实现要点：选中态使用背景色高亮并改变文字/图标颜色，避免使用左侧竖线作为唯一指示器（会与不同宽度、折叠逻辑产生对齐差异）。优点是实现简单、在展开/折叠/响应式下更稳健；仍需保证高对比度以满足无障碍要求（文本对比度）。
 | Sidebar 子菜单 | 缩进量 | 无缩进，文字与一级菜单文字左对齐 | Figma ✅ |
 | Sidebar 子菜单 | 图标 | 无图标 | Figma ✅ |
 | 下拉面板 | 全部样式 | Element UI 默认样式，不自定义 | ✅ |
