@@ -53,7 +53,7 @@ owner: ""
 ```
 管理后台框架（所有已登录页面共用）
 ├── Header（固定顶部）
-│   ├── Logo 区域（Logo + 品牌名 + 折叠按钮 ≡）
+│   ├── 折叠按钮（≡）+ 面包屑导航 + 右侧操作区（注：Sidebar 顶部的 Logo 区放在 `Sidebar` 内）
 │   ├── 面包屑导航
 │   └── 右侧操作区
 │       ├── 项目切换入口（彩色圆点 + 项目名 + 下拉）
@@ -63,6 +63,28 @@ owner: ""
 ├── Sidebar（固定左侧）
 │   ├── 展开态（图标 + 文字）
 │   └── 折叠态（仅图标，Hover 显示 Tooltip）
+### Sidebar Header（`.sidebar-header`） — Logo 区域（实现关键点）
+
+Logo 区域应作为 `Sidebar` 的顶端子区域实现，控制折叠/展开行为。实现示例 DOM：
+
+```html
+<aside class="sidebar" :class="{ collapsed: isCollapsed }">
+  <div class="sidebar-header">
+    <img class="logo-icon" src="/assets/logo.svg" alt="logo" />
+    <div class="brand-text">Smart construction site</div>
+  </div>
+  <nav class="sidebar-menu"> ... </nav>
+</aside>
+```
+
+行为与样式建议（可直接复用）：
+
+- `.sidebar` 展开时宽度 `224px`，折叠时宽度 `72px`。折叠/展开过渡 `300ms`。
+- `.sidebar-header` 高度与菜单项行高一致（例如 `56px`），内部 `display:flex; align-items:center; gap:8px; padding: 9px 8px;`。
+- `.brand-text` 在折叠态使用 `display:none` 或 `visibility:hidden`，并保留 `aria-hidden="true"` 以满足无障碍需求。
+- Logo 图标 `20×20px`，在折叠态垂直水平居中显示或保持与菜单图标左对齐（以设计稿为准）。
+- 禁止在 Header 中再次渲染 Logo 并用绝对定位对齐；折叠逻辑应由 Sidebar 的 `isCollapsed` 控制并统一管理 DOM。
+
 └── Main Content（Header 下方 / Sidebar 右侧，独立滚动）
 ```
 
@@ -95,9 +117,9 @@ owner: ""
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│  [Logo] Smart construction site  ≡  │  首页 / 项目详情          [项目▼] [📊] [🔔²] [👤▼] │
+│  ≡  │  面包屑导航            项目切换  Dashboard  通知  个人中心 │
 └────────────────────────────────────────────────────────────────────────────────────────┘
-  ←──────── Logo 区 ────────────────→    ←── 面包屑 ──→         ←─── 右侧操作区 ──────────→
+  ←── Header 左侧（汉堡按钮）──→    ←── 面包屑 ──→         ←─── 右侧操作区 ──────────→
 ```
 
 #### 状态列表
