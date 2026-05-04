@@ -353,7 +353,36 @@ Logo 区域应作为 `Sidebar` 的顶端子区域实现，控制折叠/展开行
 | Sidebar 菜单项（展开态）箭头图标 | width | `8.695px` | Figma ✅ |
 | Sidebar 菜单项（展开态）箭头图标 | height | `4.582px` | Figma ✅ |
 | Sidebar 菜单项（展开态）箭头图标 | fill | `#344050`（`--text-color-primary-dark`） | Figma ✅ |
-| Sidebar 选中指示竖线 | 宽度 | 待确认 | Figma |
+| Sidebar 选中指示竖线 | 颜色 | `--Primary-Color` / `#1890FF` | Figma ✅ |
+| Sidebar 选中指示竖线 | 宽度 | `4px`（竖线宽度） | Figma ✅ |
+| Sidebar 选中指示竖线 | 放置位置 | 靠左 0px（与 Sidebar 左侧对齐），高度与菜单项高度一致 | Figma ✅ |
+| Sidebar 选中指示竖线 | 折叠态行为 | 折叠态仍显示竖线（高度等于菜单项高度），位置靠左，与图标左侧对齐；竖线宽度同 `4px` | Figma ✅ |
+
+实现建议（CSS 示例）：
+
+```scss
+.sidebar-menu .menu-item {
+  position: relative;
+}
+
+.sidebar-menu .menu-item.is-active::before {
+  content: '';
+  position: absolute;
+  left: 0;             // 靠左对齐
+  top: 0;
+  bottom: 0;
+  width: 4px;         // 指示竖线宽度
+  background: var(--Primary-Color, #1890FF);
+  border-radius: 0 2px 2px 0;
+}
+
+/* 折叠态：menu-item 宽度缩窄，竖线依然靠左显示 */
+.sidebar.collapsed .sidebar-menu .menu-item.is-active::before {
+  left: 0;            // 仍然贴紧侧边栏左侧
+}
+```
+
+实现要点：不要把选中竖线当作菜单项的独立图层（如额外的 DOM 节点）去绝对定位在容器底部，推荐用 pseudo-element `::before` 或 `border-left`，保证在展开/折叠切换时竖线与菜单项高度与对齐关系一致。
 | Sidebar 子菜单 | 缩进量 | 无缩进，文字与一级菜单文字左对齐 | Figma ✅ |
 | Sidebar 子菜单 | 图标 | 无图标 | Figma ✅ |
 | 下拉面板 | 全部样式 | Element UI 默认样式，不自定义 | ✅ |
