@@ -191,8 +191,8 @@ generate:
 
 1. 用户完成登录 → 系统跳转至管理后台
 2. 系统调用 `/system/auth/get-permission-info` → 获取用户权限与菜单列表
-3. 系统渲染 Header（Logo、面包屑、项目选择器、工具区）
-4. 系统按权限渲染左侧侧边栏菜单
+3. 系统渲染 Header（注意：Header 不包含侧边栏的 Logo 区域；Header 渲染面包屑、项目选择器、工具区）
+4. 系统按权限渲染左侧侧边栏（包含 `sidebar-header` 的 Logo 区域与 `sidebar-menu` 菜单）
 5. 主内容区默认显示 Home 页面（当前为空白）
 6. 用户点击侧边栏菜单项 → URL 路由变更 → 主内容区渲染对应页面 → 面包屑更新
 
@@ -242,7 +242,9 @@ flowchart TD
 #### F-001-1：Logo 区域
 
 - 左侧显示 Logo 图标 + 品牌名称 "Smart construction site"
-- 宽度与侧边栏等宽：展开时与侧边栏同宽，折叠时收窄（仅显示 Logo 图标）
+- 宽度与侧边栏等宽：Logo 区域属于侧边栏（sidebar header），实现时请将 Logo 放入侧边栏 DOM。
+- 展开时（S-001）：显示 Logo 图标 + 品牌文字，侧边栏宽度示例 `240px`。
+- 折叠时（S-002）：侧边栏收窄为示例 `64px`，品牌文字隐藏，仅保留 Logo 图标。
 
 #### F-001-2：侧边栏折叠按钮（≡）
 
