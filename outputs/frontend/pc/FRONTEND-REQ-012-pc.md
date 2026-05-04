@@ -1,8 +1,10 @@
+> RUNTIME LIBRARY: 项目实现基于 Element UI（运行时）——所有实现必须使用 Element 组件或等价适配层。
+
 # FRONTEND-REQ-012-pc.md
 
 ## CM"我的任务"PC 端前端说明
 
-> 对应需求：REQ-012
+> **对应需求：REQ-012
 > 平台：PC 端（Vue2 + Element UI）
 > 影响模块：CM 我的任务列表、工序任务侧滑弹框、任务详情页 Tab
 

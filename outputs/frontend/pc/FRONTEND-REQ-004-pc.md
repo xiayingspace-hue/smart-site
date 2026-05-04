@@ -1,5 +1,7 @@
 # 前端开发说明文档 — PC 管理端图纸局部更新（Markup）
 
+> RUNTIME LIBRARY: 项目实现基于 Element UI（运行时）——所有实现必须使用 Element 组件或等价适配层。
+
 > **来源需求**: [REQ-004-pc.md](../../../requirements/pc/REQ-004-pc.md) + [REQ-004-shared.md](../../../requirements/shared/REQ-004-shared.md)
 > **UI 设计参考**: [UI-REQ-004-pc.md](../../ui/pc/UI-REQ-004-pc.md)
 > **产品**: SMART SITE SYSTEM

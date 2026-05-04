@@ -1,5 +1,6 @@
 # 前端开发说明文档 — PC 管理端工程图纸管理与审批
 
+> RUNTIME LIBRARY: 项目实现基于 Element UI（运行时）——所有实现必须使用 Element 组件或等价适配层。
 > **来源需求**: [REQ-003-pc.md](../../../requirements/pc/REQ-003-pc.md) + [REQ-003-shared.md](../../../requirements/shared/REQ-003-shared.md)
 > **UI 设计参考**: [UI-REQ-003-pc.md](../../ui/pc/UI-REQ-003-pc.md)
 > **产品**: SMART SITE SYSTEM

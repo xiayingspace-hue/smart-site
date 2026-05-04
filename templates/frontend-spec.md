@@ -8,9 +8,12 @@ data_contract_ref: data-contract.md@0.1.0
 ui_spec_ref: ui-spec.md@0.1.0
 generated_at: YYYY-MM-DD
 owner: ""
+preferred_runtime_ui: "Element UI"
 ---
 
 # 前端开发说明:[需求标题]
+
+> RUNTIME LIBRARY: 项目实现基于 Element UI（运行时）——所有实现必须使用 Element 组件或等价适配层。
 
 > **本文档供前端开发工程师及其 agent 使用**。
 >

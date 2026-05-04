@@ -1,5 +1,7 @@
 # FRONTEND-REQ-008-pc 前端开发说明文档
 
+> RUNTIME LIBRARY: 项目实现基于 Element UI（运行时）——所有实现必须使用 Element 组件或等价适配层。
+
 ## 1. 需求来源
 - 对应需求文档：REQ-008-pc《公司层级工序模板配置》
 

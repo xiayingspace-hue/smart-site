@@ -1,5 +1,7 @@
 # 前端开发说明文档 — PC 端图纸二维码管理
 
+> RUNTIME LIBRARY: 项目实现基于 Element UI（运行时）——所有实现必须使用 Element 组件或等价适配层。
+
 > **来源需求**: [REQ-006-pc.md](../../../requirements/pc/REQ-006-pc.md) + [REQ-006-shared.md](../../../requirements/shared/REQ-006-shared.md)
 > **UI 设计参考**: [UI-REQ-006-pc.md](../../ui/pc/UI-REQ-006-pc.md)
 > **产品**: SMART SITE SYSTEM

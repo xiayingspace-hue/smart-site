@@ -1,5 +1,7 @@
 # 前端开发说明文档 — PC 管理端 Site Engineer 图纸查阅与局部更新查看
 
+> RUNTIME LIBRARY: 项目实现基于 Element UI（运行时）——所有实现必须使用 Element 组件或等价适配层。
+
 > **来源需求**: [REQ-005-pc.md](../../../requirements/pc/REQ-005-pc.md) + [REQ-005-shared.md](../../../requirements/shared/REQ-005-shared.md)
 > **UI 设计参考**: [UI-REQ-005-pc.md](../../ui/pc/UI-REQ-005-pc.md)
 > **产品**: SMART SITE SYSTEM
