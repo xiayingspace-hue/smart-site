@@ -37,18 +37,19 @@
 
 ## 3. H5 端
 
-> H5 为移动端浏览器访问的轻量页面，独立于 PC 管理端部署。UI 组件库采用 **Vant 4**，设计与实现均以 Vant 4 组件规范为基准。
+> H5 为移动端浏览器访问的轻量页面，独立于 PC 管理端部署。
+> **UI 设计**以 **Vant 4** 组件规范为视觉参考基准；**前端实现**使用下表技术栈，不强制引入 Vant 4 库。
 
 | 项目 | 规范 |
 |------|------|
 | 前端框架 | Vue 3 + Vite |
-| UI 组件库 | **Vant 4**（移动端 UI 框架，覆盖所有交互组件） |
+| UI 设计参考 | **Vant 4**（仅作设计规范参照，实现层不强制依赖该库） |
 | 路由 | Vue Router 4 |
 | HTTP | `fetch` API 或 Axios |
 | 状态管理 | 无（独立无状态页面）|
 | 国际化 | Vue I18n（仅中/英 2 种语言） |
-| 样式 | CSS Variables + SCSS；设计令牌尽量对齐 Vant 4 CSS Token |
-| Bundle 目标体积 | < 200KB（含 Vant 4 按需引入） |
+| 样式 | CSS Variables + SCSS |
+| Bundle 目标体积 | < 150KB（gzip） |
 | 构建目标 | ES2019+、iOS Safari 12+、Android Chrome 80+ |
 | 隐私合规 | 无 Cookie / LocalStorage / 第三方脚本 |
 
