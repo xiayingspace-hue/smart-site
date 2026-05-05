@@ -213,6 +213,46 @@ export const {domain}Keys = {
 | 接口失败但有缓存 | 显示缓存数据 + 顶部"网络较慢" |
 | 完全离线 | 全屏提示,引导切到已缓存功能 |
 
+### 3.6A H5 端专项规则（Vant 4）
+
+**适用范围**：所有 `h5/` 目录下的前端规格文档。
+
+#### 3.6A.1 技术栈声明
+
+H5 端 `frontend-spec.md §2 技术栈` 必须包含以下条目：
+
+| 项 | 规范 |
+|----|------|
+| UI 组件库 | **Vant 4**（按需引入，使用 `@vant/auto-import-resolver`） |
+| 样式覆盖方式 | CSS Variables 覆盖 Vant 4 Token，**禁止**直接修改 Vant 4 源文件 |
+| 图标 | 优先使用 `van-icon`（Vant 内置图标集），缺失时引入 SVG |
+
+#### 3.6A.2 组件使用规则
+
+| 规则 | 说明 |
+|-----|------|
+| 优先使用 Vant 4 原生组件 | 不重新封装已有功能完整的组件（如 `van-dialog`、`van-toast`） |
+| 按需引入 | 使用 `unplugin-vue-components` + `@vant/auto-import-resolver`，禁止全量引入 |
+| 主题定制 | 在项目根 CSS 中通过 `--van-*` 变量覆盖主题色，不修改 `node_modules` |
+| Toast / Dialog 调用方式 | 使用 Vant 4 函数式调用（`showToast()` / `showDialog()`），不用组件式 |
+| 表单验证 | 使用 `van-form` + `van-field` 的 `rules` prop，不另引 vee-validate |
+
+#### 3.6A.3 移动端性能规则
+
+| 规则 | 说明 |
+|-----|------|
+| Bundle 体积 | 按需引入 Vant 4 后，总 JS gzip ≤ 200KB |
+| 图片懒加载 | 使用 `van-image` 的 `lazy-load` prop 或 `v-lazy` 指令 |
+| 列表长列表 | 使用 `van-list` 无限滚动，禁止一次性渲染超 100 条 |
+| 下拉刷新 | 使用 `van-pull-refresh` 包裹列表，统一交互模式 |
+
+#### 3.6A.4 H5 端禁止事项
+
+- ❌ 引入 Element UI（PC 专用，体积过大）
+- ❌ 全量引入 Vant 4（必须按需引入）
+- ❌ 直接修改 Vant 4 组件源码或 `node_modules` 内文件
+- ❌ 使用 PC 端的 `el-*` 组件命名习惯命名 H5 组件
+
 ### 3.7 错误边界(§9)
 
 强制规则:
@@ -304,6 +344,9 @@ export const {domain}Keys = {
 - [ ] 每个 §14 成功指标都有对应埋点
 - [ ] AC 覆盖表全部处理
 - [ ] 没有重复定义 API 字段类型(必须从 contract 生成)
+- [ ] **H5 端**：§2 技术栈中声明了 Vant 4 及按需引入方案（见 §3.6A.1）
+- [ ] **H5 端**：所有 UI 组件映射到 Vant 4 组件（见 §3.6A.2）
+- [ ] **H5 端**：Bundle 体积目标 ≤ 200KB gzip（见 §3.6A.3）
 
 ---
 
@@ -318,3 +361,5 @@ export const {domain}Keys = {
 - ❌ 把性能优化前置(过早 useMemo / memo,先写正确再测瓶颈)
 - ❌ 给所有组件加 ErrorBoundary(粒度过细)
 - ❌ 埋点字段嵌套(扁平化,便于分析)
+- ❌ **H5 端**引入 Element UI 或全量引入 Vant 4（见 §3.6A.4）
+- ❌ **H5 端**自行封装 Vant 4 已有功能完整的组件（见 §3.6A.2）
