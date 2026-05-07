@@ -2,9 +2,9 @@
 doc_type: qa_spec
 req_id: REQ-007A-pc
 req_title: "PC 端 — 内部审批 Todo 调整"
-version: 0.1.0
+version: 0.2.0
 status: draft
-generated_from: REQ-007A-pc@0.1.0
+generated_from: REQ-007A-pc@0.2.0
 generated_at: 2026-05-07
 owner: ""
 ---
@@ -24,10 +24,10 @@ owner: ""
 
 | 项 | 值 |
 |---|---|
-| 来源需求 | REQ-007A-pc @ v0.1.0 |
+| 来源需求 | REQ-007A-pc @ v0.2.0 |
 | 依赖需求 | REQ-007-shared、REQ-003A-pc |
 | 覆盖 Story | US-007A-001 |
-| 覆盖 AC | AC-007A-001 ～ AC-007A-009 |
+| 覆盖 AC | AC-007A-001 ～ AC-007A-009、AC-007A-010、AC-007A-011 |
 | 测试平台 | PC（Chrome 100+ / Edge 100+ / Safari 15+，1280px+） |
 | 测试环境 | dev / staging |
 
@@ -53,6 +53,8 @@ owner: ""
 - 驳回——旧版本保持 ACTIVE
 - 对话框 loading 态防重复提交
 - 接口失败后可重试
+- **无 DC 配置时前端阻断（F-004 无 DC 警告弹窗，不打开确认对话框）**
+- **无 DC 配置时后端兜底（POST /drawing/approve 返回 1003007012，版本保持 PENDING_INTERNAL）**
 
 **不测（本期）**：
 - DC 外部审批 Todo（REQ-007B-pc）
@@ -79,6 +81,7 @@ owner: ""
 | SC-007A-001 | 内部审批人在 PC Todo 看到 Internal Approval Required 卡片并完成通过 | US-007A-001 | P1 |
 | SC-007A-002 | 内部审批人在 PC Todo 完成驳回，设计人员收到通知 | US-007A-001 | P1 |
 | SC-007A-003 | 内部审批通过后 DC 收到外部审批 Todo | US-007A-001 | P1 |
+| SC-007A-004 | 项目无 DC 时审批人点击 [Approve]，被前端拦截 | US-007A-001 | P1 |
 
 ### 3.2 异常场景
 
@@ -87,6 +90,8 @@ owner: ""
 | SC-007A-E01 | 驳回时 Comment 为空，前端阻止提交 | AC-007A-005 |
 | SC-007A-E02 | 通过/驳回接口调用失败，对话框保留可重试 | AC-007A-009 |
 | SC-007A-E03 | loading 期间重复点击 Confirm | AC-007A-008 |
+| SC-007A-E04 | 前端预检查：项目无 DC 配置，点击 [Approve] 后弹出无 DC 警告弹窗 | AC-007A-010 |
+| SC-007A-E05 | 后端兜底：绕过前端预检直接调用审批接口，后端返回 1003007012 | AC-007A-011 |
 
 ### 3.3 权限场景
 
@@ -165,6 +170,14 @@ owner: ""
 | TC-007A-019 | — | 用户不具备 `drawing:approve` 权限 | 直接调用 POST /drawing/approve | 接口返回 403；前端对该用户不展示 [Approve]/[Reject] 按钮 |
 | TC-007A-020 | — | 审批人尝试对同一版本重复审批（Todo 已关闭） | 重新调用审批接口 | 接口返回业务错误（已处理），前端 Todo 列表不显示已关闭任务 |
 
+### TC 组 7：无 DC 配置防护
+
+| TC ID | 关联 AC | 前置条件 | 步骤 | 预期结果 |
+|-------|--------|---------|------|---------|
+| TC-007A-021 | AC-007A-010 | 项目未配置任何 DC；审批人看到内部审批 Todo 卡片 | 点击 [Approve] | **不**弹出确认对话框；弹出无 DC 警告弹窗，标题"No DC Configured"；弹窗正文含"no Document Controller configured"语义；仅有 [Got it] 按钮 |
+| TC-007A-022 | AC-007A-010 | 同上（项目无 DC） | 在无 DC 警告弹窗中点击 [Got it] | 弹窗关闭；卡片状态不变（仍可操作）；**[Reject] 按钮功能正常，不受无 DC 状态影响** |
+| TC-007A-023 | AC-007A-011 | 项目无 DC；绕过前端（如 Postman/devtools）直接调用 POST /drawing/approve | 发送请求 | 接口返回错误码 `1003007012`，msg 含"No DC configured"；DrawingVersion 状态保持 `PENDING_INTERNAL`，未发生状态变更 |
+
 ---
 
 ## 5. 界面验收
@@ -201,6 +214,8 @@ owner: ""
 - [ ] 驳回不影响旧版本 ACTIVE 状态
 - [ ] 审批操作审计日志落库
 - [ ] 无 `drawing:approve` 权限时接口返回 403
+- [ ] **项目无 DC 时点击 [Approve] 弹出无 DC 警告弹窗，[Reject] 流程不受影响**
+- [ ] **绕过前端直接调用 POST /drawing/approve 在无 DC 时返回 1003007012**
 
 ---
 
@@ -222,3 +237,4 @@ owner: ""
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
 | 0.1.0 | 2026-05-07 | agent | 从 REQ-007A-pc@0.1.0 生成初稿 |
+| 0.2.0 | 2026-05-07 | agent | 同步 REQ-007A-pc@0.2.0：新增 SC-007A-004/E04/E05，TC 组7（TC-007A-021~023），覆盖 AC-007A-010/011 |

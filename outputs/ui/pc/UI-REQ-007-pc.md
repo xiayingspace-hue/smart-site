@@ -1,10 +1,10 @@
 ---
 doc_type: ui_spec
 req_id: REQ-007-pc
-version: 0.2.0
+version: 0.3.0
 status: draft
-generated_from: "REQ-007A-pc@0.1.0 + REQ-007B-pc@0.1.1 + REQ-007C-pc@0.2.0 + REQ-007D-pc@0.1.0"
-generated_at: 2026-05-06
+generated_from: "REQ-007A-pc@0.2.0 + REQ-007B-pc@0.1.1 + REQ-007C-pc@0.2.0 + REQ-007D-pc@0.1.0"
+generated_at: 2026-05-07
 owner: ""
 ---
 
@@ -24,13 +24,13 @@ owner: ""
 
 | 项 | 值 |
 |---|---|
-| 来源需求 | REQ-007A-pc @ v0.1.0 |
+| 来源需求 | REQ-007A-pc @ v0.2.0 |
 | | REQ-007B-pc @ v0.1.1 |
 | | REQ-007C-pc @ v0.2.0 |
 | | REQ-007D-pc @ v0.1.0 |
 | 覆盖用户故事 | US-007A-001 / US-007B-001 / US-007B-002 / US-007C-001 / US-007D-001 |
-| 覆盖 AC | AC-007A-001~009 / AC-007B-001~011 / AC-007C-001~016 / AC-007D-001~010 |
-| 上次同步时间 | 2026-05-06 |
+| 覆盖 AC | AC-007A-001~009、AC-007A-010~011 / AC-007B-001~011 / AC-007C-001~016 / AC-007D-001~010 |
+| 上次同步时间 | 2026-05-07 |
 
 > ⚠️ 当任一来源需求版本变更时，本文档需更新此块，并 review 受影响章节。
 
@@ -66,6 +66,7 @@ owner: ""
 ├── Todo 面板（全局通知/铃铛）
 │   ├── Internal Approval Required 卡片         ← REQ-007A-pc
 │   │   ├── Approve 确认 Dialog
+│   │   ├── 无 DC 警告弹窗（F-004）
 │   │   └── Reject 驳回 Dialog
 │   └── External Approval Required 卡片         ← REQ-007B-pc
 │       └── Mark External Approval Result Dialog
@@ -122,7 +123,7 @@ owner: ""
 | Uploaded by | `{designerName}（Designer）  \|  {uploadTime}` | 时间格式 YYYY-MM-DD HH:mm |
 | Version Note | 版本修改说明 | 选填字段；值为空时整行隐藏 |
 | [View Drawing] | 打开 PDF 预览 / 文件下载（`fileUrl`） | 次要按钮 |
-| [Approve] | 打开 Approve 确认 Dialog（§3.2） | 主要按钮，蓝色 |
+| [Approve] | 触发 DC 预检查；若有 DC 则打开 Approve 确认 Dialog（§3.2）；若无 DC 则打开无 DC 警告弹窗（§3.2b） | 主要按钮，蓝色 |
 | [Reject] | 打开 Reject 驳回 Dialog（§3.3） | 默认按钮 |
 
 #### 状态（5 态）
@@ -174,6 +175,42 @@ owner: ""
 | 操作成功 | Dialog 关闭，Todo 卡片消失 | `"Internal approval completed. DC has been notified for external approval."` |
 | 操作失败 | loading 恢复，Dialog 保留 | 接口错误文案，可重试 |
 | 点击 [Cancel] | Dialog 关闭 | — |
+
+---
+
+### 3.2b 无 DC 警告弹窗（F-004）
+
+**关联 AC**: AC-007A-010
+
+**触发条件**: 点击 [Approve] 后，前端预检查发现项目未配置任何 DC。
+
+#### 布局
+
+```
+┌──────────────────────────────────────────────┐
+│                                              │
+│         ⚠️  No DC Configured                 │
+│                                              │
+│  This project has no Document Controller    │
+│  configured. Please contact your project    │
+│  admin to add a DC before proceeding        │
+│  with internal approval.                    │
+│                                              │
+│                           [Got it]           │
+└──────────────────────────────────────────────┘
+```
+
+#### 规格
+
+| 属性 | 值 |
+|------|----|
+| 宽度 | 420px |
+| 图标 | ⚠️（warning，橙色），居中，56px |
+| 标题 | "No DC Configured"，居中，16px 加粗 |
+| 正文 | 两行文案，居中对齐，14px 正常 |
+| 按钮 | [Got it] — 主要按钮，右对齐 |
+| 关闭方式 | 仅通过 [Got it] 按钮关闭；**禁止**背景点击关闭；**禁止** ESC 键关闭 |
+| 关闭后效果 | 弹窗关闭，卡片状态不变，[Reject] 功能不受影响 |
 
 ---
 
@@ -890,3 +927,4 @@ UI 设计交付物完成的判定：
 |-----|------|-------|---------|
 | 0.1.0 | 2026-04-17 | agent | 从旧 REQ-007-pc 生成初稿，覆盖两级审批全流程 |
 | 0.2.0 | 2026-05-06 | agent | 按 REQ-007A/B/C/D-pc 拆分后重新生成：结构全面对齐最新模版；新增 §0 溯源块；§3 扩展为 11 个组件（新增 §3.6 主列表/§3.7 4 阶段卡片/§3.8 Attachments 抽屉/§3.9 DC 配置页/§3.10 Add DC 弹窗/§3.11 Remove DC 确认）；§4.2 补全 flex/字体 5 维度规格；§9 文案规范扩展；§11 AC 覆盖检查表从 0 补全至 40 条 |
+| 0.3.0 | 2026-05-07 | agent | 同步 REQ-007A-pc@0.2.0：§3.1 [Approve] 按钮行为更新（前端预检触发路径）；新增 §3.2b 无 DC 警告弹窗（F-004）完整 UI 规格；溯源块 + 版本号更新 |

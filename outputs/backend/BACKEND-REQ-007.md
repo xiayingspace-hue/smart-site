@@ -42,15 +42,16 @@ PENDING_INTERNAL → INTERNAL_APPROVED → APPROVED
 ### 2.2 内部审批通过后动作（替代 BACKEND-REQ-003 §2.2）
 
 ```
+0. 校验项目已配置至少一个 DC（查询 ProjectDcConfig 列表）
+   → 若无 DC，返回错误码 1003007012，阻断操作，版本状态保持 PENDING_INTERNAL
 1. 版本 approvalStatus → INTERNAL_APPROVED
 2. 图纸主记录 status → PENDING_EXTERNAL
 3. 创建 DrawingApproval 记录（phase = INTERNAL, status = APPROVED）
 4. ❌ 不触发版本生效（isCurrent 不变）
 5. ❌ 不推送 Site Engineer
 6. ❌ 不生成 QR
-7. ✅ 查询 ProjectDcConfig 获取项目所有 DC
-8. ✅ 为每个 DC 创建 Todo 任务（type = DRAWING_EXTERNAL_APPROVAL）
-9. ✅ 向每个 DC 发送站内通知
+7. ✅ 为每个已配置 DC 创建 Todo 任务（type = DRAWING_EXTERNAL_APPROVAL）
+8. ✅ 向每个 DC 发送站内通知
 ```
 
 ### 2.3 内部审批驳回后动作
@@ -108,7 +109,7 @@ PENDING_INTERNAL → INTERNAL_APPROVED → APPROVED
 - 全量覆盖模式：`POST /project/dc-config/update` 替换整个 DC 列表
 - `dcUserIds` 不能为空（至少 1 人）
 - 校验所有用户有 `drawing:external-approval` 权限
-- 内部审批通过时若无可用 DC，返回警告但不阻断（通过状态正常变更，但不创建 Todo）
+- **内部审批通过时若无可用 DC，返回错误码 1003007012，阻断审批通过操作**（版本状态保持 `PENDING_INTERNAL`，不产生任何副作用）
 
 ---
 
@@ -352,6 +353,7 @@ public CommonResult<DrawingVersionRespVO> externalApprove(ExternalApproveReqDTO 
 | 1003007009 | QR 生成失败，请重试 |
 | 1003007010 | DC 列表不能为空 |
 | 1003007011 | 包含无效的用户 ID 或用户无 DC 权限 |
+| 1003007012 | 项目未配置 DC，内部审批通过被阻断 |
 
 ---
 
@@ -375,6 +377,7 @@ public CommonResult<DrawingVersionRespVO> externalApprove(ExternalApproveReqDTO 
 - [ ] 上传图纸版本初始状态为 `PENDING_INTERNAL`
 - [ ] 图纸有版本处于 `PENDING_INTERNAL` / `INTERNAL_APPROVED` 时上传被拒（错误码 1003007001）
 - [ ] 内部审批通过后版本状态 → `INTERNAL_APPROVED`，不生效、不推送 SE、不生成 QR
+- [ ] **项目无 DC 时调用内部审批通过接口返回 1003007012，版本状态保持 `PENDING_INTERNAL`**
 - [ ] 内部审批通过后为项目所有 DC 创建 Todo + 发送通知
 - [ ] 内部审批驳回后通知设计人员
 - [ ] 外部审批通过后同步执行：版本生效 + QR 生成 + 推送 SE

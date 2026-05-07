@@ -151,6 +151,88 @@ const TODO_TYPE = {
 | Approve 确认文案 | "Once approved, this version will proceed to external approval by Document Controller." |
 | 通过后 Toast | "Internal approval completed. DC has been notified for external approval." |
 | 通过后行为 | 仅更新列表，**不**做 SE 推送相关 UI 提示 |
+| **[Approve] 点击前预检查** | 点击 [Approve] 后**先调用 `getDcConfigList()` 检查 DC 列表**；若为空，弹出无 DC 警告弹窗（见 §4.3.5），**不打开**确认对话框 |
+
+#### 4.3.5 无 DC 警告弹窗（新增）
+
+当审批人点击 [Approve] 时，前端预检查 DC 配置为空，使用 `this.$confirm`（warning 类型，无 Cancel 按钮）或独立 Dialog 展示：
+
+```vue
+<!-- TodoPanel.vue 内部使用 el-dialog 实现 -->
+<el-dialog
+  :visible.sync="noDcWarningVisible"
+  title=""
+  width="420px"
+  :show-close="false"
+  :close-on-click-modal="false"
+  :close-on-press-escape="false"
+>
+  <div class="no-dc-warning">
+    <i class="el-icon-warning-outline no-dc-warning__icon"></i>
+    <h3>{{ $t('no_dc_warning_title') }}</h3>
+    <p>{{ $t('no_dc_warning_body') }}</p>
+  </div>
+  <span slot="footer">
+    <el-button type="primary" @click="noDcWarningVisible = false">
+      {{ $t('btn_got_it') }}
+    </el-button>
+  </span>
+</el-dialog>
+```
+
+**对应核心方法**：
+
+```javascript
+data() {
+  return {
+    noDcWarningVisible: false,
+    approveConfirmVisible: false,
+    approvingItem: null
+  }
+},
+
+methods: {
+  async handleApproveClick(item) {
+    // 前端预检查：查询 DC 配置
+    try {
+      const res = await getDcConfigList()
+      if (!res.data.dcList || res.data.dcList.length === 0) {
+        // 无 DC 配置，弹出警告弹窗，不进入确认对话框
+        this.noDcWarningVisible = true
+        return
+      }
+    } catch (e) {
+      // 预检查接口失败，降级为后端兜底（仍打开确认对话框，由后端校验）
+      console.warn('[DC pre-check] failed, fallback to backend validation', e)
+    }
+    // 有 DC 配置，打开确认对话框
+    this.approvingItem = item
+    this.approveConfirmVisible = true
+  },
+
+  async handleApproveConfirm() {
+    this.approving = true
+    try {
+      await internalApprove({ drawingVersionId: this.approvingItem.relatedId })
+      this.$message.success(this.$t('toast_internal_approved'))
+      this.approveConfirmVisible = false
+      this.$emit('refresh')
+    } catch (err) {
+      // 兜底：后端返回 1003007012 时提示无 DC
+      const code = err.response?.data?.code
+      if (code === 1003007012) {
+        this.$message.error(this.$t('error_no_dc_on_approve'))
+        this.approveConfirmVisible = false
+        this.noDcWarningVisible = true
+      } else {
+        this.$message.error(err.response?.data?.msg || this.$t('error_unknown'))
+      }
+    } finally {
+      this.approving = false
+    }
+  }
+}
+```
 
 #### 4.3.3 外部审批卡片（新增）
 
@@ -699,6 +781,12 @@ async externalApprove({ commit, dispatch }, formData) {
   stage_signed: 'Signed Version',
   label_not_reached: 'Not reached',
 
+  // 无 DC 警告弹窗（F-004）
+  no_dc_warning_title: 'No DC Configured',
+  no_dc_warning_body: 'This project has no Document Controller configured. Please contact your project admin to add a DC before proceeding with internal approval.',
+  btn_got_it: 'Got it',
+  error_no_dc_on_approve: 'No DC configured. Please ask your admin to add a DC first.',
+
   // DC 配置
   page_dc_config: 'DC Configuration',
   dc_config_hint: 'At least one DC is required for the drawing approval process.',
@@ -737,6 +825,10 @@ async externalApprove({ commit, dispatch }, formData) {
 - [ ] Approve 确认弹窗文案正确
 - [ ] 通过后 Toast 提示 DC 已通知
 - [ ] 通过后刷新 Todo 列表 + 图纸列表
+- [ ] **点击 [Approve] 时若项目无 DC 配置，弹出无 DC 警告弹窗，不打开确认对话框**
+- [ ] **无 DC 警告弹窗仅有 [Got it] 按钮，点击关闭后卡片状态不变**
+- [ ] **无 DC 警告弹窗不可通过背景点击或 ESC 键关闭**
+- [ ] **无 DC 配置时 [Reject] 流程不受影响**
 
 ### DC 外部审批 Todo
 - [ ] 内部审批通过后外部审批 Todo 出现在 DC 的 Todo 列表

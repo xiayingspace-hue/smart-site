@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-007
 req_title: "图纸两级审批流程（内部审批 + 外部审批）"
-version: 0.2.0
+version: 0.3.0
 status: reviewed
 priority: P1
 product: "Smart Site System"
 owner: ""
 created_at: 2026-03-01
-updated_at: 2026-05-06
+updated_at: 2026-05-07
 depends_on:
   - REQ-003-shared
   - REQ-006-shared
@@ -230,7 +230,7 @@ generate:
 
 | From | To | 触发动作 | 守卫条件（前置） | 副作用 |
 |------|-----|---------|-------------|-------|
-| S-001 PENDING_INTERNAL | S-002 INTERNAL_APPROVED | 内部审批人点击 [Approve] | 操作人拥有 `drawing:approve` 权限 | 通知项目所有已配置 DC；创建外部审批 Todo |
+| S-001 PENDING_INTERNAL | S-002 INTERNAL_APPROVED | 内部审批人点击 [Approve] | 操作人拥有 `drawing:approve` 权限；**项目已配置至少一个 DC**（否则返回错误码 1003007012，阻断操作） | 通知项目所有已配置 DC；创建外部审批 Todo |
 | S-001 PENDING_INTERNAL | S-003 INTERNAL_REJECTED | 内部审批人点击 [Reject] | comment 必填 | 通知设计人员（上传人）；旧版本保持 isCurrent=true |
 | S-002 INTERNAL_APPROVED | S-004 APPROVED | DC 点击 [Mark Result] 选择通过 | 操作人为项目已配置 DC；签字版 / 凭证 / 日期均已填写 | 版本生效（isCurrent=true）；旧版本废弃；图纸 status→ACTIVE；同步生成 QR；推送已分配 SE |
 | S-002 INTERNAL_APPROVED | S-005 EXTERNAL_REJECTED | DC 点击 [Mark Result] 选择驳回 | comment 必填 | 通知设计人员；旧版本保持 isCurrent=true |
@@ -284,7 +284,8 @@ flowchart TD
 | QR 生成失败 | QR 服务不可用或 OSS 异常 | 整体操作回滚，版本保持 INTERNAL_APPROVED，Toast 报错 | "QR generation failed, please retry"，DC 当场重试 |
 | 非 DC 用户调用外部审批接口 | 操作人未在项目 DC 配置中 | 返回 403，错误码 1003007003 | Toast "You are not a configured DC for this project" |
 | DC 已被其他 DC 抢先标记 | 该版本外部审批 Todo 已关闭 | 返回任务已处理提示 | "This version has already been processed by another DC" |
-| 项目未配置任何 DC | 内部审批通过后 DC 列表为空 | 状态停留在 INTERNAL_APPROVED，触发管理员告警 | 管理员收到站内告警"项目未配置 DC，请前往配置页设置"（见 OQ-001） |
+| 项目未配置任何 DC — 前端预检 | 内部审批人点击 [Approve] 时前端查询 DC 配置接口返回空列表 | 前端阻断：弹出无 DC 警告弹窗，不进入确认对话框 | 弹窗提示"No DC configured. Please contact admin to add a DC first."，点击 [Got it] 关闭 |
+| 项目未配置任何 DC — 后端兜底 | 前端预检被绕过，POST /drawing/approve 时后端查询 DC 配置为空 | 返回错误码 1003007012，阻断操作，版本状态不变 | Toast "No DC configured. Please ask admin to add a DC first." |
 
 ---
 
@@ -322,6 +323,13 @@ flowchart TD
 - 仅处理 `phase = INTERNAL` 的审批任务
 - **通过**后：版本状态 → `INTERNAL_APPROVED`，通知项目所有已配置 DC，创建外部审批 Todo
 - **驳回**后：版本状态 → `INTERNAL_REJECTED`，通知设计人员（上传人），旧版本保持有效
+- **新增后端守卫**：通过操作前后端校验项目是否已配置 DC；若无 DC，返回错误码 `1003007012`，版本状态保持 `PENDING_INTERNAL`，不执行任何副作用
+
+**错误码（新增）**：
+
+| 错误码 | 英文提示 | 中文提示 |
+|--------|---------|---------|
+| 1003007012 | No DC configured for this project. Please add a DC before approving. | 项目未配置 DC，请先让管理员添加 DC 再进行审批 |
 
 ---
 
@@ -739,6 +747,7 @@ Then   API 返回 403；UI 对应入口不显示或置灰
 |-----|------|-------|---------|------------|
 | 0.1.0 | 2026-03-01 | - | 初稿：定义两级审批流程、角色、数据模型、API、通知机制 | 全部 |
 | 0.2.0 | 2026-05-06 | - | 按最新需求文档模版重构：新增 YAML front matter；重组为 §1–§19 标准节结构；用户故事增加 US-ID（US-001~006）；AC 格式化为 Given/When/Then（AC-007-001~013）；新增 §14 监控与告警；新增 OQ-002（SE 通知触发时机待 PM 确认） | 全部 |
+| 0.3.0 | 2026-05-07 | agent | 补充"项目无 DC 时阻断内部审批通过"策略：§5.2 状态转换守卫条件新增"项目已配置至少一个 DC"；§6.3 异常流程"项目未配置 DC"行拆分为前端预检与后端兜底两种场景；§7.2 F-002 新增错误码 1003007012 | Backend、Frontend、QA |
 
 ---
 
