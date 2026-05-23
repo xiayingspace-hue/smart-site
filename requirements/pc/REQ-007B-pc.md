@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-007B-pc
 req_title: "PC 端 — DC 外部审批 Todo 与标记 Dialog"
-version: 0.2.0
+version: 0.2.2
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -275,10 +275,10 @@ flowchart TD
 
 **弹框内容区 — 展示字段**（与上传时填写信息严格对应）：
 
+> **设计决策**：Drawing Code 和 Drawing Name 已在 Todo 卡片摘要行中展示，一次提交记录中不单独包含这两项，详情弹框不重复展示，以减少冗余信息。
+
 | 字段名（展示） | 数据来源 | 说明 |
 |--------------|---------|------|
-| Drawing Code | DrawingVersion.drawingCode | 版本维度的图纸编号 |
-| Drawing Name | Drawing.name | 继承自图纸主记录，只读 |
 | Category | Drawing.category | 继承自图纸主记录，只读 |
 | Description | Drawing.description | 无内容时显示 `—` |
 | Version | DrawingVersion.versionNo | 例：V3 |
@@ -297,8 +297,6 @@ flowchart TD
 │  External Approval Required                               │
 ├────────────────────────────────────────────────────────────┤
 │                                                            │
-│  Drawing Code        ARCH-001                             │
-│  Drawing Name        首层平面图                            │
 │  Category            Architecture                         │
 │  Description         包含外墙及核心筒轮廓线                 │
 │                                                            │
@@ -354,12 +352,25 @@ Response: 302 → 预签名 URL（Content-Disposition: attachment，有效期 5 
 │  ARCH-001  首层平面图  V3                     │
 ├──────────────────────────────────────────────┤
 │                                              │
-│  Result *                                    │
+│  Status of Approval *                        │
 │  ┌────────────────────────────────────────┐  │
-│  │  ○ Approved   ○ Rejected               │  │
+│  │  Please select ▾                       │  │
 │  └────────────────────────────────────────┘  │
+│  A – Approved / No Exception Taken           │
+│  B – Approved with comment,                  │
+│      resubmission required                   │
+│  C – Revise And Resubmit                     │
+│  D – For Record Purpose                      │
+│  E – Others (please state reason)            │
 │                                              │
-│  ─── 选择 Approved 后显示以下字段 ───         │
+│  ─── 选择 E 后显示 ───────────────────────── │
+│  Others Reason *                             │
+│  ┌────────────────────────────────────────┐  │
+│  │                                        │  │
+│  └────────────────────────────────────────┘  │
+│  最多 500 字符                               │
+│                                              │
+│  ──────────────────────────────────────────  │
 │                                              │
 │  Submission Ref No. *                        │
 │  ┌────────────────────────────────────────┐  │
@@ -377,6 +388,8 @@ Response: 302 → 预签名 URL（Content-Disposition: attachment，有效期 5 
 │  │  请填写报审说明                         │  │
 │  └────────────────────────────────────────┘  │
 │  最多 1000 字符                              │
+│                                              │
+│  ─── Status A / B / D 时显示 ─────────────── │
 │                                              │
 │  Signed Drawing File *                       │
 │  ┌────────────────────────────────────────┐  │
@@ -396,15 +409,9 @@ Response: 302 → 预签名 URL（Content-Disposition: attachment，有效期 5 
 │  │  📅 YYYY-MM-DD                         │  │
 │  └────────────────────────────────────────┘  │
 │                                              │
+│  ──────────────────────────────────────────  │
+│                                              │
 │  Remarks                                     │
-│  ┌────────────────────────────────────────┐  │
-│  │                                        │  │
-│  └────────────────────────────────────────┘  │
-│  最多 500 字符                               │
-│                                              │
-│  ─── 选择 Rejected 后显示以下字段 ───        │
-│                                              │
-│  Rejection Reason *                          │
 │  ┌────────────────────────────────────────┐  │
 │  │                                        │  │
 │  └────────────────────────────────────────┘  │
@@ -416,31 +423,37 @@ Response: 302 → 预签名 URL（Content-Disposition: attachment，有效期 5 
 
 **字段说明**：
 
+> **设计决策**：DC 不再区分 Approved / Rejected 二选一，而是直接选择与实际报审表一致的 Status of Approval（A–E），与纸质表单保持一致，便于日后核查。报审三要素（Ref No.、Subject、Description）**始终必填**，与审批结果无关。
+
 | 字段 | 类型 | 必填条件 | 约束 |
 |------|------|---------|------|
-| Result | Radio（Approved / Rejected） | ✅ 始终 | 默认不选中；未选中时 [Confirm] 禁用 |
-| Submission Ref No. | 文本输入 | Approved 时 ✅ | 最多 200 字符；用于记录 Bentley 审批单号等外部参考编号 |
-| Submission Subject | 文本输入 | Approved 时 ✅ | 最多 200 字符 |
-| Submission Description | 文本域 | Approved 时 ✅ | 最多 1000 字符 |
-| Signed Drawing File | 文件上传 | Approved 时 ✅ | ≤ 50MB；格式 PDF/DWG/DXF/PNG/JPG |
-| Approval Evidence | 文件上传 | Approved 时 ✅ | ≤ 20MB；格式 PDF/PNG/JPG |
-| External Approval Date | 日期选择器 | Approved 时 ✅ | 不可选未来日期 |
+| Status of Approval | 下拉单选（A / B / C / D / E） | ✅ 始终 | 默认 "Please select"；未选中时 [Confirm] 禁用 |
+| Others Reason | 文本域 | Status = E 时 ✅ | 最多 500 字符；仅 E 时显示 |
+| Submission Ref No. | 文本输入 | ✅ 始终 | 最多 200 字符；记录 Bentley 审批单号等外部参考编号 |
+| Submission Subject | 文本输入 | ✅ 始终 | 最多 200 字符 |
+| Submission Description | 文本域 | ✅ 始终 | 最多 1000 字符 |
+| Signed Drawing File | 文件上传 | Status A / B / D 时 ✅ | ≤ 50MB；格式 PDF / DWG / DXF / PNG / JPG |
+| Approval Evidence | 文件上传 | Status A / B / D 时 ✅ | ≤ 20MB；格式 PDF / PNG / JPG |
+| External Approval Date | 日期选择器 | Status A / B / D 时 ✅ | 不可选未来日期 |
 | Remarks | 文本域 | ❌ | 最多 500 字符 |
-| Rejection Reason | 文本域 | Rejected 时 ✅ | 最多 500 字符 |
 
-**Approved 交互规则**：
-1. DC 选择 `Approved`，依次填写报审信息（Ref No.、Subject、Description）及文件与日期后点击 [Confirm]
-2. [Confirm] 按钮进入 loading 态（文案变为"Processing..."），禁用 Dialog 内所有操作
-3. 后端同步执行：文件上传 → 写入报审信息 + 审批记录 → 版本生效 → QR 生成（约 3–5 秒）
-4. **成功**：Dialog 关闭，Toast 提示 `"External approval marked. Drawing is now active and QR code has been generated."`，Todo 消失（包含其他 DC 的同一任务）
-5. 版本生效后，**项目管理员**需在图纸列表中通过 [Assign] 操作将图纸分配给对应 SE，SE 收到站内通知后方可在 APP 端查看签字版图纸（见 [REQ-003D-pc](./REQ-003D-pc.md)）
-6. **失败**：loading 恢复，Toast 显示错误文案（如 `"QR generation failed, please retry"`），DC 可修改后重试
+**Status 分组逻辑**：
 
-**Rejected 交互规则**：
-1. DC 选择 `Rejected`，填写 Rejection Reason 后点击 [Confirm]
-2. 后端执行：版本状态 → `EXTERNAL_REJECTED`，通知设计人员
-3. **成功**：Dialog 关闭，Toast 提示 `"External rejection recorded. Designer has been notified."`，Todo 消失
-4. **失败**：loading 恢复，Toast 报错，可重试
+| 分组 | Status | 说明 | 额外必填 |
+|------|--------|------|---------|
+| 通过并上传文件 | A、B、D | 图纸已被审批方接受（含附条件），需上传签字版 | Signed Drawing File、Approval Evidence、External Approval Date |
+| 退回修改 | C | 需设计人员修改后再提交，无需签字版文件 | 无 |
+| 其他 | E | 需说明具体原因 | Others Reason |
+
+**交互规则**：
+1. DC 从下拉中选择 Status（A–E），按照分组显示或隐藏对应的附加字段
+2. 所有必填字段填写完毕后 [Confirm] 方可点击；否则点击时前端校验阻止提交，空字段标红
+3. [Confirm] 点击后进入 loading 态（文案变为 "Processing..."），禁用 Dialog 内所有操作
+4. **Status A / B / D — 成功**：后端同步执行文件上传 → 写入报审信息 + 审批记录 → 版本生效 → QR 生成（约 3–5 秒）；Dialog 关闭，Toast 提示 `"External approval marked. Drawing is now active and QR code has been generated."`，Todo 消失（包含其他 DC 的同一任务）
+5. **Status C — 成功**：版本状态 → `EXTERNAL_REJECTED`，通知设计人员；Dialog 关闭，Toast 提示 `"External rejection recorded. Designer has been notified."`，Todo 消失
+6. **Status E — 成功**：同 Status C 路径，通知内容包含 Others Reason 文本
+7. **失败（任意 Status）**：loading 恢复，Toast 显示错误文案（如 `"Operation failed, please retry"`），DC 可修改后重试
+8. 版本因 Status A/B/D 而生效后，**项目管理员**需在图纸列表通过 [Assign] 将图纸分配给 SE（见 [REQ-003D-pc](./REQ-003D-pc.md)）
 
 ---
 
@@ -465,11 +478,12 @@ Then   右侧滑出详情侧滑弹框，弹框头部显示 "Drawing Approval Det
 ### AC-007B-003：详情弹框展示完整图纸提交信息
 
 ```
-Given  设计人员上传图纸时填写了 Drawing Code、Drawing Name、Category、Description、
-       Version Note，并经内部审批人审批通过
+Given  设计人员上传图纸时填写了 Category、Description、Version Note，
+       并经内部审批人审批通过
 When   DC 打开该图纸的待办详情弹框
 Then   弹框中展示以上所有字段值，以及 Version、Uploaded by、Upload Time、
-       Internal Approver、Internal Approved Time，且与原始提交信息一致
+       Internal Approver、Internal Approved Time，且与原始提交信息一致；
+       弹框中不显示 Drawing Code 和 Drawing Name 字段
 ```
 
 ### AC-007B-004：详情弹框内成功下载原始文件
@@ -489,30 +503,40 @@ When   尝试调用 GET /drawing/version/{versionId}/download
 Then   接口返回 403，文件不下载
 ```
 
-### AC-007B-006：外部审批通过 — 报审信息必填校验
+### AC-007B-006：报审三要素始终必填
 
 ```
-Given  DC 在 Dialog 中选择 Approved
+Given  DC 打开 Mark Result Dialog，已选择任意 Status（A/B/C/D/E）
 When   Submission Ref No. / Submission Subject / Submission Description 任一为空时点击 [Confirm]
 Then   前端校验阻止提交，空字段标红并提示必填
 ```
 
-### AC-007B-007：外部审批通过 — 文件与日期必填校验
+### AC-007B-007：Status A / B / D — 文件与日期必填
 
 ```
-Given  DC 在 Dialog 中选择 Approved，已填写报审信息
+Given  DC 在 Dialog 中选择 Status A、B 或 D，已填写报审三要素
 When   Signed Drawing File / Approval Evidence / External Approval Date 任一为空时点击 [Confirm]
 Then   前端校验阻止提交，空字段标红并提示必填
 ```
 
-### AC-007B-008：外部审批通过 — 成功路径（含报审信息落库）
+### AC-007B-007B：Status E — Others Reason 必填
 
 ```
-Given  DC 填写 Submission Ref No.、Subject、Description 及所有文件与日期字段后点击 [Confirm]
+Given  DC 在 Dialog 中选择 Status E
+When   Others Reason 为空时点击 [Confirm]
+Then   前端校验阻止提交，Others Reason 字段标红并提示必填
+```
+
+### AC-007B-008：Status A / B / D — 成功路径（含报审信息落库）
+
+```
+Given  DC 选择 Status A/B/D，填写 Submission Ref No.、Subject、Description
+       及所有文件与日期字段后点击 [Confirm]
 When   操作成功（约 3-5 秒后）
 Then   Dialog 关闭，Toast 提示"Drawing is now active and QR code has been generated"，
        Todo 卡片消失，图纸列表状态变为 ACTIVE；
-       DrawingApproval 记录包含 submissionRefNo、submissionSubject、submissionDescription；
+       DrawingApproval 记录包含 statusOfApproval、submissionRefNo、
+       submissionSubject、submissionDescription；
        项目管理员需后续通过 [Assign] 操作将图纸分配给 SE
 ```
 
@@ -533,21 +557,21 @@ Then   版本状态不变（保持 PENDING_EXTERNAL），Dialog 内 loading 恢�
        Toast 提示"QR generation failed, please retry"，DC 可当场重试
 ```
 
-### AC-007B-011：外部审批驳回 — Comment 必填
+### AC-007B-011：Status C — 退回必填校验
 
 ```
-Given  DC 在 Dialog 中选择 Rejected
-When   Rejection Reason 为空时点击 [Confirm]
-Then   前端校验阻止提交，字段标红并提示必填
+Given  DC 在 Dialog 中选择 Status C（Revise And Resubmit）
+When   Submission Ref No. / Submission Subject / Submission Description 任一为空时点击 [Confirm]
+Then   前端校验阻止提交，空字段标红并提示必填
 ```
 
-### AC-007B-012：外部审批驳回 — 成功路径
+### AC-007B-012：Status C — 成功路径
 
 ```
-Given  DC 填写驳回原因并点击 [Confirm]
+Given  DC 选择 Status C，填写报审三要素后点击 [Confirm]
 When   操作成功
-Then   Dialog 关闭，Toast 提示"Designer has been notified"，Todo 消失，
-       设计人员收到站内消息（含驳回原因）
+Then   Dialog 关闭，Toast 提示"External rejection recorded. Designer has been notified."，
+       Todo 消失，设计人员收到站内消息
 ```
 
 ### AC-007B-013：一个 DC 操作完成后其他 DC 的 Todo 自动关闭
@@ -695,6 +719,8 @@ Then   按钮处于 loading 禁用态，不触发重复提交
 |-----|------|-------|---------|------------|
 | 0.1.1 | 2026-05-06 | agent | 全文修正"SE 自动推送"错误描述（共 6 处：§1.2/§2.2 US-007B-002/§4.3/§6.1 步骤8/§13.2），统一为"版本生效后管理员通过 [Assign] 分配 SE，SE 方收到通知"（依据 REQ-003D-pc） | — |
 | 0.1.0 | 2026-05-05 | agent | 从 REQ-007-pc 按 US-007B-001/002 拆分初稿 | 全部 |
+| 0.2.2 | 2026-05-23 | | F-003 Mark Result Dialog 重构审批结果录入方式：1）将 Approved/Rejected Radio 替换为 Status of Approval 下拉（A–E 五档，与纸质报审表一致）；2）Submission Ref No.、Subject、Description 由"Approved 时必填"改为**始终必填**；3）新增 Others Reason 字段（Status E 时必填）；4）Signed Drawing File、Approval Evidence、External Approval Date 调整为 Status A/B/D 时必填；5）移除 Rejection Reason 字段；6）AC-007B-006/007/008/011/012 同步更新，新增 AC-007B-007B | UI、Frontend、Backend、QA |
+| 0.2.1 | 2026-05-23 | | F-002 详情弹框移除 Drawing Code 和 Drawing Name 字段，一次提交记录中不包含这两项，已由 Todo 卡片摘要行覆盖；同步更新字段表、布局示意及 AC-007B-003 | UI、Frontend、QA |
 | 0.2.0 | 2026-05-23 | | 1）Todo 列表改为仅展示当前 DC 自己名下的待办（后端 assigneeId 过滤）；2）新增 F-002 图纸待办详情侧滑弹框，展示图纸全量提交信息并支持原始文件下载（inline 打开 + 强制下载）；3）F-003（原 F-002）Mark Result Dialog 新增三个 Approved 必填字段：Submission Ref No.、Submission Subject、Submission Description；4）AC 重新编号并补充新增场景（AC-007B-001 ~ AC-007B-015）；5）关闭 OQ-002 | UI、Frontend、Backend、QA |
 
 ---
