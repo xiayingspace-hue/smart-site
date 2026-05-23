@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-007C-pc
 req_title: "PC 端 — 版本历史抽屉 4 阶段生命周期视图"
-version: 0.2.0
+version: 0.2.1
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
 owner: ""
 created_at: 2026-05-05
-updated_at: 2026-05-06
+updated_at: 2026-05-23
 
 depends_on:
   - REQ-007-shared
@@ -220,6 +220,17 @@ flowchart TD
 
 4 个卡片排列为 2×2 网格。卡片内容根据 `approvalStatus` 动态渲染：
 
+**③ External Approval 卡片 Status of Approval 展示规则**：
+
+| DrawingApproval.status | 卡片图标 | 显示文案 | 额外展示字段 |
+|----------------------|---------|---------|------------|
+| A | ✅ | A – Approved / No Exception Taken | Marked by、Approval Date、Submission Ref No.、Evidence [Download]、Remarks |
+| B | ✅ | B – Approved with comment, resubmission required | 同 A |
+| D | ✅ | D – For Record Purpose | 同 A |
+| C | ❌ | C – Revise And Resubmit | Marked by、日期、Submission Ref No.、Reason/Remarks（无 Evidence） |
+| E | ❌ | E – Others: {othersReason} | 同 C |
+| —（未完成） | ⏳ | Pending | 等待提示文字 |
+
 #### 7.3.1 APPROVED 版本（全部完成）
 
 ```
@@ -237,12 +248,14 @@ flowchart TD
 │                                                                          │
 │  ③ External Approval                 ④ Signed Version                    │
 │  ┌───────────────────────────┐       ┌───────────────────────────┐       │
-│  │ ✅ Approved                │       │ 📄 arch001-v3-signed.pdf  │       │
-│  │ Marked by: DC 陈小明       │       │ ✍️ Signed Drawing         │       │
-│  │ Approval Date: 2026-04-05 │       │ Uploaded: 2026-04-05      │       │
-│  │ 📎 Evidence: bentley.pdf  │       │ Size: 3.1 MB              │       │
-│  │           [Download]      │       │            [Preview]      │       │
-│  │ Remark: 业主已签批         │       │            [Download]     │       │
+│  │ ✅ A – Approved /          │       │ 📄 arch001-v3-signed.pdf  │       │
+│  │    No Exception Taken     │       │ ✍️ Signed Drawing         │       │
+│  │ Marked by: DC 陈小明       │       │ Uploaded: 2026-04-05      │       │
+│  │ Approval Date: 2026-04-05 │       │ Size: 3.1 MB              │       │
+│  │ Ref No.: BEN-2026-001     │       │            [Preview]      │       │
+│  │ 📎 Evidence: bentley.pdf  │       │            [Download]     │       │
+│  │           [Download]      │       │                            │       │
+│  │ Remark: 业主已签批         │       │                            │       │
 │  └───────────────────────────┘       └───────────────────────────┘       │
 │                                                                          │
 │  📄 Uploaded ✓  →  🔍 Internal ✓  →  🌐 External ✓  →  ✍️ Signed ✓    │
@@ -345,9 +358,11 @@ flowchart TD
 │                                                                          │
 │  ③ External Approval                 ④ Signed Version                    │
 │  ┌───────────────────────────┐       ┌───────────────────────────┐       │
-│  │ ❌ Rejected                │       │ — Not reached              │       │
-│  │ Marked by: DC 陈小明       │       │ (External approval failed) │       │
+│  │ ❌ C – Revise And          │       │ — Not reached              │       │
+│  │    Resubmit               │       │ (External approval failed) │       │
+│  │ Marked by: DC 陈小明       │       │                            │       │
 │  │ 2026-03-20 15:00           │       │                            │       │
+│  │ Ref No.: BEN-2026-010     │       │                            │       │
 │  │ Reason: "业主要求修改立面"  │       │                            │       │
 │  └───────────────────────────┘       └───────────────────────────┘       │
 │                                                                          │
@@ -377,7 +392,7 @@ flowchart TD
 | ① Uploaded | [Preview] | 始终显示 | `fileUrl`（原始文件） |
 | ① Uploaded | [Download] | 始终显示 | `fileUrl` |
 | ③ External | [✅ Mark Result] | `approvalStatus = INTERNAL_APPROVED` + DC 权限 | — （打开 Dialog） |
-| ③ External | [Download]（Evidence） | `APPROVED` 或 `EXTERNAL_REJECTED` | `evidenceFileUrl` |
+| ③ External | [Download]（Evidence） | `approvalStatus = APPROVED`（即 Status A/B/D；Status C/E 无凭证文件，不显示） | `evidenceFileUrl` |
 | ④ Signed | [Preview] | `approvalStatus = APPROVED` | `signedFileUrl` |
 | ④ Signed | [Download] | `approvalStatus = APPROVED` | `pdfWithQrUrl` > `signedFileUrl`（优先带 QR 版） |
 
@@ -489,7 +504,8 @@ Given  版本 approvalStatus = APPROVED
 When   点击 ▶ 展开该版本
 Then   ① 上传卡片显示原始文件信息及 [Preview][Download]；
        ② 内部审批卡片显示"Approved"、审批人、时间、Comment；
-       ③ 外部审批卡片显示"Approved"、DC 姓名、审批日期、[Download]（凭证）、备注；
+       ③ 外部审批卡片显示 Status of Approval（A/B/D 对应标签）、DC 姓名、审批日期、
+          Submission Ref No.、[Download]（凭证）、Remarks；
        ④ 签字版卡片显示签字版文件信息及 [Preview][Download]；
        底部步骤条 4 步均为绿色 ✓
 ```
@@ -527,7 +543,9 @@ Then   ② 内部审批卡片显示"❌ Rejected"及驳回 Comment；
 ```
 Given  版本 approvalStatus = EXTERNAL_REJECTED
 When   点击 ▶ 展开
-Then   ② 卡片显示"✅ Approved"；③ 卡片显示"❌ Rejected"及驳回原因和 DC 信息；
+Then   ② 卡片显示"✅ Approved"；
+       ③ 卡片显示 Status of Approval（C 显示"C – Revise And Resubmit" / E 显示"E – Others: {reason}"）、
+          DC 姓名、日期、Submission Ref No.、Remarks；不显示 Evidence [Download]；
        ④ 卡片显示"— Not reached"；
        底部步骤条 ③ 为红色 ✕，④ 为灰色 —
 ```
@@ -722,6 +740,7 @@ Then   该行从表格中移除，标题计数减 1，主列表 Attachments 列�
 
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
 |-----|------|-------|---------|------------|
+| 0.2.1 | 2026-05-23 | agent | 对齐 REQ-007B-pc Status A–E：③ External Approval 卡片由简单 Approved/Rejected 改为展示具体 Status（A/B/D/C/E）及对应标签；新增 §7.3 Status 展示规则表；Evidence [Download] 条件收窄为仅 APPROVED（Status A/B/D）；更新 AC-007C-003、AC-007C-007 | UI、前端、QA |
 | 0.2.0 | 2026-05-06 | agent | 新增 Attachments 列（主列表 QR 后）及 §7.6 F-006（展开行内嵌 Attachments 区块，对齐实际 UI：inline 表格、[+] 上传按钮、No Data 空态）；更新 §3 权限矩阵、§4.1 ENT-001、§7.1、§8 新增 AC-011~016；来源：REQ-014 FB-002 | UI、前端、QA |
 | 0.1.0 | 2026-05-05 | agent | 从 REQ-007-pc 按 US-007C-001 拆分初稿 | 全部 |
 
