@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-007B-pc
 req_title: "PC 端 — DC 外部审批 Todo 与标记 Dialog"
-version: 0.1.0
+version: 0.2.0
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
 owner: ""
 created_at: 2026-05-05
-updated_at: 2026-05-05
+updated_at: 2026-05-23
 
 depends_on:
   - REQ-007-shared
@@ -75,8 +75,8 @@ generate:
 
 ```
 作为 Document Controller (DC)
-我想要 在 Todo 列表中看到等待外部审批的图纸，并直接下载原始文件
-以便 快速将图纸提交到 Bentley，无需在系统中来回查找
+我想要 在 Todo 列表中只看到指派给自己的图纸待办记录，并能打开详情查看图纸上传信息、下载原始文件
+以便 快速定位属于自己的任务，并将图纸提交到 Bentley，无需在系统中来回查找
 ```
 
 **优先级**：P1
@@ -85,8 +85,9 @@ generate:
 
 ```
 作为 Document Controller (DC)
-我想要 外部审批完成后，在一个弹窗中一次性上传签字版图纸、审批凭证并标记结果
-以便 一次操作完成所有工作，版本立即生效；SE 将在管理员完成 [Assign] 分配后收到通知
+我想要 外部审批完成后，在 Mark Result 弹窗中填写报审编号、Subject、Description，
+        并一次性上传签字版图纸、审批凭证并标记审批结果
+以便 一次操作完成所有工作，版本立即生效；报审信息完整留档便于与 Bentley 记录交叉核查
 ```
 
 **优先级**：P1
@@ -97,10 +98,11 @@ generate:
 
 | 操作 | DC（已配置） | 内部审批人 | 设计人员 | Site Engineer |
 |-----|:-----------:|:---------:|:-------:|:-------------:|
-| 查看 External Approval Required Todo | ✅（项目 DC 均可见） | ❌ | ❌ | ❌ |
-| 点击 [Download Original] | ✅ | ❌ | ❌ | ❌ |
+| 查看 External Approval Required Todo（仅自己名下） | ✅（后端按当前登录用户过滤） | ❌ | ❌ | ❌ |
+| 打开图纸待办详情侧滑弹框 | ✅ | ❌ | ❌ | ❌ |
+| 详情弹框内下载原始图纸文件 | ✅ | ❌ | ❌ | ❌ |
 | 点击 [Mark Result] 打开标记 Dialog | ✅ | ❌ | ❌ | ❌ |
-| 标记外部审批通过（上传签字版 + 凭证） | ✅ | ❌ | ❌ | ❌ |
+| 标记外部审批通过（填写报审信息 + 上传签字版 + 凭证） | ✅ | ❌ | ❌ | ❌ |
 | 标记外部审批驳回 | ✅ | ❌ | ❌ | ❌ |
 
 ---
@@ -111,9 +113,10 @@ generate:
 
 | 实体 ID | 实体名 | 描述 | 关键属性（业务语义） |
 |--------|-------|------|------------------|
-| ENT-001 | Todo 任务（外部审批） | DC 的待办事项 | 类型、图纸信息、原始文件下载链接 |
+| ENT-001 | Todo 任务（外部审批） | DC 的待办事项 | 类型、图纸信息、指派 DC（assigneeId） |
 | ENT-002 | DrawingVersion | 图纸版本 | signedFileUrl、evidenceFileUrl、externalApprovalDate、approvalStatus |
-| ENT-003 | DrawingApproval | 审批记录 | phase=EXTERNAL、status、comment |
+| ENT-003 | DrawingApproval | 审批记录 | phase=EXTERNAL、status、comment、submissionRefNo、submissionSubject、submissionDescription |
+| ENT-004 | Drawing | 图纸主记录 | Drawing Code、Drawing Name、Category、Description |
 
 ### 4.2 实体关系
 
@@ -123,7 +126,7 @@ generate:
 ### 4.3 数据生命周期
 
 **外部审批 Todo 生命周期**：
-1. 创建：内部审批通过后，系统向项目所有已配置 DC 自动创建
+1. 创建：内部审批通过后，系统向项目所有已配置 DC **各自**创建一条独立的外部审批 Todo（`assigneeId` = 各 DC 用户 ID）
 2. 处理：任一 DC 点击 [Mark Result] 完成外部审批标记
 3. 终态：
    - 外部通过 → Todo 关闭，版本生效，其余 DC 的同一 Todo 自动关闭；管理员后续通过 [Assign] 分配 SE 后 SE 收到通知
@@ -161,48 +164,55 @@ generate:
 
 ### 6.1 主流程（外部审批通过）
 
-1. 内部审批通过后，DC 的 Todo 列表自动出现"External Approval Required"任务卡片
-2. DC 点击 [📄 Download Original] 下载原始图纸文件
-3. DC 将文件提交到 Bentley 平台（系统外操作，Smart Site 无感知）
-4. 外部审批完成后，DC 回到 Smart Site，点击 [✅ Mark Result]
-5. 弹出"Mark External Approval Result" Dialog
-6. 选择 `Approved`，填写必填字段（签字版文件、审批凭证、外部审批日期）
-7. 点击 [Confirm]，按钮进入 loading 态
-8. 后端同步执行：上传文件 → 版本生效 → QR 生成（约 3–5 秒）
-9. 成功：Dialog 关闭，Toast 提示版本已生效 + QR 已生成，Todo 消失
+1. 内部审批通过后，DC 的 Todo 列表自动出现"External Approval Required"任务卡片（**仅当前登录 DC 自己名下的**）
+2. DC 点击卡片右侧 **[Detail]** 按钮，右侧弹出详情侧滑弹框
+3. 详情弹框中 DC 查看图纸提交信息，点击 **[Download Original File]** 下载原始图纸文件
+4. DC 将文件提交到 Bentley 平台（系统外操作，Smart Site 无感知）
+5. 外部审批完成后，DC 回到 Smart Site，在详情弹框底部或 Todo 卡片上点击 **[Mark Result]**
+6. 弹出"Mark External Approval Result" Dialog
+7. 选择 `Approved`，填写**报审编号（Submission Ref No.）**、**报审 Subject**、**报审 Description**，以及签字版文件、审批凭证、外部审批日期（均必填）
+8. 点击 [Confirm]，按钮进入 loading 态
+9. 后端同步执行：上传文件 → 写入报审信息 → 版本生效 → QR 生成（约 3–5 秒）
+10. 成功：Dialog 关闭，Toast 提示版本已生效 + QR 已生成，Todo 消失
 
 ### 6.2 主流程图（Mermaid）
 
 ```mermaid
 flowchart TD
-    A([DC 进入 Todo 列表]) --> B[看到 External Approval Required 卡片]
-    B --> C[点击 Download Original 下载原始文件]
-    C --> D[在 Bentley 平台完成外部审批（系统外）]
-    D --> E[回到 Smart Site，点击 Mark Result]
-    E --> F[弹出 Mark External Approval Result Dialog]
-    F --> G{Result 选择}
-    G -- Approved --> H[填写签字版文件 + 凭证 + 审批日期（可填备注）]
-    G -- Rejected --> I[填写 Rejection Reason]
-    H --> J[点击 Confirm]
-    I --> K[点击 Confirm]
-    J --> L[按钮 loading，等待 3-5s]
-    L --> M{操作结果}
-    M -- 成功 --> N[Dialog 关闭，Toast 提示，Todo 消失]
-    N --> O([版本生效，项目管理员后续分配 SE])
-    M -- 失败 --> O[loading 恢复，Toast 报错，可重试]
-    K --> P{操作结果}
-    P -- 成功 --> Q[Dialog 关闭，Toast 提示，Todo 消失，设计人员收到通知]
-    P -- 失败 --> R[loading 恢复，Toast 报错，可重试]
+    A([DC 进入 Todo 列表]) --> B[仅展示指派给自己的 External Approval Required 卡片]
+    B --> C[点击 Detail 按钮]
+    C --> D[打开图纸待办详情侧滑弹框]
+    D --> E[查看图纸提交信息]
+    E --> F[点击 Download Original File 下载原始文件]
+    F --> G[在 Bentley 平台完成外部审批（系统外）]
+    G --> H[回到 Smart Site，点击 Mark Result]
+    H --> I[弹出 Mark External Approval Result Dialog]
+    I --> J{Result 选择}
+    J -- Approved --> K[填写报审编号 + Subject + Description\n+ 签字版文件 + 凭证 + 审批日期]
+    J -- Rejected --> L[填写 Rejection Reason]
+    K --> M[点击 Confirm]
+    L --> N[点击 Confirm]
+    M --> O[按钮 loading，等待 3-5s]
+    O --> P{操作结果}
+    P -- 成功 --> Q[Dialog 关闭，Toast 提示，Todo 消失]
+    Q --> R([版本生效，项目管理员后续分配 SE])
+    P -- 失败 --> S[loading 恢复，Toast 报错，可重试]
+    N --> T{操作结果}
+    T -- 成功 --> U[Dialog 关闭，Toast 提示，Todo 消失，设计人员收到通知]
+    T -- 失败 --> V[loading 恢复，Toast 报错，可重试]
 ```
 
 ### 6.3 异常流程
 
 | 异常场景 | 触发条件 | 系统响应 | 用户感知 |
 |---------|---------|---------|---------|
+| 详情弹框加载失败 | 网络异常或接口超时 | 弹框内显示错误提示 + [Retry] | "Failed to load drawing details. [Retry]" |
+| 原始文件下载失败 | fileUrl 过期或 CDN 不可达 | Toast 错误提示，按钮恢复可点击 | Toast: "Download failed. Please try again." |
 | QR 生成失败 | 后端 QR 生成服务异常 | 整个操作回滚，版本不生效 | Toast 提示"QR generation failed, please retry"，loading 恢复，DC 当场重试 |
 | 文件上传失败 | OSS 写入失败 | 操作回滚 | Toast 报错，Dialog 保留 |
 | 未选择 Result | 直接点击 Confirm | 前端校验阻止 | 提示"请选择审批结果" |
-| Approved 时必填项为空 | 签字版/凭证/日期任一为空 | 前端校验阻止 | 对应字段标红 |
+| Approved 时报审信息必填项为空 | Submission Ref No. / Subject / Description 任一为空 | 前端校验阻止 | 对应字段标红并提示必填 |
+| Approved 时文件或日期必填项为空 | 签字版/凭证/日期任一为空 | 前端校验阻止 | 对应字段标红 |
 | Rejected 时 Comment 为空 | Comment 为空 | 前端校验阻止 | 字段标红，提示必填 |
 
 ---
@@ -212,7 +222,12 @@ flowchart TD
 ### 7.1 功能 F-001：外部审批 Todo 卡片
 
 **关联用户故事**：US-007B-001
-**所属流程节点**：流程 6.1 步骤 1–2
+**所属流程节点**：流程 6.1 步骤 1
+
+**"仅我名下"过滤规则**：
+- 后端仅返回 `assigneeId` 等于当前登录用户 ID 的外部审批 Todo 记录
+- 前端无需额外过滤控件，"仅我名下"是默认且唯一的展示逻辑
+- 若当前 DC 名下无任何 External Approval Required 待办，展示空状态："No pending tasks"
 
 **卡片布局**：
 
@@ -225,7 +240,7 @@ flowchart TD
 │ Internal approved by: 王总工  |  2026-04-02 14:30               │
 │ Version Note: 修正轴网尺寸                                       │
 │                                                                  │
-│ [📄 Download Original]   [✅ Mark Result]                        │
+│                            [Detail]   [✅ Mark Result]           │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -239,13 +254,97 @@ flowchart TD
 | Uploaded by | `{designerName}（Designer）  \|  {uploadTime}` | 设计人员姓名 + 上传时间 |
 | Internal approved by | `{approverName}  \|  {internalApprovedTime}` | 内部审批人 + 通过时间 |
 | Version Note | 版本修改说明 | 选填，无则不显示该行 |
-| [📄 Download Original] | 下载原始图纸文件（`fileUrl`），文件名为原始 `fileName` | DC 用此文件提交 Bentley |
-| [✅ Mark Result] | 打开标记 Dialog（F-002） | 绿色主按钮 |
+| [Detail] | 打开图纸待办详情侧滑弹框（F-002） | 次要样式按钮 |
+| [✅ Mark Result] | 打开标记 Dialog（F-003） | 绿色主按钮 |
 
-### 7.2 功能 F-002：Mark External Approval Result Dialog
+### 7.2 功能 F-002：图纸待办详情侧滑弹框（Detail Drawer）
+
+**关联用户故事**：US-007B-001
+**所属流程节点**：流程 6.1 步骤 2–3
+
+**触发方式**：点击 Todo 卡片右侧 [Detail] 按钮，从页面右侧滑入弹框（Drawer 宽度建议 480px）。
+
+**弹框头部**：
+
+```
+┌────────────────────────────────────────────────────────────┐
+│  Drawing Approval Detail                              ×    │
+│  External Approval Required                               │
+└────────────────────────────────────────────────────────────┘
+```
+
+**弹框内容区 — 展示字段**（与上传时填写信息严格对应）：
+
+| 字段名（展示） | 数据来源 | 说明 |
+|--------------|---------|------|
+| Drawing Code | DrawingVersion.drawingCode | 版本维度的图纸编号 |
+| Drawing Name | Drawing.name | 继承自图纸主记录，只读 |
+| Category | Drawing.category | 继承自图纸主记录，只读 |
+| Description | Drawing.description | 无内容时显示 `—` |
+| Version | DrawingVersion.versionNo | 例：V3 |
+| Version Note | DrawingVersion.versionNote | 无内容时显示 `—` |
+| Uploaded by | DrawingVersion.uploaderName | 显示姓名 + 角色标签，例：张三（Designer） |
+| Upload Time | DrawingVersion.uploadTime | 格式：YYYY-MM-DD HH:mm，Tooltip 显示完整时间戳 |
+| Internal Approver | DrawingVersion.approverName | 内部审批人姓名 |
+| Internal Approved Time | DrawingApproval.approvedAt（phase=INTERNAL） | 内部审批通过时间 |
+| Original File | DrawingVersion.fileUrl | 显示文件名 + 文件类型图标；文件名为可点击链接，点击后在浏览器新标签页 inline 打开；文件名下方展示下载引导提示 |
+
+**布局示意**：
+
+```
+┌────────────────────────────────────────────────────────────┐
+│  Drawing Approval Detail                              ×    │
+│  External Approval Required                               │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│  Drawing Code        ARCH-001                             │
+│  Drawing Name        首层平面图                            │
+│  Category            Architecture                         │
+│  Description         包含外墙及核心筒轮廓线                 │
+│                                                            │
+│  Version             V3                                   │
+│  Version Note        修正轴网尺寸，更新柱位标注              │
+│                                                            │
+│  Uploaded by         张三（Designer）                      │
+│  Upload Time         2026-04-01 10:00                     │
+│  Internal Approver   王总工                               │
+│  Internal Approved   2026-04-02 14:30                     │
+│                                                            │
+│  Original File       📄 ARCH-001-V3-plan.pdf  ↗           │
+│                      Click to open in browser.            │
+│                      To save the file, use                │
+│                      [Download Original File] below.      │
+│                                                            │
+├────────────────────────────────────────────────────────────┤
+│  [Download Original File]          [✅ Mark Result]        │
+└────────────────────────────────────────────────────────────┘
+```
+
+**交互规则**：
+- 弹框打开时展示加载态（Skeleton），加载完成后渲染字段
+- 点击 `×` 或按 `Esc` 关闭弹框，审批状态不变
+- 弹框打开期间，背景列表不可操作（半透明遮罩）
+- 所有字段均为**只读**，不提供编辑入口
+- **文件名链接**：点击后以 `target="_blank"` 在浏览器新标签页中打开（`Content-Disposition: inline`）；文件名下方展示灰色辅助提示文案："Click to open in browser. To save the file, use [Download Original File] below."
+- **[Download Original File] 按钮**：点击触发浏览器强制下载（`Content-Disposition: attachment`），文件命名格式：`{drawingCode}-V{versionNo}-original.{ext}`；下载期间按钮 loading 防重复；`fileUrl` 为空时按钮置灰，Tooltip 提示 "Original file unavailable."
+- **[Mark Result] 按钮**：点击打开 F-003 Dialog，弹框保留在背景
+
+**下载接口**（后端实现参考）：
+```
+# Inline 在浏览器打开
+GET /drawing/version/{versionId}/view
+Response: 302 → 预签名 URL（Content-Disposition: inline，有效期 5 分钟）
+
+# 强制下载到本地
+GET /drawing/version/{versionId}/download
+Response: 302 → 预签名 URL（Content-Disposition: attachment，有效期 5 分钟）
+```
+> 两个接口均须校验请求用户为该项目已配置 DC，否则返回 403。
+
+### 7.3 功能 F-003：Mark External Approval Result Dialog
 
 **关联用户故事**：US-007B-002
-**所属流程节点**：流程 6.1 步骤 5–9
+**所属流程节点**：流程 6.1 步骤 5–10
 
 **Dialog 布局**：
 
@@ -257,11 +356,27 @@ flowchart TD
 │                                              │
 │  Result *                                    │
 │  ┌────────────────────────────────────────┐  │
-│  │  ○ Approved                            │  │
-│  │  ○ Rejected                            │  │
+│  │  ○ Approved   ○ Rejected               │  │
 │  └────────────────────────────────────────┘  │
 │                                              │
-│  ─── 选择 Approved 后显示 ───                │
+│  ─── 选择 Approved 后显示以下字段 ───         │
+│                                              │
+│  Submission Ref No. *                        │
+│  ┌────────────────────────────────────────┐  │
+│  │  请填写报审编号（如 Bentley 审批单号）   │  │
+│  └────────────────────────────────────────┘  │
+│                                              │
+│  Submission Subject *                        │
+│  ┌────────────────────────────────────────┐  │
+│  │  请填写报审主题                         │  │
+│  └────────────────────────────────────────┘  │
+│                                              │
+│  Submission Description *                    │
+│  ┌────────────────────────────────────────┐  │
+│  │                                        │  │
+│  │  请填写报审说明                         │  │
+│  └────────────────────────────────────────┘  │
+│  最多 1000 字符                              │
 │                                              │
 │  Signed Drawing File *                       │
 │  ┌────────────────────────────────────────┐  │
@@ -273,8 +388,7 @@ flowchart TD
 │  Approval Evidence *                         │
 │  ┌────────────────────────────────────────┐  │
 │  │  📎 Click or drag to upload            │  │
-│  │     PDF / PNG / JPG                    │  │
-│  │     Max 20MB                           │  │
+│  │     PDF / PNG / JPG · Max 20MB         │  │
 │  └────────────────────────────────────────┘  │
 │                                              │
 │  External Approval Date *                    │
@@ -286,13 +400,15 @@ flowchart TD
 │  ┌────────────────────────────────────────┐  │
 │  │                                        │  │
 │  └────────────────────────────────────────┘  │
+│  最多 500 字符                               │
 │                                              │
-│  ─── 选择 Rejected 后显示 ───               │
+│  ─── 选择 Rejected 后显示以下字段 ───        │
 │                                              │
 │  Rejection Reason *                          │
 │  ┌────────────────────────────────────────┐  │
 │  │                                        │  │
 │  └────────────────────────────────────────┘  │
+│  最多 500 字符                               │
 │                                              │
 │           [Cancel]     [Confirm]             │
 └──────────────────────────────────────────────┘
@@ -302,7 +418,10 @@ flowchart TD
 
 | 字段 | 类型 | 必填条件 | 约束 |
 |------|------|---------|------|
-| Result | Radio（Approved / Rejected） | ✅ | 默认不选中；未选中时 [Confirm] 禁用 |
+| Result | Radio（Approved / Rejected） | ✅ 始终 | 默认不选中；未选中时 [Confirm] 禁用 |
+| Submission Ref No. | 文本输入 | Approved 时 ✅ | 最多 200 字符；用于记录 Bentley 审批单号等外部参考编号 |
+| Submission Subject | 文本输入 | Approved 时 ✅ | 最多 200 字符 |
+| Submission Description | 文本域 | Approved 时 ✅ | 最多 1000 字符 |
 | Signed Drawing File | 文件上传 | Approved 时 ✅ | ≤ 50MB；格式 PDF/DWG/DXF/PNG/JPG |
 | Approval Evidence | 文件上传 | Approved 时 ✅ | ≤ 20MB；格式 PDF/PNG/JPG |
 | External Approval Date | 日期选择器 | Approved 时 ✅ | 不可选未来日期 |
@@ -310,12 +429,12 @@ flowchart TD
 | Rejection Reason | 文本域 | Rejected 时 ✅ | 最多 500 字符 |
 
 **Approved 交互规则**：
-1. DC 选择 `Approved`，填写必填字段后点击 [Confirm]
+1. DC 选择 `Approved`，依次填写报审信息（Ref No.、Subject、Description）及文件与日期后点击 [Confirm]
 2. [Confirm] 按钮进入 loading 态（文案变为"Processing..."），禁用 Dialog 内所有操作
-3. 后端同步执行：文件上传 → 写入审批信息 → 版本生效 → QR 生成（约 3–5 秒）
+3. 后端同步执行：文件上传 → 写入报审信息 + 审批记录 → 版本生效 → QR 生成（约 3–5 秒）
 4. **成功**：Dialog 关闭，Toast 提示 `"External approval marked. Drawing is now active and QR code has been generated."`，Todo 消失（包含其他 DC 的同一任务）
 5. 版本生效后，**项目管理员**需在图纸列表中通过 [Assign] 操作将图纸分配给对应 SE，SE 收到站内通知后方可在 APP 端查看签字版图纸（见 [REQ-003D-pc](./REQ-003D-pc.md)）
-5. **失败**：loading 恢复，Toast 显示错误文案（如 `"QR generation failed, please retry"`），DC 可修改后重试
+6. **失败**：loading 恢复，Toast 显示错误文案（如 `"QR generation failed, please retry"`），DC 可修改后重试
 
 **Rejected 交互规则**：
 1. DC 选择 `Rejected`，填写 Rejection Reason 后点击 [Confirm]
@@ -327,42 +446,77 @@ flowchart TD
 
 ## 8. 验收标准（Acceptance Criteria）
 
-### AC-007B-001：Todo 卡片出现时机与内容
+### AC-007B-001：Todo 列表仅展示当前 DC 自己名下的待办
 
 ```
-Given  内部审批人完成通过操作
-When   项目已配置 DC 的用户进入 PC Todo 列表
-Then   所有已配置 DC 均出现带 🌐 图标、标题为"External Approval Required"的卡片，
-       包含图纸信息、上传人、内部审批人及通过时间
+Given  项目配置了 DC-A 和 DC-B，内部审批通过后两人各自收到一条外部审批 Todo
+When   DC-A 进入 PC Todo 列表
+Then   列表中仅显示指派给 DC-A 的外部审批任务，不显示 DC-B 的任务
 ```
 
-### AC-007B-002：下载原始文件
+### AC-007B-002：点击 Detail 打开详情侧滑弹框
 
 ```
-Given  DC 在 Todo 卡片看到外部审批任务
-When   点击 [📄 Download Original]
-Then   浏览器下载原始图纸文件（fileUrl），文件名与上传时的原始文件名一致
+Given  DC-A 在 Todo 列表中看到一条 External Approval Required 记录
+When   点击该记录右侧的 [Detail] 按钮
+Then   右侧滑出详情侧滑弹框，弹框头部显示 "Drawing Approval Detail" 及 "External Approval Required" 标签
 ```
 
-### AC-007B-003：外部审批通过 — 必填校验
+### AC-007B-003：详情弹框展示完整图纸提交信息
+
+```
+Given  设计人员上传图纸时填写了 Drawing Code、Drawing Name、Category、Description、
+       Version Note，并经内部审批人审批通过
+When   DC 打开该图纸的待办详情弹框
+Then   弹框中展示以上所有字段值，以及 Version、Uploaded by、Upload Time、
+       Internal Approver、Internal Approved Time，且与原始提交信息一致
+```
+
+### AC-007B-004：详情弹框内成功下载原始文件
+
+```
+Given  DC 在图纸待办详情弹框中，原始文件存在（fileUrl 非空）
+When   点击 [Download Original File] 按钮
+Then   浏览器触发文件下载，文件命名为 "{drawingCode}-V{versionNo}-original.{ext}"，
+       内容与设计人员上传的原始文件一致
+```
+
+### AC-007B-005：非项目 DC 无法下载原始文件
+
+```
+Given  用户未被配置为该项目的 DC
+When   尝试调用 GET /drawing/version/{versionId}/download
+Then   接口返回 403，文件不下载
+```
+
+### AC-007B-006：外部审批通过 — 报审信息必填校验
 
 ```
 Given  DC 在 Dialog 中选择 Approved
+When   Submission Ref No. / Submission Subject / Submission Description 任一为空时点击 [Confirm]
+Then   前端校验阻止提交，空字段标红并提示必填
+```
+
+### AC-007B-007：外部审批通过 — 文件与日期必填校验
+
+```
+Given  DC 在 Dialog 中选择 Approved，已填写报审信息
 When   Signed Drawing File / Approval Evidence / External Approval Date 任一为空时点击 [Confirm]
 Then   前端校验阻止提交，空字段标红并提示必填
 ```
 
-### AC-007B-004：外部审批通过 — 成功路径
+### AC-007B-008：外部审批通过 — 成功路径（含报审信息落库）
 
 ```
-Given  DC 填写所有必填字段并点击 [Confirm]
+Given  DC 填写 Submission Ref No.、Subject、Description 及所有文件与日期字段后点击 [Confirm]
 When   操作成功（约 3-5 秒后）
 Then   Dialog 关闭，Toast 提示"Drawing is now active and QR code has been generated"，
        Todo 卡片消失，图纸列表状态变为 ACTIVE；
-       项目管理员需后续通过 [Assign] 操作将图纸分配给 SE，SE 收到通知后方可查看
+       DrawingApproval 记录包含 submissionRefNo、submissionSubject、submissionDescription；
+       项目管理员需后续通过 [Assign] 操作将图纸分配给 SE
 ```
 
-### AC-007B-005：外部审批通过 — 管理员分配后 SE 收到通知
+### AC-007B-009：外部审批通过 — 管理员分配后 SE 收到通知
 
 ```
 Given  外部审批通过，版本已生效（ACTIVE）
@@ -370,7 +524,7 @@ When   项目管理员在图纸列表点击 [Assign] 并保存 SE 分配（见 R
 Then   被新增分配的 SE 收到站内通知，可在 APP 端查看签字版图纸
 ```
 
-### AC-007B-006：外部审批通过 — QR 生成失败回滚
+### AC-007B-010：外部审批通过 — QR 生成失败回滚
 
 ```
 Given  DC 点击 [Confirm] 后 QR 生成服务异常
@@ -379,7 +533,7 @@ Then   版本状态不变（保持 PENDING_EXTERNAL），Dialog 内 loading 恢�
        Toast 提示"QR generation failed, please retry"，DC 可当场重试
 ```
 
-### AC-007B-007：外部审批驳回 — Comment 必填
+### AC-007B-011：外部审批驳回 — Comment 必填
 
 ```
 Given  DC 在 Dialog 中选择 Rejected
@@ -387,7 +541,7 @@ When   Rejection Reason 为空时点击 [Confirm]
 Then   前端校验阻止提交，字段标红并提示必填
 ```
 
-### AC-007B-008：外部审批驳回 — 成功路径
+### AC-007B-012：外部审批驳回 — 成功路径
 
 ```
 Given  DC 填写驳回原因并点击 [Confirm]
@@ -396,7 +550,7 @@ Then   Dialog 关闭，Toast 提示"Designer has been notified"，Todo 消失，
        设计人员收到站内消息（含驳回原因）
 ```
 
-### AC-007B-009：一个 DC 操作完成后其他 DC 的 Todo 自动关闭
+### AC-007B-013：一个 DC 操作完成后其他 DC 的 Todo 自动关闭
 
 ```
 Given  项目配置了 DC-A 和 DC-B，两人的 Todo 列表均有同一外部审批任务
@@ -404,7 +558,7 @@ When   DC-A 完成外部审批标记（通过或驳回）
 Then   DC-B 的 Todo 列表中该任务自动消失
 ```
 
-### AC-007B-010：非项目 DC 无法调用外部审批接口
+### AC-007B-014：非项目 DC 无法调用外部审批接口
 
 ```
 Given  用户未被配置为该项目的 DC
@@ -412,7 +566,7 @@ When   尝试调用 POST /drawing/external-approve
 Then   接口返回 403，前端不展示 [Mark Result] 按钮
 ```
 
-### AC-007B-011：Dialog loading 态防重复提交
+### AC-007B-015：Dialog loading 态防重复提交
 
 ```
 Given  DC 点击 [Confirm] 后接口请求进行中
@@ -523,7 +677,8 @@ Then   按钮处于 loading 禁用态，不触发重复提交
 | OQ ID | 问题 | 影响 | Owner | 截止 |
 |------|------|------|-------|------|
 | OQ-001 | 外部审批超时（如 10 天未处理）是否需要催办通知？ | 通知机制 | PM | — |
-| OQ-002 | DC 是否需要在 Dialog 中填写 Bentley 审批单号，便于与 Bentley 平台记录交叉核查？ | F-002 字段 | PM | — |
+| OQ-002 | ~~DC 是否需要在 Dialog 中填写 Bentley 审批单号~~ **已解决**：0.2.0 新增 Submission Ref No.、Subject、Description 三个字段，完整记录报审信息 | — | — | 2026-05-23 |
+| OQ-003 | 详情弹框中是否需要同时提供文件名 inline 打开链接（区别于下载按钮）？ | 影响 UI 交互复杂度；inline 打开需依赖 /view 接口 | PM | — |
 
 ---
 
@@ -540,6 +695,7 @@ Then   按钮处于 loading 禁用态，不触发重复提交
 |-----|------|-------|---------|------------|
 | 0.1.1 | 2026-05-06 | agent | 全文修正"SE 自动推送"错误描述（共 6 处：§1.2/§2.2 US-007B-002/§4.3/§6.1 步骤8/§13.2），统一为"版本生效后管理员通过 [Assign] 分配 SE，SE 方收到通知"（依据 REQ-003D-pc） | — |
 | 0.1.0 | 2026-05-05 | agent | 从 REQ-007-pc 按 US-007B-001/002 拆分初稿 | 全部 |
+| 0.2.0 | 2026-05-23 | | 1）Todo 列表改为仅展示当前 DC 自己名下的待办（后端 assigneeId 过滤）；2）新增 F-002 图纸待办详情侧滑弹框，展示图纸全量提交信息并支持原始文件下载（inline 打开 + 强制下载）；3）F-003（原 F-002）Mark Result Dialog 新增三个 Approved 必填字段：Submission Ref No.、Submission Subject、Submission Description；4）AC 重新编号并补充新增场景（AC-007B-001 ~ AC-007B-015）；5）关闭 OQ-002 | UI、Frontend、Backend、QA |
 
 ---
 
