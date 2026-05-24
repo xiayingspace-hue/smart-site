@@ -2,6 +2,8 @@
 
 > 按需求编号记录每个 REQ 的功能范围、涉及端、对已有需求的影响。
 > 快速了解"每个需求做了什么"以及"改了什么"。
+>
+> **最后更新**：2026-05-24
 
 ---
 
@@ -72,25 +74,25 @@
 - **依赖**: REQ-001、REQ-012
 
 ### 新增内容
-- APP端首页新增"Progress Management"模块，SE可见"我的任务"入口
-- APP首页底部notification入口，点击后进入通知中心，顶部显示两个Tab：
+- APP 端首页新增"Progress Management"模块，SE 可见"我的任务"入口
+- APP 首页底部 notification 入口，点击后进入通知中心，顶部显示两个 Tab：
   - Todo（待办）：展示所有与用户相关的待办事项，支持一键跳转
   - 消息通知：展示系统消息、任务变更、问题处理等通知
-- SE专属"我的任务"页面：展示CM分配的任务列表，支持筛选、搜索
+- SE 专属"我的任务"页面：展示 CM 分配的任务列表，支持筛选、搜索
 - 任务详情页：工序要求、计划/实际时间、优先级、进度填报、工单反馈、问题上报等
 - 消息通知：新任务分配、变更、作废、逾期预警、问题处理反馈等
 
 ### 对已有需求的影响
 | 需求 | 影响 |
 |------|------|
-| **REQ-001** | APP首页新增Progress Management模块入口 |
-| **REQ-012** | CM分配任务给SE后，SE在此页面接收并执行 |
+| **REQ-001** | APP 首页新增 Progress Management 模块入口 |
+| **REQ-012** | CM 分配任务给 SE 后，SE 在此页面接收并执行 |
 
 ### 文档清单
 | 类型 | 文件 |
 |------|------|
-| APP端需求 | `requirements/app/REQ-013-app.md` |
-| UI设计 | `outputs/ui/app/UI-REQ-013-app.md` |
+| APP 端需求 | `requirements/app/REQ-013-app.md` |
+| UI 设计 | `outputs/ui/app/UI-REQ-013-app.md` |
 
 ---
 
@@ -101,27 +103,27 @@
 - **依赖**: REQ-001、REQ-010、REQ-011
 
 ### 新增内容
-- PC端Progress Management新增"我的任务（CM）"菜单，仅CM可见
-- 任务列表页：展示PM分配给CM的所有任务，支持筛选、搜索、分页，与PM端布局一致
+- PC 端 Progress Management 新增"我的任务（CM）"菜单，仅 CM 可见
+- 任务列表页：展示 PM 分配给 CM 的所有任务，支持筛选、搜索、分页，与 PM 端布局一致
 - 新建任务弹框：支持引用工序模板或自定义新建，自动关联上级任务
-- 任务拆解：CM可将任务分配/分解给SE，弹框支持批量新建
-- 问题汇报：操作列及任务详情页均有"汇报问题"入口，提交后通知PM
-- 消息通知：SE分配通知、任务变更、作废、进度反馈、逾期预警等全场景通知
+- 任务拆解：CM 可将任务分配/分解给 SE，弹框支持批量新建
+- 问题汇报：操作列及任务详情页均有"汇报问题"入口，提交后通知 PM
+- 消息通知：SE 分配通知、任务变更、作废、进度反馈、逾期预警等全场景通知
 
 ### 对已有需求的影响
 | 需求 | 影响 |
 |------|------|
-| **REQ-010** | 新增CM专属菜单入口 |
-| **REQ-011** | PM分配任务给CM后，CM在此页面接收并分解任务 |
+| **REQ-010** | 新增 CM 专属菜单入口 |
+| **REQ-011** | PM 分配任务给 CM 后，CM 在此页面接收并分解任务 |
 
 ### 文档清单
 | 类型 | 文件 |
 |------|------|
-| PC端需求 | `requirements/pc/REQ-012-pc.md` |
-| UI设计 | `outputs/ui/pc/UI-REQ-012-pc.md` |
+| PC 端需求 | `requirements/pc/REQ-012-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-012-pc.md` |
 | 前端开发 | （待生成） |
 | 后端开发 | （待生成） |
-| QA测试 | （待生成） |
+| QA 测试 | （待生成） |
 
 ---
 
@@ -132,29 +134,29 @@
 - **依赖**: REQ-001、REQ-010
 
 ### 新增内容
-- PC端Progress Management新增"我的任务（PM）"菜单，仅PM可见
-- 任务列表页：展示Planning分配给PM的所有任务，布局与Planning端Master Program一致
+- PC 端 Progress Management 新增"我的任务（PM）"菜单，仅 PM 可见
+- 任务列表页：展示 Planning 分配给 PM 的所有任务，布局与 Planning 端 Master Program 一致
 - 新任务高亮显示，顶部显示新任务数量提示，支持一键筛选
-- 新建任务弹框：从右侧侧滑，需关联Planning主计划任务，支持批量新建
-- 任务分配/分解给CM，弹框支持批量操作
-- 问题汇报：操作列及任务详情页均有"汇报问题"入口，提交后通知Planning
-- Planning可在消息中心和Master Program任务详情页"问题汇报"tab查看处理
-- 分级进度填报：SE填报→CM审核→PM查看，PM无需手动填报
-- 消息通知：覆盖分配、变更、作废、进度反馈、问题汇报、逾期预警、退回、审批、评论、完成确认、分解合并等全场景
+- 新建任务弹框：从右侧侧滑，需关联 Planning 主计划任务，支持批量新建
+- 任务分配/分解给 CM，弹框支持批量操作
+- 问题汇报：操作列及任务详情页均有"汇报问题"入口，提交后通知 Planning
+- Planning 可在消息中心和 Master Program 任务详情页"问题汇报"Tab 查看处理
+- 分级进度填报：SE 填报 → CM 审核 → PM 查看，PM 无需手动填报
+- 消息通知：覆盖分配、变更、作废、进度反馈、问题汇报、逾期预警等全场景
 
 ### 对已有需求的影响
 | 需求 | 影响 |
 |------|------|
-| **REQ-010** | 新增PM专属菜单入口 |
+| **REQ-010** | 新增 PM 专属菜单入口 |
 
 ### 文档清单
 | 类型 | 文件 |
 |------|------|
-| PC端需求 | `requirements/pc/REQ-011-pc.md` |
-| UI设计 | `outputs/ui/pc/UI-REQ-011-pc.md` |
+| PC 端需求 | `requirements/pc/REQ-011-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-011-pc.md` |
 | 前端开发 | （待生成） |
 | 后端开发 | （待生成） |
-| QA测试 | （待生成） |
+| QA 测试 | （待生成） |
 
 ---
 
@@ -165,13 +167,13 @@
 - **依赖**: REQ-001、REQ-008、REQ-009
 
 ### 新增内容
-- PC端Progress Management新增"Master Program"菜单（Planning专用）
-- Master Program任务表格：Activity ID、Activity Name、WBS、计划/实际时间、Deviation、Status、Assigned PM、操作等
+- PC 端 Progress Management 新增"Master Program"菜单（Planning 专用）
+- Master Program 任务表格：Activity ID、Activity Name、WBS、计划/实际时间、Deviation、Status、Assigned PM、操作等
 - 新增/分配任务弹框：从右侧侧滑，样式与系统风格一致
-- 任务分配（Planning→PM）：分配按钮、批量分配
+- 任务分配（Planning → PM）：分配按钮、批量分配
 - 任务编辑/作废：操作列支持编辑、作废，含权限控制和二次确认
 - 任务状态管理：未分配/已分配/进行中/已完成/已延期/作废，颜色高亮
-- Deviation字段：自动计算计划与实际偏差，颜色区分延期/提前/如期
+- Deviation 字段：自动计算计划与实际偏差，颜色区分延期/提前/如期
 - 消息通知：分配/变更/作废/进度/异常等场景全覆盖，含消息内容模板
 
 ### 对已有需求的影响
@@ -183,11 +185,11 @@
 ### 文档清单
 | 类型 | 文件 |
 |------|------|
-| PC端需求 | `requirements/pc/REQ-010-pc.md` |
-| UI设计 | `outputs/ui/pc/UI-REQ-010-pc.md` |
+| PC 端需求 | `requirements/pc/REQ-010-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-010-pc.md` |
 | 前端开发 | （待生成） |
 | 后端开发 | （待生成） |
-| QA测试 | （待生成） |
+| QA 测试 | （待生成） |
 
 ---
 
@@ -198,11 +200,11 @@
 - **依赖**: REQ-008
 
 ### 新增内容
-- 项目管理后台Progress Management下新增Process Settings子菜单
+- 项目管理后台 Progress Management 下新增 Process Settings 子菜单
 - 支持从公司层级一键复制字典配置和工序模板到项目层级
 - 项目层级拥有独立的字典和工序配置副本，可自由增删改，不影响公司层级和其他项目
 - 复制操作前弹窗确认，操作日志记录
-- 页面结构与公司层级一致（专业Tab、构件类型、工序表格三级联动）
+- 页面结构与公司层级一致（专业 Tab、构件类型、工序表格三级联动）
 
 ### 对已有需求的影响
 | 需求 | 影响 |
@@ -227,13 +229,13 @@
 - **依赖**: REQ-001
 
 ### 新增内容
-- Company Insights视角下，左侧导航Project Progress > Process Settings页面
-- 专业Tab栏（来自公司字典，仅展示，不可增删）
+- Company Insights 视角下，左侧导航 Project Progress > Process Settings 页面
+- 专业 Tab 栏（来自公司字典，仅展示，不可增删）
 - 左侧构件类型列表（来自字典，仅展示）
 - 右侧工序表格：支持新增、编辑、删除、禁用/启用、批量添加、排序
 - 工序权重字段，用于后续进度汇总计算
 - 删除/禁用逻辑：引用状态校验，已用于实际任务仅可禁用，不可物理删除
-- 专业Tab、构件类型、工序三级联动
+- 专业 Tab、构件类型、工序三级联动
 
 ### 对已有需求的影响
 - 无（首次引入工序模板模块）
@@ -246,6 +248,163 @@
 | 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-008-pc.md` |
 | 后端开发 | `outputs/backend/BACKEND-REQ-008.md` |
 | QA 测试 | `outputs/qa/pc/QA-REQ-008-pc.md` |
+
+---
+
+## REQ-007E · 内部审批人图纸待办详情查看与原文件下载（PC端）
+
+- **状态**: 草稿（v0.3.0，2026-05-23）
+- **涉及端**: PC
+- **依赖**: REQ-007-shared、REQ-007A-pc、REQ-003A-pc
+
+### 新增内容
+- Todo 列表**仅展示指派给当前登录用户**的内部审批待办，后端以 `assigneeId = 当前用户` 过滤，不可绕过
+- 点击待办记录右侧 **[Detail]** 按钮，从右侧弹出**详情侧滑弹框（Detail Drawer）**
+- 详情弹框展示与设计人员上传时完全一致的全量字段：Drawing Code、Drawing Name、Category、Description、系统版本号、Version Note、上传人、上传时间，以及原始文件行（文件名可点击在新标签页 inline 打开）
+- 底部提供 **[Download Original File]** 按钮，触发浏览器强制下载，命名规则：`{drawingCode}-V{versionNo}-original.{ext}`
+- 下载后弹框保留，审批人可在弹框内继续执行 [Approve] / [Reject]（交互详见 REQ-007A-pc）
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-007A-pc** | Todo 列表过滤规则收严（仅展示自己名下的待办）；[Detail] 按钮补充原卡片内联展示 |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-007E-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-007E-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-007E-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-007E.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-007E-pc.md` |
+
+---
+
+## REQ-007D · DC 配置页面（PC端）
+
+- **状态**: 草稿
+- **涉及端**: PC
+- **依赖**: REQ-007-shared
+
+### 新增内容
+- Project Settings 下新增 DC Configuration 子页面（仅具备 `drawing:dc-config` 权限可访问）
+- 展示当前项目所有已配置 DC 成员列表，支持新增、删除
+- 全量覆盖模式：每次保存以当前列表为准，历史任务不受影响
+- 内部审批通过后系统自动向全部已配置 DC 推送外部审批 Todo，无需上传人手动指定
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-007A** | 内部审批通过后通知对象由"手动指定"改为"项目 DC 配置表" |
+| **REQ-007B** | DC 收到 Todo 任务的前提是已在此页面完成配置 |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-007D-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-007D-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-007D-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-007D.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-007D-pc.md` |
+
+---
+
+## REQ-007C · 版本历史抽屉 4 阶段生命周期视图（PC端）
+
+- **状态**: 草稿（v0.2.3，2026-05-23）
+- **涉及端**: PC
+- **依赖**: REQ-007-shared、REQ-007A-pc、REQ-007B-pc
+
+### 新增内容
+- 图纸版本历史抽屉升级为可展开的 4 阶段生命周期视图：① 上传 → ② 内部审批 → ③ 外部审批 → ④ 签字版
+- 每阶段卡片展示：责任人、操作时间、审批结果、文件链接（原始文件 / 签字版 / 审批凭证）
+- ③ 外部审批卡片展示具体 Status of Approval（A/B/D/C/E），与纸质报审表对应
+- DC 可在 ③ 外部审批卡片直接点击 [Mark Result] 发起标记（与 Todo 操作一致）
+- 版本历史主列表新增 **Attachments 列**（📎 n），点击打开二级弹框
+- 二级弹框（480px 宽抽屉）顶部展示：Status、Ver (System)、Description、Submission Ref No.、Submission Subject、Uploaded by、Upload Date 及主文件行；**不含 Drawing Code**
+- 二级弹框内含 **Part Print / Attachments 双 Tab**：
+  - **Part Print Tab**：只读展示基于当前版本发布的 Markup（局部更新）列表
+  - **Attachments Tab**（默认激活）：附件上传/下载/删除，上传/删除仅限本版本上传人
+
+### 变更记录
+| 版本 | 日期 | 变更摘要 |
+|------|------|---------|
+| v0.2.3 | 2026-05-23 | 二级弹框新增 Part Print / Attachments 双 Tab |
+| v0.2.2 | 2026-05-23 | 二级弹框顶部移除 Drawing Code，新增 Description / Submission Ref No. / Submission Subject |
+| v0.2.1 | 2026-05-23 | ③ 外部审批卡片对齐 Status A–E |
+| v0.2.0 | 2026-05-06 | 新增 Attachments 列及二级弹框（REQ-014 FB-002） |
+| v0.1.0 | 2026-05-05 | 初稿：4 阶段生命周期视图 |
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-003C** | 版本历史抽屉标题及查阅确认面板标题移除 Drawing Code，对齐 REQ-003A 列表设计 |
+| **REQ-003** | 原版本历史列表升级为 4 阶段生命周期视图，UI 结构调整 |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-007C-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-007C-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-007C-pc.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-007C-pc.md` |
+
+---
+
+## REQ-007B · DC 外部审批 Todo 与标记 Dialog（PC端）
+
+- **状态**: 草稿
+- **涉及端**: PC
+- **依赖**: REQ-007-shared、REQ-007A-pc、REQ-003D-pc
+
+### 新增内容
+- PC Todo 列表新增"外部审批"类型任务（仅 DC 角色可见）
+- DC 可在 Todo 中直接下载原始文件，提交 Bentley 后回传签字版 PDF + 审批凭证
+- [Mark Result] Dialog：填写 Status of Approval（A/B/D/C/E）、Submission Ref No.、Submission Subject、Submission Description（始终必填）
+- Status A/B/D（通过类）：额外上传签字版文件 + 审批凭证 + 外部审批日期，触发版本生效 + QR 生成
+- Status C/E（驳回类）：填写 Remarks，通知设计人员重新上传
+- 操作完成后 Todo 任务自动关闭，历史存档可查
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-007A** | 内部审批通过后自动创建 DC 外部审批 Todo 任务 |
+| **REQ-006** | 外部审批通过时同步触发 QR 码生成（替代原"审批通过后异步"逻辑） |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-007B-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-007B-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-007B-pc.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-007B-pc.md` |
+
+---
+
+## REQ-007A · 内部审批 Todo 调整（PC端）
+
+- **状态**: 草稿
+- **涉及端**: PC
+- **依赖**: REQ-007-shared、REQ-003A-pc
+
+### 新增内容
+- 将 PC Todo 列表中的"审批"任务明确区分为"内部审批"，与旧单级审批任务进行视觉区分
+- 内部审批人通过后，弹框提示"下一步将由 DC 负责外部审批，版本暂不生效"
+- 驳回时弹框同旧流程，驳回理由必填，通知设计人员重新上传
+- Todo 列表仅展示**指派给当前登录用户**的待办（与 REQ-007E 联动）
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-003B** | 单级审批 Todo 交互升级为两级，内部审批通过后版本不再直接生效 |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-007A-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-007A-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-007A-pc.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-007A-pc.md` |
 
 ---
 
@@ -282,116 +441,6 @@
 | 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-007-pc.md` |
 | 后端开发 | `outputs/backend/BACKEND-REQ-007.md` |
 | QA 测试 | `outputs/qa/pc/QA-REQ-007-pc.md` |
-
----
-
-## REQ-007A · 内部审批 Todo 调整（PC端）
-
-- **状态**: 草稿
-- **涉及端**: PC
-- **依赖**: REQ-007-shared、REQ-003A
-
-### 新增内容
-- 将 PC Todo 列表中的"审批"任务明确区分为"内部审批"，与旧单级审批任务进行视觉区分
-- 内部审批人通过后，弹框提示"下一步将由 DC 负责外部审批，版本暂不生效"
-- 驳回时弹框同旧流程，驳回理由必填，通知设计人员重新上传
-
-### 对已有需求的影响
-| 需求 | 影响 |
-|------|------|
-| **REQ-003B** | 单级审批 Todo 交互升级为两级，内部审批通过后版本不再直接生效 |
-
-### 文档清单
-| 类型 | 文件 |
-|------|------|
-| PC 端需求 | `requirements/pc/REQ-007A-pc.md` |
-| UI 设计 | `outputs/ui/pc/UI-REQ-007A-pc.md` |
-| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-007A-pc.md` |
-| QA 测试 | `outputs/qa/pc/QA-REQ-007A-pc.md` |
-
----
-
-## REQ-007B · DC 外部审批 Todo 与标记 Dialog（PC端）
-
-- **状态**: 草稿
-- **涉及端**: PC
-- **依赖**: REQ-007-shared、REQ-007A、REQ-003D
-
-### 新增内容
-- PC Todo 列表新增"外部审批"类型任务（仅 DC 角色可见）
-- DC 可在 Todo 中直接下载原始文件，提交 Bentley 后回传签字版 PDF + 审批凭证
-- [Mark Result] Dialog：外部通过时上传签字版 + 凭证并标记通过，触发版本生效 + QR 生成；外部驳回时填写理由，通知设计人员
-- 操作完成后 Todo 任务自动关闭，历史存档可查
-
-### 对已有需求的影响
-| 需求 | 影响 |
-|------|------|
-| **REQ-007A** | 内部审批通过后自动创建 DC 外部审批 Todo 任务 |
-| **REQ-006** | 外部审批通过时同步触发 QR 码生成（替代原"审批通过后异步"逻辑） |
-
-### 文档清单
-| 类型 | 文件 |
-|------|------|
-| PC 端需求 | `requirements/pc/REQ-007B-pc.md` |
-| UI 设计 | `outputs/ui/pc/UI-REQ-007B-pc.md` |
-| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-007B-pc.md` |
-| QA 测试 | `outputs/qa/pc/QA-REQ-007B-pc.md` |
-
----
-
-## REQ-007C · 版本历史抽屉 4 阶段生命周期视图（PC端）
-
-- **状态**: 草稿
-- **涉及端**: PC
-- **依赖**: REQ-007-shared、REQ-007A、REQ-007B
-
-### 新增内容
-- 图纸版本历史抽屉升级为可展开的 4 阶段生命周期视图：① 上传 → ② 内部审批 → ③ 外部审批 → ④ 签字版
-- 每阶段卡片展示：责任人、操作时间、审批结果、文件链接（原始文件 / 签字版 / 审批凭证）
-- DC 可在 ③ 外部审批卡片直接点击 [Mark Result] 发起标记（与 Todo 操作一致）
-- 已驳回版本的各阶段高亮显示驳回信息
-
-### 对已有需求的影响
-| 需求 | 影响 |
-|------|------|
-| **REQ-003** | 原版本历史列表升级为 4 阶段生命周期视图，UI 结构调整 |
-
-### 文档清单
-| 类型 | 文件 |
-|------|------|
-| PC 端需求 | `requirements/pc/REQ-007C-pc.md` |
-| UI 设计 | `outputs/ui/pc/UI-REQ-007C-pc.md` |
-| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-007C-pc.md` |
-| QA 测试 | `outputs/qa/pc/QA-REQ-007C-pc.md` |
-
----
-
-## REQ-007D · DC 配置页面（PC端）
-
-- **状态**: 草稿
-- **涉及端**: PC
-- **依赖**: REQ-007-shared
-
-### 新增内容
-- Project Settings 下新增 DC Configuration 子页面（仅具备 `drawing:dc-config` 权限可访问）
-- 展示当前项目所有已配置 DC 成员列表，支持新增、删除
-- 全量覆盖模式：每次保存以当前列表为准，历史任务不受影响
-- 内部审批通过后系统自动向全部已配置 DC 推送外部审批 Todo，无需上传人手动指定
-
-### 对已有需求的影响
-| 需求 | 影响 |
-|------|------|
-| **REQ-007A** | 内部审批通过后通知对象由"手动指定"改为"项目 DC 配置表" |
-| **REQ-007B** | DC 收到 Todo 任务的前提是已在此页面完成配置 |
-
-### 文档清单
-| 类型 | 文件 |
-|------|------|
-| PC 端需求 | `requirements/pc/REQ-007D-pc.md` |
-| UI 设计 | `outputs/ui/pc/UI-REQ-007D-pc.md` |
-| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-007D-pc.md` |
-| 后端开发 | `outputs/backend/BACKEND-REQ-007D.md` |
-| QA 测试 | `outputs/qa/pc/QA-REQ-007D-pc.md` |
 
 ---
 
@@ -486,6 +535,167 @@
 
 ---
 
+## REQ-003E · 图纸上传 AI 自动识别页信息（PC端）
+
+- **状态**: 草稿
+- **涉及端**: PC
+- **依赖**: REQ-003A-pc、REQ-003-shared
+
+### 新增内容
+- 新建图纸上传弹窗增强：设计人员填写 Drawing Description、选择 Category 并上传 PDF 文件后，AI 自动识别每页图框中的 Drawing No 和 Drawing Name
+- 识别结果以**只读列表**形式展示（含页码、缩略图、Drawing No、Drawing Name），供设计人员核对
+- AI 识别结果自动填入 Drawing Code / Drawing Name 输入框（可编辑），设计人员确认后提交
+- **每次提交仍创建一条 Drawing 记录**（一个 PDF = 一条记录），与 REQ-003A 一致
+- AI 识别期间 Drawing Code / Name 输入框及 Submit 按钮置灰
+- AI 识别失败时降级：橙色提示 + 输入框恢复可编辑 + [Re-upload] 按钮
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-003A** | 新建图纸上传弹窗增加 AI 识别结果列表区域和自动填入逻辑；上传新版本场景不受影响 |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-003E-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-003E-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003E-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-003E.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-003E-pc.md` |
+
+---
+
+## REQ-003D · 项目管理员图纸 SE 分配（PC端）
+
+- **状态**: 草稿
+- **涉及端**: PC
+- **依赖**: REQ-003B-pc
+
+### 新增内容
+- 图纸列表操作列新增 [Assign] 按钮（图纸状态为 ACTIVE 时可用）
+- [Assign] 弹框：展示当前分配的 SE 列表，支持添加/移除项目内 SE 成员
+- 保存后，被新增的 SE 收到 App Push + 站内通知，被移除的 SE 图纸不再可见
+- 分配记录可在版本历史/查阅确认记录中追溯（见 REQ-003C）
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-003** | 将 REQ-003 的"SE 分配机制"拆解为独立子需求，操作入口和交互更明确 |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-003D-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-003D-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003D-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-003D.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-003D-pc.md` |
+
+---
+
+## REQ-003C · 图纸版本历史与查阅确认记录（PC端）
+
+- **状态**: 草稿（v0.1.1，2026-05-23）
+- **涉及端**: PC
+- **依赖**: REQ-003A-pc、REQ-003B-pc
+
+### 新增内容
+- 项目管理人员在 PC 端查看每张图纸的完整版本历史列表及每次审批结果
+- 版本历史抽屉：版本号、上传人、上传时间、审批状态、审批人、审批意见（驳回时显示）
+- 查阅确认记录面板：当前有效版本中每个被分配 SE 的确认状态（已确认/未确认）、确认时间
+- 版本历史抽屉标题格式：`{drawingName} — Version History`（不含 Drawing Code）
+- 查阅确认面板标题格式：`{drawingName} — SE Confirmation（V{n}）`（不含 Drawing Code）
+- （注：版本历史视图在 REQ-007C 中升级为 4 阶段生命周期视图）
+
+### 变更记录
+| 版本 | 日期 | 变更摘要 |
+|------|------|---------|
+| v0.1.1 | 2026-05-23 | 版本历史抽屉及查阅确认面板标题移除 Drawing Code，对齐 REQ-003A 列表设计 |
+| v0.1.0 | 2026-05-04 | 初稿：从 REQ-003-pc 拆分 |
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-003** | 将 REQ-003 的"版本历史与确认记录查看"拆解为独立子需求 |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-003C-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-003C-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003C-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-003C.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-003C-pc.md` |
+
+---
+
+## REQ-003B · 审批人图纸审批（PC端）
+
+- **状态**: 草稿
+- **涉及端**: PC
+- **依赖**: REQ-003A-pc
+
+### 新增内容
+- 审批人通过右上角通知图标进入 Todo List，处理待审批图纸任务
+- 详情侧滑弹框展示图纸信息（Drawing Code、版本说明、PDF 预览/下载）
+- 弹框底部 [Approve] / [Reject] 按钮完成审批；驳回时理由必填
+- （注：升级为两级审批后，此处为内部审批操作，通过后版本不立即生效，见 REQ-007A）
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-003** | 将 REQ-003 的"审批操作"拆解为独立子需求 |
+| **REQ-007A** | 内部审批 Todo 交互在 REQ-007A 中进一步调整，说明两级流程变化 |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-003B-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-003B-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003B-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-003B.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-003B-pc.md` |
+
+---
+
+## REQ-003A · 图纸上传与审批发起（PC端）
+
+- **状态**: 草稿（v0.3.1，2026-05-23）
+- **涉及端**: PC
+- **依赖**: REQ-007-shared
+
+### 新增内容
+- 设计人员（Designer）在 PC 端图纸列表新建图纸或上传新版本
+- 图纸主列表展示列：Description、Category、RFA No.、Subject of RFA、Current Version、Status、Confirmed、Total Markups、Last Updated、Actions；**不含 Drawing Code 列**
+- 上传时选择文件（PDF）、填写 Drawing Code、版本说明，指定内部审批人
+- 提交后触发两级审批流程（内部 → 外部），图纸版本进入 `PENDING_INTERNAL` 状态
+- 内部审批驳回后，设计人员收到站内通知，可重新上传新版本
+- 支持修改 Drawing Code（上传新版本时可选，同项目唯一性校验）
+- 新建图纸流程集成 AI 自动识别（详见 REQ-003E），降级为手动填写路径
+
+### 变更记录
+| 版本 | 日期 | 变更摘要 |
+|------|------|---------|
+| v0.3.1 | 2026-05-23 | 明确图纸列表不含 Drawing Code 列，作为下游 REQ-003C / REQ-007C 的对齐依据 |
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-003** | 将 REQ-003 的"上传与发起审批"拆解为独立子需求，审批流程升级为两级 |
+| **REQ-003C** | 列表不显示 Drawing Code，版本历史抽屉/确认面板标题同步移除 Drawing Code |
+| **REQ-007C** | F-006 二级弹框标题及顶部信息区同步移除 Drawing Code |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-003A-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-003A-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003A-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-003A.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-003A-pc.md` |
+
+---
+
 ## REQ-003 · 工程图纸管理（版本管理、审批、查阅确认）
 
 - **状态**: 草稿
@@ -516,150 +726,6 @@
 
 ---
 
-## REQ-003A · 图纸上传与审批发起（PC端）
-
-- **状态**: 草稿
-- **涉及端**: PC
-- **依赖**: REQ-007-shared
-
-### 新增内容
-- 设计人员（Designer）在 PC 端图纸列表新建图纸或上传新版本
-- 上传时选择文件（PDF）、填写 Drawing Code、版本说明，指定内部审批人
-- 提交后触发两级审批流程（内部 → 外部），图纸版本进入 `PENDING_INTERNAL` 状态
-- 内部审批驳回后，设计人员收到站内通知，可重新上传新版本
-- 支持修改 Drawing Code（上传新版本时可选，同项目唯一性校验）
-
-### 对已有需求的影响
-| 需求 | 影响 |
-|------|------|
-| **REQ-003** | 将 REQ-003 的"上传与发起审批"操作拆解为独立子需求，审批流程升级为两级 |
-
-### 文档清单
-| 类型 | 文件 |
-|------|------|
-| PC 端需求 | `requirements/pc/REQ-003A-pc.md` |
-| UI 设计 | `outputs/ui/pc/UI-REQ-003A-pc.md` |
-| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003A-pc.md` |
-| 后端开发 | `outputs/backend/BACKEND-REQ-003A.md` |
-| QA 测试 | `outputs/qa/pc/QA-REQ-003A-pc.md` |
-
----
-
-## REQ-003B · 审批人图纸审批（PC端）
-
-- **状态**: 草稿
-- **涉及端**: PC
-- **依赖**: REQ-003A
-
-### 新增内容
-- 审批人通过右上角通知图标进入 Todo List，处理待审批图纸任务
-- 详情侧滑弹框展示图纸信息（Drawing Code、版本说明、PDF 预览/下载）
-- 弹框底部 [Approve] / [Reject] 按钮完成审批；驳回时理由必填
-- （注：升级为两级审批后，此处为内部审批操作，通过后版本不立即生效，见 REQ-007A）
-
-### 对已有需求的影响
-| 需求 | 影响 |
-|------|------|
-| **REQ-003** | 将 REQ-003 的"审批操作"拆解为独立子需求 |
-| **REQ-007A** | 内部审批 Todo 交互在 REQ-007A 中进一步调整，说明两级流程变化 |
-
-### 文档清单
-| 类型 | 文件 |
-|------|------|
-| PC 端需求 | `requirements/pc/REQ-003B-pc.md` |
-| UI 设计 | `outputs/ui/pc/UI-REQ-003B-pc.md` |
-| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003B-pc.md` |
-| 后端开发 | `outputs/backend/BACKEND-REQ-003B.md` |
-| QA 测试 | `outputs/qa/pc/QA-REQ-003B-pc.md` |
-
----
-
-## REQ-003C · 图纸版本历史与查阅确认记录（PC端）
-
-- **状态**: 草稿
-- **涉及端**: PC
-- **依赖**: REQ-003A、REQ-003B
-
-### 新增内容
-- 项目管理人员在 PC 端查看每张图纸的完整版本历史列表及每次审批结果
-- 版本历史列表：版本号、Drawing Code、上传时间、审批状态、审批人、操作
-- 查阅确认记录：当前有效版本中每个被分配 SE 的确认状态（已确认/未确认）、确认时间、设备类型
-- （注：版本历史视图后续在 REQ-007C 中升级为 4 阶段生命周期视图）
-
-### 对已有需求的影响
-| 需求 | 影响 |
-|------|------|
-| **REQ-003** | 将 REQ-003 的"版本历史与确认记录查看"拆解为独立子需求 |
-
-### 文档清单
-| 类型 | 文件 |
-|------|------|
-| PC 端需求 | `requirements/pc/REQ-003C-pc.md` |
-| UI 设计 | `outputs/ui/pc/UI-REQ-003C-pc.md` |
-| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003C-pc.md` |
-| 后端开发 | `outputs/backend/BACKEND-REQ-003C.md` |
-| QA 测试 | `outputs/qa/pc/QA-REQ-003C-pc.md` |
-
----
-
-## REQ-003E · 图纸上传 AI 自动识别页信息（PC端）
-
-- **状态**: 草稿
-- **涉及端**: PC
-- **依赖**: REQ-003A、REQ-003-shared
-
-### 新增内容
-- 新建图纸上传弹窗增强：设计人员填写 Drawing Description、选择 Category 并上传 PDF 文件后，AI 自动识别该文件的总页数及每页图框中的 Drawing No 和 Drawing Name
-- 识别结果以**只读列表**形式展示（含页码、缩略图、Drawing No、Drawing Name），供设计人员核对 PDF 内容是否正确
-- AI 识别结果自动填入 Drawing Code / Drawing Name 输入框（可编辑），设计人员确认后提交
-- **每次提交仍创建一条 Drawing 记录**（一个 PDF 文件 = 一条记录），与 REQ-003A 一致
-- AI 识别期间 Drawing Code / Name 输入框及 Submit 按钮置灰
-- AI 识别失败时降级：橙色提示 + 输入框恢复可编辑（手动填写）+ [Re-upload] 按钮
-
-### 对已有需求的影响
-| 需求 | 影响 |
-|------|------|
-| **REQ-003A** | 新建图纸上传弹窗增加 AI 识别结果列表区域和自动填入逻辑；上传新版本场景不受影响 |
-
-### 文档清单
-| 类型 | 文件 |
-|------|------|
-| PC 端需求 | `requirements/pc/REQ-003E-pc.md` |
-| UI 设计 | `outputs/ui/pc/UI-REQ-003E-pc.md` |
-| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003E-pc.md` |
-| 后端开发 | `outputs/backend/BACKEND-REQ-003E.md` |
-| QA 测试 | `outputs/qa/pc/QA-REQ-003E-pc.md` |
-
----
-
-## REQ-003D · 项目管理员图纸 SE 分配（PC端）
-
-- **状态**: 草稿
-- **涉及端**: PC
-- **依赖**: REQ-003B
-
-### 新增内容
-- 图纸列表操作列新增 [Assign] 按钮（图纸状态为 ACTIVE 时可用）
-- [Assign] 弹框：展示当前分配的 SE 列表，支持添加/移除项目内 SE 成员
-- 保存后，被新增的 SE 收到 App Push + 站内通知，被移除的 SE 图纸不再可见
-- 分配记录可在版本历史/查阅确认记录中追溯（见 REQ-003C）
-
-### 对已有需求的影响
-| 需求 | 影响 |
-|------|------|
-| **REQ-003** | 将 REQ-003 的"SE 分配机制"拆解为独立子需求，操作入口和交互更明确 |
-
-### 文档清单
-| 类型 | 文件 |
-|------|------|
-| PC 端需求 | `requirements/pc/REQ-003D-pc.md` |
-| UI 设计 | `outputs/ui/pc/UI-REQ-003D-pc.md` |
-| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003D-pc.md` |
-| 后端开发 | `outputs/backend/BACKEND-REQ-003D.md` |
-| QA 测试 | `outputs/qa/pc/QA-REQ-003D-pc.md` |
-
----
-
 ## REQ-002 · PC 管理后台框架（Header / Sidebar / Main Content）
 
 - **状态**: 草稿
@@ -671,7 +737,6 @@
 - Header：Logo、项目切换器、通知图标（Todo List 入口）、用户头像/退出
 - Sidebar：按角色权限动态渲染菜单项（MAINCON 管理员 / SUBCON 管理员），支持折叠
 - Main Content：路由占位区，各功能模块页面在此渲染
-- 各功能模块内容为空白占位，随后续需求文档逐步填充
 - 最低支持 1280×720px 桌面浏览器，不做移动端适配
 
 ### 对已有需求的影响
@@ -726,7 +791,7 @@ REQ-001 登录和首页（基础）
   ├── REQ-002 PC 管理后台框架（Header / Sidebar / Main Content）
   ├── REQ-003 工程图纸管理（核心模块）
   │     ├── REQ-003A 图纸上传与审批发起（PC端）
-  │     │     ├── REQ-003E 图纸上传 AI 自动识别页信息（批量创建）（PC端，增强 REQ-003A 上传弹窗）
+  │     │     ├── REQ-003E 图纸上传 AI 自动识别页信息（PC端，增强 REQ-003A 上传弹窗）
   │     │     └── REQ-003B 审批人图纸审批（PC端）
   │     │           ├── REQ-003C 图纸版本历史与查阅确认记录（PC端）
   │     │           └── REQ-003D 项目管理员图纸 SE 分配（PC端）
@@ -737,13 +802,14 @@ REQ-001 登录和首页（基础）
   │     └── REQ-007 图纸两级审批流程（扩展 REQ-003，影响 REQ-006）
   │           ├── REQ-007D DC 配置页面（PC端）
   │           ├── REQ-007A 内部审批 Todo 调整（PC端，依赖 REQ-007D）
+  │           │     └── REQ-007E 内部审批人待办详情查看与原文件下载（PC端）
   │           ├── REQ-007B DC 外部审批 Todo 与标记 Dialog（PC端，依赖 REQ-007A）
   │           └── REQ-007C 版本历史抽屉 4 阶段生命周期视图（PC端，依赖 REQ-007A/B）
   └── REQ-008 公司层级工序模板配置
         └── REQ-009 项目层级工序配置副本机制
-              └── REQ-010 Master Program任务分配页面（Planning端）
-                    ├── REQ-011 PM"我的任务"页面（PM端）
-                    │     └── REQ-012 CM"我的任务"页面（CM端）
-                    │           └── REQ-013 SE"我的任务"页面（APP端）
+              └── REQ-010 Master Program 任务分配页面（Planning 端）
+                    ├── REQ-011 PM"我的任务"页面（PM 端）
+                    │     └── REQ-012 CM"我的任务"页面（CM 端）
+                    │           └── REQ-013 SE"我的任务"页面（APP 端）
 REQ-015 BCA 月度人力数据提交（独立模块，无依赖）
 ```
