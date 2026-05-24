@@ -249,12 +249,17 @@ flowchart TD
 
 - 侧边栏菜单"Drawing Management"为一级菜单，其下包含二级菜单"Drawing Masterlist"；点击进入图纸管理列表页面
 - 列表展示所有图纸，默认按 Last Updated 倒序
-- 表格列：Description、Category、Submission No.、Current Version、Status（颜色标签）、Confirmed（Active 时显示 x/y；其他状态显示 —）、Total Markups、Last Updated（可排序）、Actions
+- 表格列：Description、Category、RFA No.、Subject of RFA、Current Version、Status（颜色标签）、Confirmed（Active 时显示 x/y；其他状态显示 —）、Total Markups、Last Updated（可排序）、Actions
 
-**Submission No. 列显示规则**：
-- 显示当前版本对应的外部审批报审号
+**RFA No. 列显示规则**：
+- 显示当前版本对应的外部审批报审编号（Submission Ref No.）
 - 当前版本尚未提交外部审批（状态为 `PENDING_INTERNAL` 或 `INTERNAL_REJECTED`）时显示 `—`
-- 外部审批已发起后显示具体报审号（由 DC 外部审批流程写入，详见 REQ-007B-pc）
+- 外部审批已发起后显示具体报审编号（由 DC 外部审批流程写入，详见 REQ-007B-pc）
+
+**Subject of RFA 列显示规则**：
+- 显示当前版本对应的外部审批报审主题（Submission Subject）
+- 当前版本尚未提交外部审批时显示 `—`
+- 外部审批已发起后显示具体报审主题（由 DC 外部审批流程写入，详见 REQ-007B-pc）
 - 顶部操作区：左侧 [Filter Search]（点击以 Popover 方式弹出搜索条件面板），右侧 [+ Upload Drawing]
   - [+ Upload Drawing] 点击后触发"Upload New Drawing"弹窗，**新建图纸流程已扩展为 AI 自动识别模式**，详见 [REQ-003E-pc](REQ-003E-pc.md)；上传新版本流程沿用本文档 §7.3 F-003
 - [Filter Search] 按钮文案根据当前生效的搜索条件数量动态变化：无条件时显示"Filter Search"；有 n 个条件时显示"Filter Search (n)"
@@ -437,7 +442,7 @@ Then   服务端返回错误，Drawing Code 字段下方内联展示"Code 已存
 ```
 Given  项目中存在图纸记录
 When   用户进入图纸管理列表页
-Then   表格列包含 Description、Category、Submission No.、Current Version、Status、Confirmed、Total Markups、Last Updated、Actions；
+Then   表格列包含 Description、Category、RFA No.、Subject of RFA、Current Version、Status、Confirmed、Total Markups、Last Updated、Actions；
        不显示 Drawing Code 列和 Drawing Name（Name）列
 ```
 

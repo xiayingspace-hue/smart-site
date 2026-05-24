@@ -602,6 +602,36 @@
 
 ---
 
+## REQ-003E · 图纸上传 AI 自动识别页信息（PC端）
+
+- **状态**: 草稿
+- **涉及端**: PC
+- **依赖**: REQ-003A、REQ-003-shared
+
+### 新增内容
+- 新建图纸上传弹窗增强：设计人员填写 Drawing Description、选择 Category 并上传 PDF 文件后，AI 自动识别该文件的总页数及每页图框中的 Drawing No 和 Drawing Name
+- 识别结果以**只读列表**形式展示（含页码、缩略图、Drawing No、Drawing Name），供设计人员核对 PDF 内容是否正确
+- AI 识别结果自动填入 Drawing Code / Drawing Name 输入框（可编辑），设计人员确认后提交
+- **每次提交仍创建一条 Drawing 记录**（一个 PDF 文件 = 一条记录），与 REQ-003A 一致
+- AI 识别期间 Drawing Code / Name 输入框及 Submit 按钮置灰
+- AI 识别失败时降级：橙色提示 + 输入框恢复可编辑（手动填写）+ [Re-upload] 按钮
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-003A** | 新建图纸上传弹窗增加 AI 识别结果列表区域和自动填入逻辑；上传新版本场景不受影响 |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-003E-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-003E-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003E-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-003E.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-003E-pc.md` |
+
+---
+
 ## REQ-003D · 项目管理员图纸 SE 分配（PC端）
 
 - **状态**: 草稿
@@ -696,6 +726,7 @@ REQ-001 登录和首页（基础）
   ├── REQ-002 PC 管理后台框架（Header / Sidebar / Main Content）
   ├── REQ-003 工程图纸管理（核心模块）
   │     ├── REQ-003A 图纸上传与审批发起（PC端）
+  │     │     ├── REQ-003E 图纸上传 AI 自动识别页信息（批量创建）（PC端，增强 REQ-003A 上传弹窗）
   │     │     └── REQ-003B 审批人图纸审批（PC端）
   │     │           ├── REQ-003C 图纸版本历史与查阅确认记录（PC端）
   │     │           └── REQ-003D 项目管理员图纸 SE 分配（PC端）

@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-007C-pc
 req_title: "PC 端 — 版本历史抽屉 4 阶段生命周期视图"
-version: 0.2.1
+version: 0.2.3
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -411,20 +411,41 @@ flowchart TD
 右侧滑入 Drawer（480px，叠加在版本历史抽屉之上）：
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  Version History — · ARCH-001  V3                                   [✕]  │
+│  Version History — · 首层平面图  V3                                 [✕]  │
 ├──────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
-│  Drawing Code    ARCH-001                                                │
-│  Status          ✅ Active                                               │
-│  Ver (System)    V3                                                      │
-│  Uploaded by     👤 张三                                                 │
-│  Upload Date     2026-04-01 10:00                                        │
+│  Status              ✅ Active                                           │
+│  Ver (System)        V3                                                  │
+│  Description         包含外墙及核心筒轮廓线                              │
+│  Submission Ref No.  BEN-2026-001                                        │
+│  Submission Subject  首层平面图 Rev.3 外部审批                           │
+│  Uploaded by         👤 张三                                             │
+│  Upload Date         2026-04-01 10:00                                    │
 │                                                                          │
 │  ┌──────────────────────────────────────────────────────────────────┐    │
 │  │ 📄 arch001-v3.pdf                               [Download]       │    │
 │  │ ✅ Approved by 王总工 · 2026-04-02 14:30                          │    │
 │  └──────────────────────────────────────────────────────────────────┘    │
 │                                                                          │
+│  ┌──────────────┬──────────────────────────────────────────────────┐    │
+│  │ Part Print(2)│ Attachments (3)                                  │    │
+│  └──────────────┴──────────────────────────────────────────────────┘    │
+│                                                                          │
+│  ── Part Print Tab 激活时 ──────────────────────────────────────────     │
+│  ┌──────────────────────────────────────────────────────────────────┐    │
+│  │ [Active]  A轴节点详图修正                                         │    │
+│  │ Apr 8, 2026 · 张三                                               │    │
+│  │ A-C轴 / 3-5层                                                   │    │
+│  │ A轴与3轴交叉节点详图已更新，新增钢筋排布说明...                   │    │
+│  │ 📎 node-detail.pdf                                               │    │
+│  └──────────────────────────────────────────────────────────────────┘    │
+│  ┌──────────────────────────────────────────────────────────────────┐    │
+│  │ [Merged → V4]  外墙保温层厚度修正                                 │    │
+│  │ Apr 5, 2026 · 张三                                               │    │
+│  └──────────────────────────────────────────────────────────────────┘    │
+│  （无局部更新时显示 "No Data"）                                           │
+│                                                                          │
+│  ── Attachments Tab 激活时 ─────────────────────────────────────────     │
 │  Attachments (3)                                              [+]        │
 │  ┌──────────────────────────────────────────────────────────────────┐    │
 │  │ Filename              │ Type  │ Size    │ Uploaded    │ Uploaded by │  │
@@ -433,7 +454,6 @@ flowchart TD
 │  │ 施工说明.docx          │ docx  │ 0.5 MB  │ 2026-04-01  │ 张三        │  │
 │  │ arch001-v3.dwg         │ dwg   │ 8.3 MB  │ 2026-04-01  │ 张三        │  │
 │  └──────────────────────────────────────────────────────────────────┘    │
-│                                                                          │
 │  （无附件时表格内显示 "No Data"）                                         │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
@@ -442,13 +462,55 @@ flowchart TD
 
 | 字段 | 内容 | 说明 |
 |------|------|------|
-| 标题 | `Version History — · {drawingCode}  {versionNo}` | 与截图保持一致 |
-| Drawing Code | 图纸编号 | 只读展示 |
+| 标题 | `Version History — · {drawingName}  {versionNo}` | 不含 Drawing Code |
 | Status | 版本当前状态标签（同 §7.2 颜色规范） | 只读展示 |
 | Ver (System) | 系统版本号，如 `V1`、`V3` | 只读展示 |
+| Description | 图纸描述（来自 Drawing.description） | 无内容时显示 `—` |
+| Submission Ref No. | 外部报审编号（来自 DrawingApproval.submissionRefNo，phase=EXTERNAL） | 外部审批尚未发起时显示 `—` |
+| Submission Subject | 外部报审主题（来自 DrawingApproval.submissionSubject，phase=EXTERNAL） | 外部审批尚未发起时显示 `—` |
 | Uploaded by | 上传人头像 + 姓名 | 只读展示 |
 | Upload Date | 上传时间，格式 `DD-MM-YYYY HH:mm:ss` | 只读展示 |
 | 主文件行 | 文件名 + 审批状态（`✅ Approved by {name} · {time}`）+ [Download] | 点击 [Download] 下载原始文件（`fileUrl`） |
+
+**Tab 导航规则**：
+
+顶部版本信息区下方显示两个 Tab：**Part Print** 和 **Attachments**，默认激活 **Attachments** Tab。
+
+| Tab | 标题格式 | 数量来源 |
+|-----|---------|---------|
+| Part Print | `Part Print ({n})` | 该版本关联的 Markup 总数（含 ACTIVE 与 MERGED） |
+| Attachments | `Attachments ({n})` | 该版本的附件总数 |
+
+---
+
+**Part Print Tab 规格**：
+
+- 展示所有基于当前版本（`baseVersionId`）发布的 Markup（局部更新），按发布时间倒序排列
+- 纯**只读**展示，无发布/汇总操作（发布入口在图纸列表主页面 Actions 列）
+- 每条 Markup 展示为卡片：
+
+| 卡片字段 | 说明 |
+|---------|------|
+| 状态标签 | `ACTIVE`（绿色）/ `Merged → V{n}`（灰色，含目标版本号） |
+| 标题 | Markup 标题 |
+| 元信息行 | 发布日期（`MMM D, YYYY`）· 创建人姓名 |
+| 受影响区域 | 灰色 Tag 展示 `affectedArea`；无内容时隐藏 |
+| 说明文字 | 最多 3 行，超出显示"…Show more"展开 |
+| 附件列表 | 📎 文件名，点击可下载 |
+
+- 无 Markup 时显示空状态 `"No Data"`
+
+---
+
+**Attachments Tab 规格**：
+
+**[+] 上传按钮规则**：
+
+- 位置：`Attachments (n)` 标题右侧图标按钮
+- **仅本版本上传人（设计人员）可见**；其他角色不显示
+- 点击触发文件选择器：支持任意文件类型，单文件 ≤ 50MB，单次最多 5 个
+- 上传成功：表格即时追加新行，标题计数同步更新，背后主列表 Attachments 列数字同步加 1
+- 上传失败：Toast 提示错误（如文件过大）
 
 **Attachments 表格列定义**：
 
@@ -460,14 +522,6 @@ flowchart TD
 | Uploaded | 上传日期，格式 `YYYY-MM-DD` | — |
 | Uploaded by | 上传人姓名 | — |
 | 行操作 | [Download]（所有人可见）；[Delete]（仅本版本上传人可见） | [Delete] 点击需二次确认 |
-
-**[+] 上传按钮规则**：
-
-- 位置：`Attachments (n)` 标题右侧图标按钮
-- **仅本版本上传人（设计人员）可见**；其他角色不显示
-- 点击触发文件选择器：支持任意文件类型，单文件 ≤ 50MB，单次最多 5 个
-- 上传成功：表格即时追加新行，标题计数同步更新，背后主列表 Attachments 列数字同步加 1
-- 上传失败：Toast 提示错误（如文件过大）
 
 **[Delete] 删除规则**：
 
@@ -590,11 +644,12 @@ Then   有附件的版本显示"📎 n"（n 为该版本的附件数量），无
 Given  版本历史抽屉已打开（版本行无论展开或折叠均可）
 When   用户点击某版本行的 Attachments 列单元格（📎 n 或 📎 0）
 Then   从右侧滑入宽度 480px 的抽屉，叠加在版本历史抽屉之上，
-       标题为"Version History — · {drawingCode} {versionNo}"；
-       顶部显示该版本的 Drawing Code、Status、Ver、Uploaded by、Upload Date 及主文件行；
-       下方 Attachments 区块标题为"Attachments (n)"，右侧 [+] 按钮（仅本版本上传人可见）；
-       表格包含 Filename、Type、Size、Uploaded、Uploaded by 列；
-       无附件时表格内显示"No Data"；
+       标题为"Version History — · {drawingName} {versionNo}"（不含 Drawing Code）；
+       顶部依次显示该版本的 Status、Ver (System)、Description、
+       Submission Ref No.、Submission Subject、Uploaded by、Upload Date 及主文件行；
+       其中 Description 无内容时显示"—"；
+       Submission Ref No. / Submission Subject 在外部审批尚未发起时显示"—"；
+       顶部信息区下方显示 Part Print 和 Attachments 两个 Tab，默认激活 Attachments Tab；
        关闭该抽屉后返回版本历史抽屉，不影响版本行的展开/折叠状态
 ```
 
@@ -630,6 +685,27 @@ Given  设计人员点击某附件行的 [Delete]
 When   确认 Dialog 中点击 [Delete]
 Then   该行从表格中移除，标题计数减 1，主列表 Attachments 列数字同步减 1；
        减为 0 时显示"📎 0"
+```
+
+### AC-007C-017：Part Print Tab — 显示当前版本关联局部更新
+
+```
+Given  Attachments 二级弹框已打开
+When   用户点击 Part Print Tab
+Then   展示所有基于当前版本（baseVersionId）发布的 Markup 列表，按发布时间倒序排列；
+       每条 Markup 显示状态标签（ACTIVE 绿色 / Merged → V{n} 灰色）、标题、
+       发布日期 + 创建人、受影响区域（有则显示 Tag）、说明文字（超 3 行折叠）、附件文件名；
+       无 Markup 时显示"No Data"；
+       Part Print Tab 标题格式为"Part Print ({n})"，n 为该版本关联的 Markup 总数
+```
+
+### AC-007C-018：Part Print Tab — 只读，无操作入口
+
+```
+Given  Part Print Tab 已激活，当前用户拥有发布 Markup 权限
+When   查看局部更新列表
+Then   不显示任何发布、删除、汇总操作按钮（这些操作入口仅在图纸列表页 Actions 列提供）；
+       附件文件名可点击下载
 ```
 
 ---
@@ -740,6 +816,8 @@ Then   该行从表格中移除，标题计数减 1，主列表 Attachments 列�
 
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
 |-----|------|-------|---------|------------|
+| 0.2.3 | 2026-05-23 | agent | F-006 弹框新增 Part Print / Attachments 双 Tab：Part Print Tab 只读展示当前版本关联的 Markup（局部更新）列表；Attachments Tab 保留原附件功能；默认激活 Attachments Tab；更新 ASCII 示意图、Tab 导航规格、AC-007C-012；新增 AC-007C-017/018 | UI、前端、QA |
+| 0.2.2 | 2026-05-23 | agent | F-006 Attachments 弹框顶部移除 Drawing Code，改为展示 Status、Ver (System)、Description、Submission Ref No.、Submission Subject、Uploaded by、Upload Date；弹框标题改用 drawingName；更新 ASCII 示意图及 AC-007C-012 | UI、前端、QA |
 | 0.2.1 | 2026-05-23 | agent | 对齐 REQ-007B-pc Status A–E：③ External Approval 卡片由简单 Approved/Rejected 改为展示具体 Status（A/B/D/C/E）及对应标签；新增 §7.3 Status 展示规则表；Evidence [Download] 条件收窄为仅 APPROVED（Status A/B/D）；更新 AC-007C-003、AC-007C-007 | UI、前端、QA |
 | 0.2.0 | 2026-05-06 | agent | 新增 Attachments 列（主列表 QR 后）及 §7.6 F-006（展开行内嵌 Attachments 区块，对齐实际 UI：inline 表格、[+] 上传按钮、No Data 空态）；更新 §3 权限矩阵、§4.1 ENT-001、§7.1、§8 新增 AC-011~016；来源：REQ-014 FB-002 | UI、前端、QA |
 | 0.1.0 | 2026-05-05 | agent | 从 REQ-007-pc 按 US-007C-001 拆分初稿 | 全部 |

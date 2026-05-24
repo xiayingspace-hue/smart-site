@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-003C-pc
 req_title: "PC 端 — 图纸版本历史与查阅确认记录"
-version: 0.1.0
+version: 0.1.1
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
 owner: ""
 created_at: 2026-05-04
-updated_at: 2026-05-04
+updated_at: 2026-05-23
 
 depends_on:
   - REQ-003A-pc
@@ -186,7 +186,7 @@ flowchart TD
 
 - 触发入口：图纸列表 Actions 列 [History] 按钮（所有状态均可点）
 - 抽屉宽度：<!-- TODO: 确认宽度，建议 480px 或 600px -->
-- 标题："{drawingCode} {drawingName} — Version History"
+- 标题："{drawingName} — Version History"
 - 版本列表（按版本号倒序）：
 
 | 列 | 说明 |
@@ -207,7 +207,7 @@ flowchart TD
 **所属流程节点**：流程 6.2
 
 - 触发入口：图纸列表 Confirmed 列的"x/y"数字（Status = ACTIVE 时可点）
-- 面板标题："{drawingCode} {drawingName} — SE Confirmation（V{n}）"
+- 面板标题："{drawingName} — SE Confirmation（V{n}）"
 - 顶部：当前有效版本号、已确认数 / 总分配 SE 数（x/y）
 - 筛选器：[All] [Confirmed] [Unconfirmed]（默认全部）
 - SE 列表：
@@ -385,6 +385,7 @@ Then   显示 —，无可点击链接
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
 |-----|------|-------|---------|------------|
 | 0.1.0 | 2026-05-04 | agent | 从 REQ-003-pc 按 US-003C-001/002 拆分初稿 | 全部 |
+| 0.1.1 | 2026-05-23 | agent | 与 REQ-003A 列表对齐，移除版本历史抽屉标题及查阅确认面板标题中的 Drawing Code 展示 | UI spec、Frontend spec |
 
 ---
 
