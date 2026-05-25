@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-007E-pc
 req_title: "PC 端 — 内部审批人图纸待办详情查看与原文件下载"
-version: 0.3.0
+version: 0.4.0
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
 owner: ""
 created_at: 2026-05-23
-updated_at: 2026-05-23
+updated_at: 2026-05-25
 
 depends_on:
   - REQ-007-shared
@@ -96,6 +96,28 @@ REQ-007A-pc 定义了内部审批人在 PC 端 Todo 列表中处理图纸审批�
 作为 内部审批人
 我想要 在图纸待办详情中点击按钮下载原始图纸文件到本地
 以便 我可以在离线环境中（如 AutoCAD、PDF 阅读器）仔细审阅图纸内容后再作出审批决定
+```
+
+**优先级**：P1
+**所属史诗**：图纸两级审批流程
+
+#### US-007E-004：在详情弹框内通过内部审批
+
+```
+作为 内部审批人
+我想要 在查看完图纸详情后，直接在详情弹框内点击 [Approve] 完成内部审批
+以便 无需离开当前上下文即可提交通过决策，并了解后续将进入外部审批阶段
+```
+
+**优先级**：P1
+**所属史诗**：图纸两级审批流程
+
+#### US-007E-005：在详情弹框内驳回内部审批
+
+```
+作为 内部审批人
+我想要 在查看完图纸详情后，直接在详情弹框内点击 [Reject] 并填写驳回原因
+以便 及时通知设计人员修改并重新上传
 ```
 
 **优先级**：P1
@@ -266,6 +288,8 @@ flowchart TD
 - 所有字段均为**只读**，不提供编辑入口
 - **Original File 文件名链接**：点击后以 `target="_blank"` 在浏览器新标签页中打开文件（HTTP `Content-Disposition: inline`）；文件名下方展示灰色辅助提示文案："Click to open in browser. To save the file, use [Download Original File] below."
 - 若 `fileUrl` 为空，文件名显示为 `—`（不可点击），辅助提示文案隐藏
+- **[Approve] 按钮**：点击后先执行 DC 配置前端预检查，无 DC 则弹出 F-006 警告弹窗；有 DC 则弹出 F-004 确认对话框
+- **[Reject] 按钮**：点击后弹出 F-005 驳回对话框；驳回流程不依赖 DC 配置
 
 ### 7.3 功能 F-003：原始图纸文件下载
 
@@ -303,6 +327,95 @@ GET /drawing/version/{versionId}/download
 Headers: Authorization: Bearer {token}
 Response: 302 Redirect 至预签名 URL（Content-Disposition: attachment; filename="{drawingCode}-V{versionNo}-original.{ext}"，有效期建议 5 分钟）
 ```
+
+### 7.4 功能 F-004：Approve 确认对话框
+
+**关联用户故事**：US-007E-004
+**所属流程节点**：详情侧滑弹框底部 [Approve] 按钮点击后
+
+**触发前置条件**：前端先完成 DC 配置预检查（F-006），确认项目已配置 DC 后方可弹出本对话框。
+
+**对话框布局**：
+
+```
+┌──────────────────────────────────────────────┐
+│  Confirm Internal Approval?                  │
+│                                              │
+│  Once approved, this version will proceed    │
+│  to external approval by Document Controller.│
+│  The version will NOT become active until    │
+│  external approval is completed.             │
+│                                              │
+│  [Cancel]  [Confirm]                         │
+└──────────────────────────────────────────────┘
+```
+
+**交互规则**：
+- 进入本对话框前，前端已完成 DC 配置预检查（F-006），此处无需重复展示 DC 警告
+- [Confirm] 点击后按钮进入 loading 态，禁用对话框所有操作
+- 成功后对话框关闭，详情弹框关闭，Todo 卡片消失，Toast 提示：`"Internal approval completed. DC has been notified for external approval."`
+- 失败后 loading 恢复，Toast 显示错误，可重试（含后端兜底校验无 DC 时的错误码 `1003007012`）
+- [Cancel] 点击后关闭对话框，返回详情弹框，不执行任何审批操作
+
+### 7.5 功能 F-005：Reject 驳回对话框
+
+**关联用户故事**：US-007E-005
+**所属流程节点**：详情侧滑弹框底部 [Reject] 按钮点击后
+
+**对话框布局**：
+
+```
+┌──────────────────────────────────────────────┐
+│  Reject Internal Approval                    │
+│  ARCH-001  首层平面图  V3                     │
+│                                              │
+│  Comment *                                   │
+│  ┌────────────────────────────────────────┐  │
+│  │                                        │  │
+│  │  请填写驳回原因（必填）                  │  │
+│  └────────────────────────────────────────┘  │
+│  最多 500 字符                               │
+│                                              │
+│           [Cancel]     [Confirm]             │
+└──────────────────────────────────────────────┘
+```
+
+**交互规则**：
+- Comment 为必填；为空时 [Confirm] 不可点击，字段标红并显示必填提示
+- [Confirm] 点击后按钮进入 loading 态，禁用对话框所有操作
+- 成功后对话框关闭，详情弹框关闭，Todo 卡片消失，Toast 提示：`"Internal approval rejected. Designer has been notified."`
+- 设计人员收到站内消息，内容包含驳回原因
+- 失败后 loading 恢复，Toast 显示错误，可重试
+- [Cancel] 点击后关闭对话框，返回详情弹框
+
+### 7.6 功能 F-006：无 DC 警告弹窗
+
+**关联用户故事**：US-007E-004
+**所属流程节点**：详情侧滑弹框底部 [Approve] 按钮点击后（F-004 前置检查）
+
+**触发时机**：审批人点击 [Approve] 后，前端调用 DC 配置查询接口（`GET /project/dc-config`），返回空列表时弹出本弹窗，**不进入** F-004 确认对话框。
+
+**弹窗布局**：
+
+```
+┌──────────────────────────────────────────────┐
+│  ⚠️  No DC Configured                        │
+│                                              │
+│  This project has no Document Controller     │
+│  configured. You cannot proceed with         │
+│  internal approval until a DC is added.      │
+│                                              │
+│  Please contact your project admin to        │
+│  configure a DC first.                       │
+│                                              │
+│                          [Got it]            │
+└──────────────────────────────────────────────┘
+```
+
+**交互规则**：
+- 仅有 [Got it] 一个按钮，点击关闭弹窗，返回详情弹框，不执行任何审批操作
+- 弹窗不可通过背景点击关闭（需显式点击 [Got it]）
+- 本弹窗不影响 [Reject] 流程（驳回不依赖 DC 配置）
 
 ---
 
@@ -439,13 +552,57 @@ Then   Original File 文件名下方显示灰色辅助文案：
        "Click to open in browser. To save the file, use [Download Original File] below."
 ```
 
-### AC-007E-010：详情弹框加载失败时显示错误提示
+### AC-007E-013：Approve — 项目无 DC 配置时弹出警告弹窗
 
 ```
-Given  打开详情侧滑弹框时后端接口返回 5xx 或网络超时
-When   弹框加载失败
-Then   弹框内显示错误信息 "Failed to load drawing details." 及 [Retry] 按钮；
-       点击 [Retry] 重新请求接口
+Given  项目当前无 DC 配置
+When   内部审批人在详情弹框内点击 [Approve]
+Then   弹出无 DC 警告弹窗（F-006），不弹出确认对话框；
+       点击 [Got it] 后弹窗关闭，返回详情弹框，审批状态不变
+```
+
+### AC-007E-014：Approve — 有 DC 配置时弹出确认对话框
+
+```
+Given  项目已配置 DC
+When   内部审批人在详情弹框内点击 [Approve]
+Then   弹出 Confirm Internal Approval 对话框，文案说明"通过后进入外部审批阶段，版本不立即生效"
+```
+
+### AC-007E-015：Approve — 成功路径
+
+```
+Given  内部审批人在确认对话框中点击 [Confirm]
+When   操作成功
+Then   对话框关闭，详情弹框关闭，Todo 卡片消失，
+       Toast 提示 "Internal approval completed. DC has been notified for external approval."
+```
+
+### AC-007E-016：Approve — 对话框 loading 态及失败可重试
+
+```
+Given  内部审批人点击确认对话框中的 [Confirm]
+When   接口请求进行中
+Then   按钮显示 loading，对话框内所有操作禁用；
+       接口返回错误后，loading 恢复，Toast 显示错误文案，对话框保留，可重试
+```
+
+### AC-007E-017：Reject — Comment 必填校验
+
+```
+Given  内部审批人在详情弹框内点击 [Reject] 打开驳回对话框
+When   Comment 为空时点击 [Confirm]
+Then   前端校验阻止提交，Comment 字段标红并显示必填提示
+```
+
+### AC-007E-018：Reject — 成功路径
+
+```
+Given  内部审批人填写驳回原因并点击 [Confirm]
+When   操作成功
+Then   对话框关闭，详情弹框关闭，Todo 卡片消失，
+       Toast 提示 "Internal approval rejected. Designer has been notified."；
+       设计人员收到站内消息，消息内容包含驳回原因
 ```
 
 ---
@@ -553,7 +710,7 @@ Then   弹框内显示错误信息 "Failed to load drawing details." 及 [Retry]
 
 | OQ ID | 问题 | 影响 | Owner | 截止 |
 |------|------|------|-------|------|
-| OQ-001 | 详情侧滑弹框中的 [Approve] / [Reject] 按钮是否直接复用 REQ-007A-pc 的 F-002、F-003 逻辑，还是需要在弹框内独立实现一套？ | 前端工作量；若复用需确保弹框关闭后 Todo 列表同步刷新 | PM + 前端 TL | 2026-06-06 |
+| ~~OQ-001~~ | ~~详情侧滑弹框中的 [Approve] / [Reject] 按钮是否直接复用 REQ-007A-pc 的 F-002、F-003 逻辑，还是需要在弹框内独立实现一套？~~ | **已解决**：F-002/F-003/F-004 已从 REQ-007A-pc 迁移至本文档 §7.4–§7.6，统一在此定义 | — | 2026-05-25 |
 | OQ-002 | 预签名下载 URL 的有效期具体值（5 分钟是否合理，是否需要一次性使用）？ | 安全策略；影响后端实现 | PM + 后端 TL + 安全 | 2026-06-06 |
 | OQ-003 | 是否需要在详情弹框中同时提供"在线预览"入口（区别于下载），还是仅保留下载？ | 影响 UI 设计复杂度；在线预览需依赖文件渲染服务 | PM | 2026-06-06 |
 
@@ -570,6 +727,7 @@ Then   弹框内显示错误信息 "Failed to load drawing details." 及 [Retry]
 
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
 |-----|------|-------|---------|------------|
-| 0.1.0 | 2026-05-23 | | 初稿：新增内部审批人图纸待办详情侧滑弹框及原文件下载能力 | UI、Frontend、Backend、QA |
-| 0.2.0 | 2026-05-23 | | 详情弹框移除 Drawing Code 和 Drawing Name 字段，内部审批人审批时仅关注图纸文件，信息已由 Todo 卡片摘要行覆盖 | UI、Frontend、QA |
+| 0.4.0 | 2026-05-25 | agent | 从 REQ-007A-pc 迁入 F-004（Approve 确认对话框）、F-005（Reject 驳回对话框）、F-006（无 DC 警告弹窗）；新增 US-007E-004/005；Detail Drawer §7.2 补充 [Approve]/[Reject] 按钮触发说明；新增 AC-007E-013~018；关闭 OQ-001；删除重复的 AC-007E-010 | UI、Frontend、QA |
 | 0.3.0 | 2026-05-23 | | Original File 文件名改为可点击链接（新标签页 inline 打开）；新增文件名下方引导提示文案；拆分 /view（inline）和 /download（attachment）两个后端接口；补充相关异常流程和 AC | UI、Frontend、Backend、QA |
+| 0.2.0 | 2026-05-23 | | 详情弹框移除 Drawing Code 和 Drawing Name 字段，内部审批人审批时仅关注图纸文件，信息已由 Todo 卡片摘要行覆盖 | UI、Frontend、QA |
+| 0.1.0 | 2026-05-23 | | 初稿：新增内部审批人图纸待办详情侧滑弹框及原文件下载能力 | UI、Frontend、Backend、QA |

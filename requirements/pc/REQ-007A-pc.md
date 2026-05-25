@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-007A-pc
 req_title: "PC 端 — 内部审批 Todo 调整"
-version: 0.2.0
+version: 0.4.0
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
 owner: ""
 created_at: 2026-05-05
-updated_at: 2026-05-07
+updated_at: 2026-05-25
 
 depends_on:
   - REQ-007-shared
@@ -51,6 +51,7 @@ REQ-003B-pc 定义了单级审批的 Todo 交互（审批人通过即版本生�
 - DC 外部审批 Todo（由 REQ-007B-pc 覆盖）
 - APP 端 Todo（APP 端沿用现有审批 Todo 交互，仅标签文案变更）
 - 审批业务规则（由 REQ-007-shared §5.2 定义）
+- Approve 确认对话框、Reject 驳回对话框、无 DC 警告弹窗的 UI 规格（已迁移至 REQ-007E-pc §7.4–§7.6）
 
 ---
 
@@ -83,7 +84,7 @@ REQ-003B-pc 定义了单级审批的 Todo 交互（审批人通过即版本生�
 | 操作 | 内部审批人 | DC | 设计人员 | Site Engineer |
 |-----|:---------:|:--:|:-------:|:-------------:|
 | 查看 Internal Approval Required Todo | ✅（仅自己被指定的） | ❌ | ❌ | ❌ |
-| 点击 [View Drawing] 在线预览原始文件 | ✅ | ❌ | ❌ | ❌ |
+| 点击 [Detail] 打开审批详情侧滑弹框 | ✅ | ❌ | ❌ | ❌ |
 | 点击 [Approve] 通过内部审批 | ✅ | ❌ | ❌ | ❌ |
 | 点击 [Reject] 驳回内部审批 | ✅ | ❌ | ❌ | ❌ |
 
@@ -142,8 +143,8 @@ REQ-003B-pc 定义了单级审批的 Todo 交互（审批人通过即版本生�
 ### 6.1 主流程（内部审批通过）
 
 1. 内部审批人进入 PC 端 Todo 列表，看到"Internal Approval Required"任务卡片
-2. 点击 [View Drawing] 在线预览原始图纸文件
-3. 审核图纸技术内容，点击 [Approve]
+2. 点击卡片上的 [Detail] 按钮，右侧滑出详情侧滑弹框（Detail Drawer），查看图纸完整信息，可在弹框内下载原始文件（见 REQ-007E-pc §7.2–§7.3）
+3. 审核图纸技术内容，在弹框底部点击 [Approve]
 4. **前端预检查**：调用 DC 配置查询接口，确认项目是否已配置 DC
    - 若**无 DC 配置**：弹出无 DC 警告弹窗（F-004），流程终止，不进入确认对话框
    - 若**有 DC 配置**：继续下一步
@@ -156,7 +157,7 @@ REQ-003B-pc 定义了单级审批的 Todo 交互（审批人通过即版本生�
 ```mermaid
 flowchart TD
     A([内部审批人进入 Todo 列表]) --> B[看到 Internal Approval Required 卡片]
-    B --> C[点击 View Drawing 预览原始文件]
+    B --> C[点击 Detail 打开审批详情侧滑弹框]
     C --> D{审批决定}
     D -- 通过 --> E[点击 Approve]
     D -- 驳回 --> F[点击 Reject]
@@ -203,7 +204,7 @@ flowchart TD
 │ Uploaded by: 张三（Designer）  |  2026-04-01 10:00  │
 │ Version Note: 修正轴网尺寸                           │
 │                                                     │
-│ [View Drawing]   [Approve]   [Reject]               │
+│ [Detail]                                            │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -216,88 +217,19 @@ flowchart TD
 | 图纸信息 | `{drawingCode}  {drawingName}  {versionNo}` | 三项同行展示 |
 | Uploaded by | `{designerName}（Designer）  \|  {uploadTime}` | 设计人员姓名 + 上传时间 |
 | Version Note | 版本修改说明 | 选填，无则不显示该行 |
-| [View Drawing] | 在线预览原始文件（`fileUrl`） | 打开 PDF 预览 / 文件下载 |
-| [Approve] | 触发内部审批通过流程 | 蓝色主按钮 |
-| [Reject] | 触发内部审批驳回流程 | 默认样式按钮 |
+| [Detail] | 打开审批详情侧滑弹框（Detail Drawer） | 默认样式按钮；点击后从页面右侧滑入详情弹框，展示图纸完整信息及 [Download Original File]、[Approve]、[Reject] 操作，详见 REQ-007E-pc §7.2 |
 
 ### 7.2 功能 F-002：Approve 确认对话框
 
-**关联用户故事**：US-007A-001
-**所属流程节点**：流程 6.1 步骤 5–6
-
-```
-┌──────────────────────────────────────────────┐
-│  Confirm Internal Approval?                  │
-│                                              │
-│  Once approved, this version will proceed    │
-│  to external approval by Document Controller.│
-│  The version will NOT become active until    │
-│  external approval is completed.             │
-│                                              │
-│  [Cancel]  [Confirm]                         │
-└──────────────────────────────────────────────┘
-```
-
-**交互规则**：
-- 进入本对话框前，前端已完成 DC 配置预检查（F-004），此处无需重复展示 DC 警告
-- [Confirm] 点击后按钮进入 loading 态，禁用对话框所有操作
-- 成功后对话框关闭，Todo 卡片消失，Toast 提示：`"Internal approval completed. DC has been notified for external approval."`
-- 失败后 loading 恢复，Toast 显示错误，可重试（含后端兜底校验无 DC 时的错误）
+> **已迁移至 REQ-007E-pc §7.4**。触发入口（[Approve] 按钮）位于详情侧滑弹框底部，UI 规格与交互规则统一在 REQ-007E-pc 中定义。
 
 ### 7.3 功能 F-003：Reject 驳回对话框
 
-**关联用户故事**：US-007A-001
-**所属流程节点**：流程 6.1 步骤（驳回分支）
-
-```
-┌──────────────────────────────────────────────┐
-│  Reject Internal Approval                    │
-│  ARCH-001  首层平面图  V3                     │
-│                                              │
-│  Comment *                                   │
-│  ┌────────────────────────────────────────┐  │
-│  │                                        │  │
-│  │  请填写驳回原因（必填）                  │  │
-│  └────────────────────────────────────────┘  │
-│  最多 500 字符                               │
-│                                              │
-│           [Cancel]     [Confirm]             │
-└──────────────────────────────────────────────┘
-```
-
-**交互规则**：
-- Comment 为必填，不填无法点击 [Confirm]
-- 成功后对话框关闭，Todo 卡片消失，Toast 提示：`"Internal approval rejected. Designer has been notified."`
-- 设计人员收到站内消息，内容包含驳回原因
+> **已迁移至 REQ-007E-pc §7.5**。触发入口（[Reject] 按钮）位于详情侧滑弹框底部，UI 规格与交互规则统一在 REQ-007E-pc 中定义。
 
 ### 7.4 功能 F-004：无 DC 警告弹窗
 
-**关联用户故事**：US-007A-001
-**所属流程节点**：流程 6.1 步骤 4（前端预检查，无 DC 时触发）
-
-**触发时机**：审批人点击 [Approve] 后，前端调用 DC 配置查询接口（`GET /project/dc-config`），返回空列表时弹出本弹窗，**不进入** F-002 确认对话框。
-
-**弹窗布局**：
-
-```
-┌──────────────────────────────────────────────┐
-│  ⚠️  No DC Configured                        │
-│                                              │
-│  This project has no Document Controller     │
-│  configured. You cannot proceed with         │
-│  internal approval until a DC is added.      │
-│                                              │
-│  Please contact your project admin to        │
-│  configure a DC first.                       │
-│                                              │
-│                          [Got it]            │
-└──────────────────────────────────────────────┘
-```
-
-**交互规则**：
-- 仅有 [Got it] 一个按钮，点击关闭弹窗，返回 Todo 卡片，不执行任何审批操作
-- 弹窗不可通过背景点击关闭（需显式点击 [Got it]）
-- 本弹窗不影响 [Reject] 流程（驳回不依赖 DC 配置）
+> **已迁移至 REQ-007E-pc §7.6**。该弹窗由详情侧滑弹框内的 [Approve] 按钮触发，统一在 REQ-007E-pc 中定义。
 
 ---
 
@@ -509,6 +441,8 @@ Then   接口返回错误码 1003007012；若经由前端触发，loading 恢复
 
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
 |-----|------|-------|---------|------------|
+| 0.4.0 | 2026-05-25 | agent | 将 F-002（Approve 确认对话框）、F-003（Reject 驳回对话框）、F-004（无 DC 警告弹窗）迁移至 REQ-007E-pc §7.4–§7.6；本文档 §7.2/7.3/7.4 改为引用存根；§1.3 补充非目标说明 | UI、前端、QA |
+| 0.3.0 | 2026-05-25 | agent | F-001 卡片操作区调整：移除 [View Drawing]、[Approve]、[Reject] 按钮，新增 [Detail] 按钮；Approve/Reject 操作移至 REQ-007E-pc 的详情侧滑弹框底部；同步更新权限矩阵、§6.1 主流程步骤 2、主流程图 | UI、前端、QA |
 | 0.2.0 | 2026-05-07 | agent | 补充无 DC 配置场景：新增 F-004（无 DC 警告弹窗）、§6.1 步骤 4 前端预检查、§6.3 异常流程两行、AC-007A-010/011、§11 依赖新增 DC 配置查询 API | UI、前端、QA |
 | 0.1.0 | 2026-05-05 | agent | 从 REQ-007-pc 按 US-007A-001 拆分初稿 | 全部 |
 
