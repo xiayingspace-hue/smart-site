@@ -257,15 +257,16 @@ owner: ""
 │                                                                          │
 │  ── Part Print Tab 激活时 ─────────────────────────────────────────      │
 │  ┌──────────────────────────────────────────────────────────────────┐    │
-│  │ [Active]  A轴节点详图修正                                         │    │
+│  │ A轴节点详图修正                                                   │    │
 │  │ Apr 8, 2026 · 张三                                               │    │
-│  │ A-C轴 / 3-5层                                                   │    │
+│  │ Based on SUB-2026-003 · Page 3                                   │    │
 │  │ A轴与3轴交叉节点详图已更新，新增钢筋排布说明...                   │    │
 │  │ 📎 node-detail.pdf                                               │    │
 │  └──────────────────────────────────────────────────────────────────┘    │
 │  ┌──────────────────────────────────────────────────────────────────┐    │
-│  │ [Merged → V4]  外墙保温层厚度修正                                 │    │
+│  │ 外墙保温层厚度修正                                                │    │
 │  │ Apr 5, 2026 · 张三                                               │    │
+│  │ Based on SUB-2026-003                                            │    │
 │  └──────────────────────────────────────────────────────────────────┘    │
 │  （无局部更新时显示 "No Data"）                                           │
 │                                                                          │
@@ -304,7 +305,7 @@ owner: ""
 
 | Tab | 标题格式 | 数量来源 | Element UI 组件 |
 |-----|---------|---------|----------------|
-| Part Print | `Part Print ({n})` | 该版本关联的 Markup 总数（含 ACTIVE 与 MERGED） | `el-tabs` |
+| Part Print | `Part Print ({n})` | 该版本关联的 Part Print 总数（ACTIVE） | `el-tabs` |
 | Attachments | `Attachments ({n})` | 该版本的附件总数 | `el-tabs` |
 
 ---
@@ -313,20 +314,19 @@ owner: ""
 
 **关联 AC**：AC-007C-017、AC-007C-018
 
-- 只读展示，**无任何发布、删除、汇总操作按钮**
+- 只读展示，**无任何发布、删除操作按钮**
 - 按发布时间倒序排列
-- 每条 Markup 以卡片形式展示：
+- 每条 Part Print 以卡片形式展示：
 
 | 卡片字段 | 视觉规格 |
 |---------|---------|
-| 状态标签 | `ACTIVE` → 绿色 `#67C23A`；`Merged → V{n}` → 灰色 `#909399` |
 | 标题 | 14px / font-weight 600 |
 | 元信息行 | 发布日期（`MMM D, YYYY`）· 创建人姓名，12px / `#909399` |
-| 受影响区域 | 灰色 `el-tag size=mini`，`affectedArea` 字段；无内容时隐藏该行 |
+| 报审号 + 页码行 | `Based on {submissionNo}`；若 `appliedPageNo` 不为 null 则追加 ` · Page {n}`；12px / `#909399` |
 | 说明文字 | 最多 3 行，超出显示"…Show more"可展开；13px / `#606266` |
 | 附件列表 | `📎 {fileName}`，点击可下载；12px |
 
-- 无 Markup 时显示空状态 `"No Data"`
+- 无 Part Print 时显示空状态 `"No Data"`
 
 ---
 
@@ -465,8 +465,8 @@ owner: ""
 | AC-007C-014 | [+] / [Delete] 仅本版本上传人可见 | §3.3 [+] 上传按钮规则、[Delete] 规则 | ✅ |
 | AC-007C-015 | 上传成功即时追加行，Tab 计数 +1 | §3.3 [+] 上传按钮规则 | ✅ |
 | AC-007C-016 | 删除附件二次确认，即时移除，计数 -1 | §3.3 [Delete] 二次确认 Dialog | ✅ |
-| AC-007C-017 | Part Print Tab — 显示当前版本关联 Markup 列表 | §3.3 Part Print Tab 规格 | ✅ |
-| AC-007C-018 | Part Print Tab — 只读，无发布/删除/汇总操作 | §3.3 Part Print Tab 规格 | ✅ |
+| AC-007C-017 | Part Print Tab — 显示当前版本关联 Part Print 列表（标题/元信息/报审号+页码/说明/附件，无状态标签） | §3.3 Part Print Tab 规格 | ✅ |
+| AC-007C-018 | Part Print Tab — 只读，无发布/删除操作 | §3.3 Part Print Tab 规格 | ✅ |
 
 ---
 
@@ -474,6 +474,7 @@ owner: ""
 
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
+| 0.2.6 | 2026-05-25 | agent | 同步 REQ-007C-pc Part Print 卡片变更：移除状态标签（ACTIVE/Merged→V{n}）和受影响区域 Tag；新增报审号+页码行（Based on {submissionNo} · Page {n}）；Tab 数量来源改为 ACTIVE 计数；移除"汇总"相关操作描述；更新线框图、卡片字段表、AC-007C-017/018 描述 |
 | 0.2.5 | 2026-05-25 | agent | 同步 REQ-007C-pc@0.2.5：主列表移除 Attachments 列，新增 RFA No. 列与 Actions 列（[Details] 按钮）；触发方式由"点击 Attachments 单元格"改为"点击 [Details] 按钮"；Details 二级抽屉顶部新增 Description / Submission Ref No. / Submission Subject 字段，移除 Drawing Code；新增 Part Print Tab 规格；更新 §2.2 层级、§3.1 布局/列定义、§3.3 全节、§8 AC覆盖表（011 新含义 + 017 + 018） |
 | 0.1.1 | 2026-05-24 | agent | 按来源需求独立成文件，完善字段与状态规范 |
 | 0.1.0 | 2026-05-07 | agent | 从 UI-REQ-007-pc.md 拆分，覆盖 REQ-007C-pc 版本历史部分 |

@@ -120,7 +120,7 @@
 │ ←  Part Print — ARCH-001 · 首层平面图                     │  ← 标题行
 │    Based on V3  ·  2 Active                              │  ← 副标题
 ├──────────────────────────────────────────────────────────┤
-│  [All (2)]  [Active (2)]          [+ Part Print]         │  ← Tab 筛选行
+│  [All (5)]                        [+ Part Print]         │  ← Tab 筛选行
 ├──────────────────────────────────────────────────────────┤
 │  🔍 Search by description or drawing no...               │  ← 搜索框
 ├──────────────────────────────────────────────────────────┤
@@ -155,7 +155,7 @@
 | 宽度 | 560px |
 | 标题 | "Part Print — {drawingCode} · {drawingName}"，`--font-weight-semibold` |
 | 副标题 | "Based on {versionNo} · {activeCount} Active"，13px，`--color-text-secondary` |
-| Tab 筛选 | `el-tabs`，标签：All ({total}) / Active ({n})；右侧对齐显示 [+ Part Print] 按钮 |
+| Tab 筛选 | `el-tabs`，标签：All ({total}) / Active；All Tab 显示局部更新总条数；Active Tab 不显示数量角标 |
 | [+ Part Print] 按钮 | Tab 行右侧，`el-button size="small" type="primary" plain`；仅设计人员（本图纸上传人）且当前版本 `approvalStatus = APPROVED_EXTERNAL` 时显示；点击打开 §3.3 发布弹窗 |
 | 搜索框 | Tab 行下方，全宽 `el-input` with prefix 搜索图标，placeholder "Search by description or drawing no..."；前端实时过滤，匹配 Description 和 Part Print Drawing No.（大小写不敏感）；无匹配时显示空态"No results found" |
 | 内容区背景 | #F5F7FA |
@@ -376,7 +376,7 @@
 | drawer_title | Part Print — {code} · {name} | 局部更新 — {code} · {name} |
 | drawer_subtitle | Based on {version} · {active} Active | 基于 {version} · {active} 生效中 |
 | tab_all | All ({n}) | 全部 ({n}) |
-| tab_active | Active ({n}) | 生效中 ({n}) |
+| tab_active | Active | 生效中 |
 | search_placeholder | Search by description or drawing no... | 按说明或图纸编号搜索... |
 | search_empty | No results found | 无匹配结果 |
 | card_based_on | Based on {submissionNo} | 基于 {submissionNo} |
@@ -415,7 +415,7 @@
 
 | # | 验收项 | 通过标准 |
 |---|--------|---------|
-| 1 | 数据加载 | 打开时正确展示所有 Part Print，All / Active Tab 数量准确 |
+| 1 | 数据加载 | 打开时正确展示所有 Part Print；All Tab 显示总数；Active Tab 不显示数量角标 |
 | 2 | [+ Part Print] 按钮 | 仅设计人员（本图纸上传人）且 `approvalStatus = APPROVED_EXTERNAL` 时显示；其他角色或其他状态时不显示 |
 | 3 | 搜索过滤 | 输入关键字后实时过滤，匹配 Description 和 Part Print Drawing No.（大小写不敏感）；无结果时显示空态 |
 | 4 | 报审号展示 | 每张卡片正确显示 "Based on {submissionNo}"；有页码时追加 " · Page {n}" |

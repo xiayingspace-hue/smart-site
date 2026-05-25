@@ -1,8 +1,8 @@
 ---
 doc_type: requirement
 req_id: REQ-004-pc
-req_title: "PC 端 — 图纸局部更新（Part Print）发布与汇总"
-version: 0.2.0
+req_title: "PC 端 — 图纸局部更新（Part Print）发布与查阅"
+version: 0.5.0
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -26,11 +26,11 @@ generate:
   qa_spec: true
 ---
 
-# 需求文档：PC 端 — 图纸局部更新（Part Print）发布与汇总
+# 需求文档：PC 端 — 图纸局部更新（Part Print）发布与查阅
 
 > **使用说明**：本文档是整个交付链路的**单一事实源**。所有下游文档（UI/前端/QA）从本文档派生。
 > 业务规则、数据模型、API 接口见 [REQ-004-shared.md](../shared/REQ-004-shared.md)。
-> 本文档仅包含：PC 端特有的页面布局、交互方式、发布局部更新流程、汇总为新版本流程。
+> 本文档仅包含：PC 端特有的页面布局、交互方式、发布局部更新流程。
 
 ---
 
@@ -38,17 +38,18 @@ generate:
 
 ### 1.1 业务背景
 
-设计人员需要在 PC 端对已发布的图纸版本进行局部补充说明，无需走完整审批流程，同时精准通知相关的 Site Engineer。当多次局部更新积累后，可一键汇总提交为正式新版本。
+设计人员需要在 PC 端对已发布的图纸版本进行局部补充说明，无需走完整审批流程，同时精准通知相关的 Site Engineer。
 
 ### 1.2 业务目标
 
-在 PC 图纸列表页提供 [+ Part Print] 入口，支持设计人员快速发布局部更新并附件；提供 [Part Print] 入口管理全部局部更新，并在积累足够时汇总提交新版本审批。
+在 PC 图纸列表页提供 [Part Print] 入口查阅该图纸的全部局部更新历史记录，并在抽屉内支持设计人员快速发布局部更新并附件。
 
 ### 1.3 非目标（Out of Scope）
 
 - APP 端查阅局部更新与通知（见 REQ-004-app）
 - 审批流程本身（见 REQ-007-pc 系列）
 - Site Engineer 通知逻辑（见 REQ-004-shared）
+- 将局部更新汇总为新版本并发起审批（不适用：Part Print 均基于已审批通过的报审记录，不触发新版本流程）
 
 ---
 
@@ -58,8 +59,8 @@ generate:
 
 | 角色 ID | 角色名 | 描述 | 典型场景 |
 |--------|-------|------|---------|
-| ROLE-001 | 设计人员 | 图纸上传人，拥有发布/删除/汇总 Part Print 权限 | 发布局部更新、汇总为新版本 |
-| ROLE-002 | 管理员 / Drawing 团队 | 可查看 Part Print 列表，无发布/删除/汇总权限 | 查看局部更新进展 |
+| ROLE-001 | 设计人员 | 图纸上传人，拥有发布/删除 Part Print 权限 | 发布局部更新、查阅历史记录 |
+| ROLE-002 | 管理员 / Drawing 团队 | 可查看 Part Print 列表，无发布/删除权限 | 查看局部更新进展 |
 | ROLE-003 | DC / 内部审批人 | 可查看 Part Print 列表 | 了解改动情况 |
 | ROLE-004 | Site Engineer | 不访问 PC 管理端 | 通过 APP 接收通知 |
 
@@ -76,12 +77,12 @@ generate:
 **优先级**：P1
 **所属史诗**：图纸管理
 
-#### US-004pc-002：查看与汇总局部更新
+#### US-004pc-002：查阅局部更新历史
 
 ```
-作为 图纸设计人员
-我想要 在 PC 端查看某图纸的所有局部更新，并选择将其汇总为新版本
-以便 在改动积累到一定程度后，发起正式版本审批，形成完整的版本记录
+作为 图纸设计人员 / 管理员 / DC
+我想要 在 PC 端查看某图纸的所有局部更新记录
+以便 随时掌握该图纸的局部改动情况与历史轨迹
 ```
 
 **优先级**：P1
@@ -93,10 +94,9 @@ generate:
 
 | 操作 | 设计人员（本图纸上传人） | 管理员 / Drawing 团队 | DC / 内部审批人 | Site Engineer |
 |-----|:-------------------:|:-------------------:|:-----------:|:------------:|
-| 查看 Part Print 列表抽屉（[Part Print]） | ✅ | ✅ | ✅ | ❌ |
-| 发布 Part Print（[+ Part Print]） | ✅（仅 ACTIVE 图纸） | ❌ | ❌ | ❌ |
+| 查看 Part Print 历史抽屉（[Part Print]）— **任意图纸状态** | ✅ | ✅ | ✅ | ❌ |
+| 发布 Part Print（[+ Part Print]）— **仅版本外部审批通过后（`APPROVED_EXTERNAL`）** | ✅ | ❌ | ❌ | ❌ |
 | 删除 Part Print | ✅（仅本人创建的 ACTIVE Part Print） | ❌ | ❌ | ❌ |
-| 汇总为新版本（[Merge to New Version]） | ✅ | ❌ | ❌ | ❌ |
 | 下载 Part Print 附件 | ✅ | ✅ | ✅ | ❌ |
 
 ---
@@ -107,20 +107,20 @@ generate:
 
 | 实体 ID | 实体名 | 描述 | 关键属性（业务语义） |
 |--------|-------|------|------------------|
-| ENT-001 | DrawingPartPrint | 局部更新记录 | title、description、affectedArea、status（ACTIVE/MERGED）、baseVersionId、attachments[]、createdBy |
-| ENT-002 | DrawingVersion | 图纸版本 | approvalStatus、fileUrl、versionNo |
+| ENT-001 | DrawingPartPrint | 局部更新记录 | drawingFileUrl（主图纸文件）、dwgNo、revNo、partPrintDrawingNo、description、issuedDate、drawnBy、approvedByAES、approvedDate、aiRecognized（bool，是否 AI 识别回填）、**appliedPageNo**（整数，局部更新对应基础版本 PDF 的页码，可选）、status（ACTIVE/DELETED）、baseVersionId、additionalAttachments[]、createdBy |
+| ENT-002 | DrawingVersion | 图纸版本 | approvalStatus、fileUrl、versionNo、**submissionNo**（报审号，对应该版本的报审单编号） |
 
 ### 4.2 实体关系
 
 - 一个 DrawingVersion 可以有多个 DrawingPartPrint（`baseVersionId` 关联）
-- 汇总操作将多条 `ACTIVE` DrawingPartPrint 状态变为 `MERGED`，并创建新的 DrawingVersion（`PENDING_INTERNAL`）
+- Part Print 始终附属于当前有效版本（即 `approvalStatus = APPROVED_EXTERNAL` 的最新 DrawingVersion），不触发新版本创建
 
 ### 4.3 数据生命周期
 
 DrawingPartPrint 生命周期：
 1. 创建：设计人员点击 [+ Part Print] 发布，状态为 `ACTIVE`
-2. 流转：被汇总后状态变为 `MERGED`，`mergedToVersionId` 记录目标版本
-3. 归档：`MERGED` 为终态，不可删除、不可再汇总
+2. 删除：设计人员（仅创建人）主动删除，记录永久移除
+3. `ACTIVE` 为唯一稳定态，不存在汇总/归档终态
 
 ---
 
@@ -130,19 +130,16 @@ DrawingPartPrint 生命周期：
 
 | 状态 ID | 状态名 | 描述 | 是否终态 |
 |--------|-------|------|---------|
-| S-001 | ACTIVE | 已发布，生效中 | 否 |
-| S-002 | MERGED | 已汇总入新版本 | 是 |
+| S-001 | ACTIVE | 已发布，生效中 | 否（可被删除） |
 
 ### 5.2 状态转换表
 
 | From | To | 触发动作 | 守卫条件 | 副作用 |
 |------|-----|---------|---------|-------|
-| ACTIVE | MERGED | 设计人员提交汇总 | 用户为本图纸设计人员；图纸无版本在 `PENDING_INTERNAL`/`PENDING_EXTERNAL` | 创建新 DrawingVersion（PENDING_INTERNAL）；通知已分配审批人 |
 | ACTIVE | 删除 | 设计人员点击删除并确认 | 用户为 Part Print 创建人 | 永久删除；图纸 Part Print 列计数 -1 |
 
 ### 5.3 非法转换
 
-- `MERGED` 状态不可删除、不可再次汇总
 - 非 Part Print 创建人不可删除
 
 ---
@@ -151,52 +148,46 @@ DrawingPartPrint 生命周期：
 
 ### 6.1 主流程——发布局部更新
 
-1. 设计人员在图纸列表找到 `status = ACTIVE` 的图纸行
-2. 点击 Actions 列 **[+ Part Print]** 按钮，弹出发布弹窗
-3. 填写 Title（必填）、Description（必填）、Affected Area（选填）、上传附件（选填）
-4. 点击 [Publish]，前端校验通过后上传附件、调用发布接口
-5. 发布成功：弹窗关闭，图纸 Part Print 列 +1，顶部 Toast 提示
+1. 设计人员在图纸列表找到当前版本 `approvalStatus = APPROVED_EXTERNAL` 的图纸行
+2. 点击 Actions 列 **[Part Print]** 按钮，打开局部更新列表抽屉
+3. 在抽屉右上角点击 **[+ Part Print]** 按钮，弹出发布弹窗
+4. 用户选择 Part Print 主图纸文件（PDF/PNG/JPG，≤ 50MB）
+5. 文件上传成功后，系统自动调用 AI 识别接口读取 Title Block 信息，识别结果回填至各字段
+6. 用户核验并按需修改字段；同时从 **Applied to Page** 选择器中选择本次局部更新对应基础版本 PDF 的页码（系统根据当前基础版本 PDF 总页数自动生成可选范围）
+7. 点击 [Publish]，前端校验必填项（Dwg No.、Part Print Drawing No.、Description）通过后调用发布接口
+8. 发布成功：弹窗关闭，图纸 Part Print 列 +1，顶部 Toast 提示
 
-### 6.2 主流程——汇总为新版本
-
-1. 设计人员点击 **[Part Print]** 打开局部更新抽屉
-2. 在 `ACTIVE` 卡片上勾选 [☑ Merge]，选择一条或多条
-3. 点击底部 **[Merge to New Version →]**，弹出汇总弹窗
-4. 上传新版本文件，确认 Version Note，选择审批人
-5. 点击 [Submit for Approval]，调用汇总接口
-6. 成功：所选 Part Print 变为 `MERGED`，图纸状态变为 `PENDING_INTERNAL`
-
-### 6.3 主流程图（Mermaid）
+### 6.2 主流程图（Mermaid）
 
 ```mermaid
 flowchart TD
-    A([设计人员进入图纸列表]) --> B{图纸 status = ACTIVE?}
-    B -- 否 --> Z1([无法发布 Part Print])
-    B -- 是 --> C[点击 + Part Print 按钮]
-    C --> D[填写 Title / Description / 附件]
-    D --> E[点击 Publish]
+    A([设计人员进入图纸列表]) --> B{当前版本 approvalStatus = APPROVED_EXTERNAL?}
+    B -- 否 --> Z1([点击 Part Print 按钮仍可查看 Part Print 历史，但抽屉内不显示 + Part Print 按钮])
+    B -- 是 --> C[点击 Actions 列 Part Print 按钮，打开局部更新列表抽屉]
+    C --> C2[点击抽屉右上角 + Part Print 按钮]
+    C2 --> D[选择 Part Print 主图纸文件]
+    D --> D2[文件上传成功，调用 AI 识别接口]
+    D2 --> D3{AI 识别成功?}
+    D3 -- 是 --> D4[字段回填（带 ✨ 标识），用户核验/修改]
+    D3 -- 否 --> D5[显示警告，字段留空，用户手动填写]
+    D4 --> D6[用户在 Applied to Page 选择器中选择对应页码]
+    D5 --> D6
+    D6 --> E[点击 Publish]
     E --> F{前端校验通过?}
     F -- 否 --> D
     F -- 是 --> G[上传附件 + 调用发布接口]
     G --> H[发布成功：Part Print 列 +1，Toast 提示]
-    H --> I([结束：可继续在抽屉中管理])
-
-    I --> J[点击 Part Print 按钮]
-    J --> K[勾选 ACTIVE Part Print]
-    K --> L[点击 Merge to New Version]
-    L --> M[上传新版本文件 + 填写审批信息]
-    M --> N{图纸是否已有版本待审批?}
-    N -- 是 --> O[接口返回错误，显示提示]
-    N -- 否 --> P[提交成功：Part Print → MERGED，图纸 → PENDING]
+    H --> I([结束])
 ```
 
-### 6.4 异常流程
+### 6.3 异常流程
 
 | 异常场景 | 触发条件 | 系统响应 | 用户感知 |
 |---------|---------|---------|---------|
 | 附件格式不符 | 上传非 PDF/PNG/JPG | 阻止上传 | 文件行显示格式错误提示 |
-| 附件超大 | 单文件 > 20MB（发布）/ > 50MB（汇总） | 阻止上传 | 文件行显示大小错误提示 |
-| 图纸已有版本待审批 | 汇总时图纸存在 PENDING 版本 | 接口报错 | `el-alert` 提示等待审批完成 |
+| 主图纸超大 | 单文件 > 50MB（主图纸）/ > 20MB（附件）| 阻止上传 | 文件行显示大小错误提示 |
+| AI 识别失败 / 超时 | 识别接口返回错误或 >15s 无响应 | 中止识别，显示 `el-alert` 警告 | "AI recognition failed. Please fill in the fields manually."；字段留空，用户可手动填写 |
+| AI 识别部分缺失 | 某字段在 Title Block 中无值 | 该字段留空，其他字段正常回填 | 无 ✨ 标识的字段提示用户补填 |
 | 网络异常 | 接口请求失败 | 保留弹窗内容 | Toast 错误提示，可重试 |
 
 ---
@@ -211,13 +202,12 @@ flowchart TD
 Actions 列按钮顺序（位于 Assign 之后）：
 
 ```
-[View] [History] [Confirms] [Assign] [Part Print] [+ Part Print] [Upload V{n}]
+[View] [History] [Confirms] [Assign] [Part Print] [Upload V{n}]
 ```
 
 | 按钮 | 显示条件 | 权限 | 说明 |
 |------|---------|------|------|
-| [Part Print] | 始终显示 | `drawing:view` | 打开局部更新列表抽屉 |
-| [+ Part Print] | `status = ACTIVE` | `drawing:markup:publish` | 打开发布局部更新弹窗；非 ACTIVE 时隐藏 |
+| [Part Print] | **始终显示**（任意图纸状态） | `drawing:view` | 打开 Part Print 局部更新历史抽屉 |
 
 **Part Print 列（可选表格列）**：
 
@@ -230,112 +220,186 @@ Actions 列按钮顺序（位于 Assign 之后）：
 ### 7.2 功能 F-002：发布局部更新弹窗
 
 **关联用户故事**：US-004pc-001
-**所属流程节点**：流程 6.1 步骤 2–5
+**所属流程节点**：流程 6.1 步骤 2–7
 
-**触发方式**：点击图纸列表 Actions 列 [+ Part Print] 按钮。
+**触发方式**：在局部更新列表抽屉（F-003）中点击右上角 `[+ Part Print]` 按钮（仅设计人员且当前版本 `approvalStatus = APPROVED_EXTERNAL` 时可见）。
 
-**弹窗布局**：
+**弹窗交互分两阶段**：
+- **阶段一**：用户选择 Part Print 图纸文件
+- **阶段二**：文件上传后，系统自动调用 AI 识别接口，从图纸 Title Block 中提取信息并回填表单字段；用户可手动修改任意字段后提交
+
+**弹窗布局（阶段一 — 初始态，未上传图纸）**：
 
 ```
-┌────────────────────────────────────────────────────────┐
-│  Publish Part Print — ARCH-001 · 首层平面图  V3      [✕]  │
-├────────────────────────────────────────────────────────┤
-│                                                        │
-│  Title *                                               │
-│  [__________________________________________________]  │
-│                                                        │
-│  Description *                                         │
-│  [__________________________________________________]  │
-│  [                                                  ]  │
-│  [                                                  ]  │
-│                                                        │
-│  Affected Area                                         │
-│  [__________________________________________________]  │
-│  e.g. "A-C axis / Level 3-5"                          │
-│                                                        │
-│  Attachments（最多 10 个，每个 ≤ 20MB）                 │
-│  ┌────────────────────────────────────────────────┐    │
-│  │  📎  Drag & Drop or  [Browse Files]            │    │
-│  │  Supports: PDF / PNG / JPG · Max 20MB each     │    │
-│  └────────────────────────────────────────────────┘    │
-│  ┌──────────────────────────────────────────────┐      │
-│  │  node-detail.pdf  (512KB)              [✕]   │      │
-│  └──────────────────────────────────────────────┘      │
-│                                                        │
-│  ┌────────────────────────────────────────────────┐    │
-│  │                                                │    │
-│  │        ⬆  上传局部更新                          │    │
-│  │                                                │    │
-│  └────────────────────────────────────────────────┘    │
-│                                                        │
-├────────────────────────────────────────────────────────┤
-│                         [Cancel]  [Publish]            │
-└────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  Publish Part Print — ARCH-001 · 首层平面图  V3       [✕] │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Part Print Drawing *                                   │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │                                                 │   │
+│  │    📎  Drag & Drop or  [Browse Files]           │   │
+│  │    Supports: PDF / PNG / JPG · Max 50MB         │   │
+│  │                                                 │   │
+│  └─────────────────────────────────────────────────┘   │
+│                                                         │
+│  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   │
+│  上传图纸后将自动识别 Title Block 信息                     │
+│  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   │
+│                                                         │
+├─────────────────────────────────────────────────────────┤
+│                           [Cancel]  [Publish]           │
+└─────────────────────────────────────────────────────────┘
 ```
+
+**弹窗布局（阶段一 → 阶段二过渡 — AI 识别中）**：
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Publish Part Print — ARCH-001 · 首层平面图  V3       [✕] │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Part Print Drawing *                                   │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │  📄 ARCH-001-PP-0014.pdf (2.1 MB)           [✕]  │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ✨ Identifying drawing info...  ████████░░  80%        │
+│                                                         │
+├─────────────────────────────────────────────────────────┤
+│                           [Cancel]  [Publish]           │
+└─────────────────────────────────────────────────────────┘
+```
+
+**弹窗布局（阶段二 — AI 识别完成，字段回填，可编辑）**：
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Publish Part Print — ARCH-001 · 首层平面图  V3       [✕] │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Part Print Drawing *                                   │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │  📄 ARCH-001-PP-0014.pdf (2.1 MB)           [✕]  │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ✨ Drawing info recognized — please verify and edit   │
+│     if needed                                           │
+│                                                         │
+│  Dwg No. *                                              │
+│  [CJY-P1-DW-SH-WFR-0117-ST-L1_0                    ✨] │
+│                                                         │
+│  Rev No.                                                │
+│  [0                                                 ✨] │
+│                                                         │
+│  Part Print Drawing No. *                               │
+│  [0014                                              ✨] │
+│                                                         │
+│  Description *                                          │
+│  [Updated beam and wall layout                      ✨] │
+│                                                         │
+│  Issued Date                                            │
+│  [10-Mar-2026                                       ✨] │
+│                                                         │
+│  Drawn By                                               │
+│  [WANG WENHAO                                       ✨] │
+│                                                         │
+│  Approved By AES (C&S)                                  │
+│  [Dicky                                             ✨] │
+│                                                         │
+│  Approved Date                                          │
+│  [11/3/2026                                         ✨] │
+│                                                         │
+│  Applied to Page                                        │
+│  [  Page 2 of 8           ▼                         ]  │
+│  （从下拉列表选择本次局部更新对应底图 PDF 的页码）          │
+│                                                         │
+├─────────────────────────────────────────────────────────┤
+│                           [Cancel]  [Publish]           │
+└─────────────────────────────────────────────────────────┘
+```
+
+> ✨ 图标表示该字段值由 AI 自动识别填入；字段仍可自由编辑，编辑后 ✨ 图标消失。
 
 **表单字段规格**：
 
-| 字段 | 组件 | 校验规则 |
-|------|------|---------|
-| Title | `el-input` | 必填，≤ 200 字符 |
-| Description | `el-input type="textarea" rows=4` | 必填，≤ 2000 字符，右下角字数计数 |
-| Affected Area | `el-input` | 可选，≤ 500 字符，placeholder 示例文字 |
-| Attachments | 自定义多文件上传区 | 可选；格式 PDF/PNG/JPG；单文件 ≤ 20MB；最多 10 个 |
-| 上传局部更新（大按钮） | 全宽 `el-button`（large，type="primary"，plain），图标 ⬆ | 点击行为待定义（TBD） |
+| 字段 | 必填 | 组件 | AI 识别来源 | 校验规则 |
+|------|:---:|------|------------|---------|
+| Part Print Drawing（主图纸文件） | ✅ | 单文件上传区（`el-upload`） | — | 格式 PDF/PNG/JPG；≤ 50MB；仅 1 个 |
+| Dwg No. | ✅ | `el-input` | Title Block — Dwg No. | ≤ 200 字符 |
+| Rev No. | — | `el-input` | Title Block — Rev No. | ≤ 50 字符 |
+| Part Print Drawing No. | ✅ | `el-input` | Title Block — Part Print Drawing No. | ≤ 50 字符 |
+| Description | ✅ | `el-input type="textarea" rows=3` | Title Block — Description | ≤ 2000 字符，右下角字数计数 |
+| Issued Date | — | `el-input` | Title Block — Issued Date | ≤ 50 字符，格式宽松（原始文本） |
+| Drawn By | — | `el-input` | Title Block — Drawn By | ≤ 200 字符 |
+| Approved By AES (C&S) | — | `el-input` | Title Block — Approved By AES (C&S)（文字签名部分） | ≤ 200 字符 |
+| Approved Date | — | `el-input` | Title Block — Approved Date | ≤ 50 字符，格式宽松（原始文本） |
+| Applied to Page | — | `el-select`（单选，选项为 `Page 1`～`Page N`，N = 基础版本 PDF 总页数；若基础版本非 PDF 或页数获取失败则改为 `el-input-number`，最小值 1） | — | 整数，1 ≤ value ≤ 总页数；选填，未选时存 null |
+
+**AI 识别交互规则**：
+
+| 场景 | 系统行为 |
+|-----|---------|
+| 用户选择文件后 | 立即开始上传，上传完成后自动调用 AI 识别接口，显示进度条与"Identifying drawing info..."提示 |
+| 识别成功 | 将识别到的字段值回填至对应输入框，字段右侧显示 ✨ 标识；用户可直接编辑任意字段 |
+| 识别部分失败（某字段无值） | 该字段留空，不阻塞；字段无 ✨ 标识，用户需手动填写 |
+| 识别整体失败 / 超时（>15s） | 显示 `el-alert` 警告："AI recognition failed. Please fill in the fields manually."；表单字段全部留空，用户可手动填写 |
+| 用户修改 AI 回填的字段 | 该字段 ✨ 标识移除，表示用户已覆盖 AI 值 |
+| 用户替换主图纸文件 | 清空所有 AI 回填字段，进度条重新出现，触发新一轮 AI 识别 |
+| [Publish] 点击时 | 仅校验必填字段（Part Print Drawing、Dwg No.、Part Print Drawing No.、Description），AI 识别状态不阻塞提交 |
+
+> **Applied to Page 交互规则**：弹窗打开时前端从服务端获取基础版本 PDF 总页数（接口：`GET /drawing/version/{versionId}/page-count`）。若总页数 ≥ 1，则 Applied to Page 显示为 `el-select`，选项为 `Page 1`～`Page N`，默认空（未选）；若获取失败或基础版本非 PDF，则改为 `el-input-number`（min=1）；该字段为选填，不影响提交。
 
 **发布交互**：
 
-1. 点击 [Publish]，前端校验必填项
-2. 附件逐个上传，展示每个文件上传进度
-3. 全部附件上传完成后调用发布接口
-4. 发布成功：弹窗关闭，图纸表格 Part Print 列 +1，Toast：`"Part Print published. Assigned Site Engineers have been notified."`
-5. 有填写内容时点击取消或遮罩，弹出二次确认
+1. 用户选择 Part Print 图纸文件（必填）
+2. 文件上传成功后，自动调用 AI 识别接口，进度条显示识别进度
+3. 识别完成，字段回填；用户核验并按需修改
+4. 用户在 **Applied to Page** 选择器中选择本次局部更新对应底图 PDF 的页码（选填）
+5. 点击 [Publish]，前端校验必填项
+6. 调用发布接口（主图纸 + 字段数据 + appliedPageNo）
+7. 发布成功：弹窗关闭，图纸表格 Part Print 列 +1，Toast：`"Part Print published. Assigned Site Engineers have been notified."`
+8. 有填写内容时点击取消或遮罩，弹出二次确认
 
 ---
 
 ### 7.3 功能 F-003：局部更新列表抽屉
 
 **关联用户故事**：US-004pc-002
-**所属流程节点**：流程 6.2 步骤 1–2
+**所属流程节点**：流程 6.1 结束后查阅历史
 
-**触发方式**：点击 Actions 列 [Part Print] 按钮，从右侧滑入。
+**触发方式**：点击 Actions 列 [Part Print] 按钮（**任意图纸状态均可**），从右侧滑入。
 
 **抽屉布局**：
 
 ```
 ┌──────────────────────────────────────────────────────────┐
 │ ← Part Print — ARCH-001 · 首层平面图                         │
-│   Based on V3 · 2 Active  1 Merged                       │
+│   Based on V3 · 2 Active                                 │
 ├──────────────────────────────────────────────────────────┤
-│  [All]  [Active (2)]  [Merged (1)]      [+ Part Print]    │
+│  [All (5)]                              [+ Part Print]   │
+├──────────────────────────────────────────────────────────┤
+│  🔍 Search by description or drawing no...               │
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │  ┌──────────────────────────────────────────────────┐   │
-│  │  [Active]  A轴节点详图修正                         │   │
+│  │  A轴节点详图修正                                   │   │
 │  │  Apr 8, 2026 · 张三                               │   │
-│  │  A-C轴 / 3-5层                                   │   │
+│  │  Based on SUB-2026-003  · Page 3                 │   │
 │  │  A轴与3轴交叉节点详图已更新，新增钢筋排布说明...    │   │
 │  │  📎 node-detail.pdf                              │   │
-│  │                         [☑ Merge]  [🗑 Delete]  │   │
+│  │                                       [🗑 Delete]│   │
 │  └──────────────────────────────────────────────────┘   │
 │                                                          │
 │  ┌──────────────────────────────────────────────────┐   │
-│  │  [Active]  C区消防管道路由修正                     │   │
+│  │  C区消防管道路由修正                               │   │
 │  │  Apr 7, 2026 · 张三                               │   │
-│  │  C区 / B1层                                       │   │
+│  │  Based on SUB-2026-003  · Page 5                 │   │
 │  │  消防主管道路由变更，详见附图...                    │   │
 │  │  📎 route-update.png                             │   │
-│  │                         [☑ Merge]  [🗑 Delete]  │   │
+│  │                                       [🗑 Delete]│   │
 │  └──────────────────────────────────────────────────┘   │
 │                                                          │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │  [Merged → V4]  外墙保温层厚度修正                 │   │
-│  │  Apr 5, 2026 · 张三                               │   │
-│  └──────────────────────────────────────────────────┘   │
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │  已选择 2 条局部更新        [Merge to New Version →] │ │
-│  └────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -346,93 +410,46 @@ Actions 列按钮顺序（位于 Assign 之后）：
 | 组件 | `el-drawer`，direction="rtl" |
 | 宽度 | 560px |
 | 标题 | `Part Print — {drawingCode} · {drawingName}` |
-| 副标题 | `Based on {baseVersionNo} · {activeCount} Active  {mergedCount} Merged` |
-| Tab 筛选 | All / Active ({n}) / Merged ({n})，`el-tabs` |
+| 副标题 | `Based on {baseVersionNo} · {activeCount} Active` |
+| Tab 筛选 | All ({n})，`el-tabs`；显示局部更新总条数（所有 Part Print 均为 ACTIVE，无需额外筛选 Tab） |
+| 搜索框 | Tab 筛选行下方，全宽 `el-input`，placeholder 为"Search by description or drawing no..."；前端对当前列表实时过滤，匹配字段为 Description 和 Part Print Drawing No.（大小写不敏感）；无匹配时显示空态提示"No results found" |
 | [+ Part Print] 按钮 | 抽屉右上角，仅设计人员（本图纸上传人）可见；复用 F-002 弹窗 |
-| 底部汇总栏 | 有局部更新被勾选时固定显示，展示已选数量 + [Merge to New Version →] 按钮 |
 
 **局部更新卡片规格**：
 
 | 卡片属性 | 规格 |
 |---------|------|
-| 状态标签 | `ACTIVE`（绿色 `#67C23A`）/ `Merged → V{n}`（灰色 `#909399`，含目标版本号） |
 | 标题 | 14px，font-weight 600 |
 | 元信息行 | `{日期} · {创建人}`，12px，`#909399` |
-| 受影响区域 | 灰色 `el-tag` 样式 |
+| 报审号 + 页码行 | 元信息行下方；格式：`Based on {submissionNo}`，若 `appliedPageNo` 不为 null 则追加 ` · Page {n}`；灰色 `#909399`，12px；`submissionNo` 取自关联 DrawingVersion 的 `submissionNo` 字段 |
 | 说明文字 | 最多 3 行，超出显示"…Show more"展开 |
 | 附件列表 | 📎 图标 + 文件名，点击下载 |
-| [☑ Merge] | 仅 `ACTIVE` 状态显示；勾选后计入底部汇总栏 |
-| [🗑 Delete] | 仅 Part Print 创建人且状态为 `ACTIVE` 时可见；点击二次确认后删除 |
+| [🗑 Delete] | 仅 Part Print 创建人且状态为 `ACTIVE` 时可见；点击后弹出二次确认 Dialog |
 
----
+**删除交互流程**：
 
-### 7.4 功能 F-004：汇总为新版本弹窗
-
-**关联用户故事**：US-004pc-002
-**所属流程节点**：流程 6.2 步骤 3–6
-
-**触发方式**：在局部更新抽屉中勾选一条或多条 `ACTIVE` Part Print 后，点击底部 [Merge to New Version →]。
-
-**弹窗布局**：
-
-```
-┌────────────────────────────────────────────────────────┐
-│  Merge Part Print to New Version — ARCH-001       [✕]    │
-├────────────────────────────────────────────────────────┤
-│                                                        │
-│  Selected Part Print (2):                                 │
-│  ┌────────────────────────────────────────────────┐   │
-│  │  ☑ A轴节点详图修正        Apr 8, 2026          │   │
-│  │  ☑ C区消防管道路由修正    Apr 7, 2026          │   │
-│  └────────────────────────────────────────────────┘   │
-│                                                        │
-│  New Version File *                                    │
-│  ┌────────────────────────────────────────────────┐   │
-│  │  📁  Drag & Drop or  [Browse Files]            │   │
-│  │  Supports: PDF / PNG / JPG · Max 50MB          │   │
-│  └────────────────────────────────────────────────┘   │
-│                                                        │
-│  ℹ️  Current version: V3. After approval, this will   │
-│     become V4.                                         │
-│                                                        │
-│  Version Note                                          │
-│  [Merged from 2 part prints: A轴节点详图修正; C区消防...]  │
-│  （自动填充，可手动修改）                               │
-│                                                        │
-│  Approver *                                            │
-│  [Select approver...         ▼]                        │
-│                                                        │
-├────────────────────────────────────────────────────────┤
-│                         [Cancel]  [Submit for Approval]│
-└────────────────────────────────────────────────────────┘
-```
-
-**字段规格**：
-
-| 字段 | 规格 |
-|------|------|
-| Selected Part Print | 只读，展示已勾选的 Part Print 列表（标题 + 日期） |
-| New Version File | 必填，格式 PDF/PNG/JPG，≤ 50MB |
-| 版本提示 | 蓝色信息块，显示当前版本和将升级的版本号（只读） |
-| Version Note | `el-input`，预填 `"Merged from {n} part prints: {titles}"`，可手动修改，≤ 500 字符 |
-| Approver | `el-select filterable`，必填，从人员接口拉取审批人列表 |
-
-**提交后处理**：
-
-1. 调用汇总接口
-2. 成功后：弹窗关闭，局部更新抽屉关闭；图纸状态变为 `PENDING_INTERNAL`；Part Print 列数字减少（已汇总条目不再计入 Active 数）；Toast：`"Submitted for approval. Version note includes {n} part prints."`
-3. 若该图纸已有版本处于 `PENDING_INTERNAL` 或 `PENDING_EXTERNAL`，接口返回错误，前端显示 `el-alert`：`"A version of this drawing is already pending approval. Please wait for the review to complete."`
+1. 创建人点击卡片右下角 `[🗑 Delete]`
+2. 弹出 `el-dialog` 二次确认，标题："Delete Part Print"，内容："Are you sure you want to delete this Part Print? This action cannot be undone."，按钮：`[Cancel]` / `[Delete]`（Delete 为红色危险按钮）
+3. 点击 `[Cancel]`：关闭 Dialog，抽屉与卡片保持不变
+4. 点击 `[Delete]`：
+   - `[Delete]` 按钮进入 loading 状态，防止重复提交
+   - 调用删除接口
+   - **成功**：Dialog 关闭，该卡片从列表中移除，抽屉副标题 Active 计数 -1，图纸列表 Part Print 列计数 -1，顶部 Toast 提示"Part Print deleted."
+   - **失败**：Dialog 保持打开，`[Delete]` 恢复可点击，Toast 错误提示，用户可重试
 
 ---
 
 ## 8. 验收标准（Acceptance Criteria）
 
-### AC-004pc-001：[+ Part Print] 按钮显示条件
+### AC-004pc-001：[+ Part Print] 与 [Part Print] 按钮显示条件
 
 ```
-Given  图纸列表中存在 status = ACTIVE 的图纸和 status ≠ ACTIVE 的图纸
-When   查看两行的 Actions 列
-Then   ACTIVE 图纸显示 [+ Part Print] 按钮；非 ACTIVE 图纸隐藏 [+ Part Print] 按钮
+Given  图纸列表中存在当前版本 approvalStatus = APPROVED_EXTERNAL 的图纸
+       以及当前版本处于其他状态（如 PENDING_INTERNAL、PENDING_EXTERNAL 等）的图纸
+When   查看各行的 Actions 列
+Then   approvalStatus = APPROVED_EXTERNAL 的图纸显示 [+ Part Print] 按钮
+       其他状态的图纸隐藏 [+ Part Print] 按钮
+       所有图纸行均显示 [Part Print] 按钮（查看历史，不受状态限制）
 ```
 
 ### AC-004pc-002：发布弹窗标题正确
@@ -446,7 +463,7 @@ Then   弹窗标题格式为"Publish Part Print — {drawingCode} · {drawingNam
 ### AC-004pc-003：发布弹窗必填校验
 
 ```
-Given  设计人员打开发布弹窗，Title 或 Description 为空
+Given  设计人员打开发布弹窗，Dwg No. / Part Print Drawing No. / Description 为空，或未选择主图纸文件
 When   点击 [Publish]
 Then   空字段显示必填错误提示，[Publish] 不执行提交
 ```
@@ -454,25 +471,68 @@ Then   空字段显示必填错误提示，[Publish] 不执行提交
 ### AC-004pc-004：附件格式校验
 
 ```
-Given  设计人员在发布弹窗上传非 PDF/PNG/JPG 文件
-When   文件添加到上传列表
+Given  设计人员在发布弹窗上传非 PDF/PNG/JPG 文件（主图纸或附件）
+When   文件添加到上传区
 Then   该文件行显示格式错误提示，不上传该文件
 ```
 
-### AC-004pc-005：附件大小校验（发布）
+### AC-004pc-005：主图纸与附件大小校验
 
 ```
-Given  设计人员上传单个超过 20MB 的文件
-When   文件添加到上传列表
+Given  设计人员上传主图纸超过 50MB，或附件超过 20MB
+When   文件添加到上传区
 Then   该文件行显示大小超限提示，不上传该文件
 ```
 
-### AC-004pc-006：附件数量上限
+### AC-004pc-018：AI 识别自动触发
 
 ```
-Given  发布弹窗已添加 10 个附件
-When   设计人员尝试继续添加
-Then   文件选择器不响应（或 Toast 提示已达上限）
+Given  设计人员在发布弹窗成功上传主图纸文件
+When   文件上传完成
+Then   系统立即调用 AI 识别接口，弹窗内显示进度条与"Identifying drawing info..."提示
+```
+
+### AC-004pc-019：AI 识别成功回填
+
+```
+Given  AI 识别接口返回识别结果
+When   识别成功
+Then   各字段自动填入对应值，字段右侧显示 ✨ 标识；所有字段仍可手动编辑；编辑后 ✨ 标识消失
+```
+
+### AC-004pc-020：AI 识别失败降级
+
+```
+Given  AI 识别接口超时（>15s）或返回错误
+When   识别失败
+Then   弹窗显示 el-alert 警告"AI recognition failed. Please fill in the fields manually."；字段全部留空；不阻塞用户继续手动填写与提交
+```
+
+### AC-004pc-021：替换主图纸重新识别
+
+```
+Given  设计人员在发布弹窗已完成 AI 识别并看到回填字段
+When   点击已上传主图纸的 [✕] 移除并重新上传新图纸
+Then   所有 AI 回填字段清空，进度条重新出现，触发新一轮 AI 识别
+```
+
+### AC-004pc-022：Applied to Page 选项范围正确
+
+```
+Given  设计人员打开发布弹窗，当前基础版本文件为 N 页 PDF
+When   弹窗完成初始化
+Then   Applied to Page 显示 el-select，选项为 Page 1 ～ Page N；
+       若基础版本非 PDF 或页数接口失败，则退化为 el-input-number（最小值 1）
+```
+
+### AC-004pc-023：Applied to Page 随 Part Print 正确存储与展示
+
+```
+Given  设计人员在 Applied to Page 选择了 Page 3 后点击 [Publish]
+When   发布成功
+Then   后端 appliedPageNo 记录为 3；
+       局部更新抽屉卡片中该 Part Print 展示"Page 3"页码信息；
+       若用户未选页码，appliedPageNo 为 null，卡片不显示页码标签
 ```
 
 ### AC-004pc-007：发布成功反馈
@@ -496,18 +556,10 @@ Then   弹出二次确认对话框，确认后弹窗关闭并清空内容
 ```
 Given  设计人员点击某图纸行 [Part Print]
 When   抽屉打开
-Then   展示该图纸所有 DrawingPartPrint，默认 All Tab；ACTIVE 卡片显示 [☑ Merge] 和 [🗑 Delete]（仅创建人）；MERGED 卡片显示"Merged → V{n}"，无操作按钮
+Then   展示该图纸所有 ACTIVE DrawingPartPrint；ACTIVE 卡片显示 [🗑 Delete]（仅创建人可见）；若 appliedPageNo 不为 null，卡片展示对应 Page 标签
 ```
 
-### AC-004pc-010：勾选 Part Print 触发底部汇总栏
-
-```
-Given  局部更新抽屉已打开
-When   勾选至少一条 ACTIVE Part Print
-Then   底部汇总栏出现，显示已选数量；取消全部勾选后汇总栏隐藏
-```
-
-### AC-004pc-011：删除 Part Print 权限控制
+### AC-004pc-010：删除 Part Print 权限控制
 
 ```
 Given  非 Part Print 创建人打开局部更新抽屉
@@ -515,44 +567,28 @@ When   查看 ACTIVE 卡片
 Then   该卡片不显示 [🗑 Delete] 按钮
 ```
 
-### AC-004pc-012：删除 Part Print 二次确认
+### AC-004pc-011：删除 Part Print 二次确认与反馈
 
 ```
 Given  设计人员点击某 ACTIVE Part Print 的 [🗑 Delete]
-When   确认 Dialog 中点击 [Delete]
-Then   该卡片从列表移除；图纸 Part Print 列数字 -1
+When   二次确认 Dialog 弹出后点击 [Cancel]
+Then   Dialog 关闭，卡片与列表保持不变
+
+Given  设计人员点击某 ACTIVE Part Print 的 [🗑 Delete]
+When   二次确认 Dialog 弹出后点击 [Delete]
+Then   调用删除接口成功：该卡片从列表移除；抽屉副标题 Active 计数 -1；图纸列表 Part Print 列数字 -1；Toast 提示"Part Print deleted."
+
+Given  设计人员点击 [Delete] 后接口调用失败
+When   接口返回错误
+Then   Dialog 保持打开；[Delete] 按钮恢复可点击；Toast 显示错误提示；用户可重试
 ```
 
-### AC-004pc-013：汇总弹窗字段预填
+### AC-004pc-012：[Part Print] 历史抽屉在任意状态下可打开
 
 ```
-Given  设计人员勾选 2 条 Part Print 后点击 [Merge to New Version →]
-When   汇总弹窗打开
-Then   Selected Part Print 列表只读展示已选 Part Print（标题 + 日期）；Version Note 自动预填"Merged from 2 part prints: {title1}; {title2}"；版本提示显示当前版本号和下一版本号
-```
-
-### AC-004pc-014：汇总必填校验
-
-```
-Given  汇总弹窗 New Version File 或 Approver 未填
-When   点击 [Submit for Approval]
-Then   对应字段显示必填错误提示，不执行提交
-```
-
-### AC-004pc-015：汇总成功
-
-```
-Given  设计人员正确填写汇总弹窗并提交
-When   提交成功
-Then   所选 Part Print 状态变为 MERGED；图纸 status 变为 PENDING_INTERNAL；弹窗和抽屉关闭；Toast 提示"Submitted for approval. Version note includes {n} part prints."
-```
-
-### AC-004pc-016：汇总时已有版本待审批
-
-```
-Given  图纸已有版本处于 PENDING_INTERNAL 或 PENDING_EXTERNAL 状态
-When   设计人员点击 [Submit for Approval]
-Then   接口返回错误；弹窗内显示 el-alert："A version of this drawing is already pending approval. Please wait for the review to complete."
+Given  图纸列表中存在任意 approvalStatus 的图纸（PENDING_INTERNAL、PENDING_EXTERNAL、APPROVED_EXTERNAL 等）
+When   点击该图纸行的 [Part Print] 按钮
+Then   Part Print 历史抽屉正常打开，展示该图纸所有局部更新记录
 ```
 
 ---
@@ -569,8 +605,8 @@ Then   接口返回错误；弹窗内显示 el-alert："A version of this drawin
 ### 9.2 安全
 
 - 鉴权：JWT
-- 权限校验：后端在发布/删除/汇总接口均需校验操作人是否为本图纸上传人
-- 审计：发布、删除、汇总操作均写操作日志
+- 权限校验：后端在发布/删除接口均需校验操作人是否为本图纸上传人
+- 审计：发布、删除操作均写操作日志
 
 ### 9.3 可访问性
 
@@ -585,7 +621,7 @@ Then   接口返回错误；弹窗内显示 el-alert："A version of this drawin
 
 ### 9.5 可观测性
 
-- 关键埋点：点击 [+ Part Print]、发布成功、打开抽屉、汇总提交成功
+- 关键埋点：点击 [+ Part Print]、发布成功、打开抽屉
 
 ---
 
@@ -594,7 +630,6 @@ Then   接口返回错误；弹窗内显示 el-alert："A version of this drawin
 | 维度 | 当前预期 | 1 年后 |
 |-----|---------|-------|
 | 单图纸 ACTIVE Part Print 数 | ≤ 20 条 | ≤ 50 条 |
-| 单次汇总选择 Part Print 数 | ≤ 20 条 | — |
 
 ---
 
@@ -618,15 +653,15 @@ Then   接口返回错误；弹窗内显示 el-alert："A version of this drawin
 
 ### 13.1 上线前
 
-- [ ] DrawingPartPrint 表已创建，包含 status / baseVersionId / attachments[] / createdBy 字段
-- [ ] `/drawing/markup/publish`、`/drawing/markup/merge` 接口已就绪
+- [ ] DrawingPartPrint 表已创建，包含 status / baseVersionId / attachments[] / createdBy / **appliedPageNo** 字段
+- [ ] `/drawing/markup/publish`、`/drawing/markup/delete` 接口已就绪
+- [ ] `GET /drawing/version/{versionId}/page-count` 接口已就绪（用于 Applied to Page 选项范围）
 - [ ] 权限码 `drawing:markup:publish` 已配置到设计人员角色
 
 ### 13.2 上线后
 
-- [ ] 验证发布、删除、汇总主流程端到端可用
+- [ ] 验证发布、删除主流程端到端可用
 - [ ] 验证非创建人无法删除他人 Part Print
-- [ ] 验证图纸已有待审批版本时汇总被正确拦截
 
 ---
 
@@ -650,8 +685,7 @@ Then   接口返回错误；弹窗内显示 el-alert："A version of this drawin
 
 | OQ ID | 问题 | 影响 | Owner | 截止 |
 |------|------|------|-------|------|
-| OQ-001 | 汇总新版本的附件格式是否仅限 PDF/PNG/JPG，还是与上传版本一致（任意格式）？ | F-004 字段规格 | PM | — |
-| OQ-002 | Part Print 发布后，通知哪些 Site Engineer（已分配全部 / 仅活跃）？ | 通知逻辑（REQ-004-shared） | PM | — |
+| OQ-001 | Part Print 发布后，通知哪些 Site Engineer（已分配全部 / 仅活跃）？ | 通知逻辑（REQ-004-shared） | PM | — |
 
 ---
 
@@ -666,6 +700,9 @@ Then   接口返回错误；弹窗内显示 el-alert："A version of this drawin
 
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
 |-----|------|-------|---------|------------|
+| 0.5.0 | 2026-05-25 | agent | 移除"汇总为新版本"功能：删除 US-004pc-002（原）、F-004、状态 S-002 MERGED、§6.2 汇总流程、AC-004pc-013~016；重写 §1.3 非目标、§4.3 生命周期、§5 状态机、F-003 抽屉（移除 [☑ Merge] 与底部汇总栏）；AC 重新编号；§16 OQ-001 移除 | UI、前端、QA、数据契约 |
+| 0.4.0 | 2026-05-25 | agent | F-002 发布弹窗新增 Applied to Page 字段；ENT-001 新增 appliedPageNo；新增 AC-004pc-022~023 | UI、前端、QA、数据契约 |
+| 0.3.0 | 2026-05-25 | agent | F-002 发布弹窗重构：AI 识别 Title Block 流程；ENT-001 新增 8 个 Title Block 字段 + aiRecognized；新增 AC-004pc-018~021 | UI、前端、QA |
 | 0.2.0 | 2026-05-25 | agent | 按新模板重构：新增 YAML Front Matter、§1 背景目标、§2 用户故事、§3 权限矩阵、§4 实体与生命周期、§5 状态机、§6 业务流程（含 Mermaid）、§8 AC 编号化（AC-004pc-001~016）、§9~18 非功能/上线/灰度/OQ 章节 | UI、前端、QA |
 | 0.1.0 | 2026-05-05 | agent | 初稿（旧格式） | 全部 |
 
@@ -676,3 +713,4 @@ Then   接口返回错误；弹窗内显示 el-alert："A version of this drawin
 - 本文档仅覆盖 PC 端交互，APP 端见 REQ-004-app.md
 - 业务规则（通知、接口）见 REQ-004-shared.md
 - REQ-007C-pc §3.3 Part Print Tab 只读展示本功能的 Part Print 数据，不重复定义
+- Part Print 均附属于已外部审批通过（`APPROVED_EXTERNAL`）的报审记录，不触发新版本审批流程

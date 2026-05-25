@@ -434,15 +434,16 @@ flowchart TD
 │                                                                          │
 │  ── Part Print Tab 激活时 ──────────────────────────────────────────     │
 │  ┌──────────────────────────────────────────────────────────────────┐    │
-│  │ [Active]  A轴节点详图修正                                         │    │
+│  │ A轴节点详图修正                                                   │    │
 │  │ Apr 8, 2026 · 张三                                               │    │
-│  │ A-C轴 / 3-5层                                                   │    │
+│  │ Based on SUB-2026-003 · Page 3                                   │    │
 │  │ A轴与3轴交叉节点详图已更新，新增钢筋排布说明...                   │    │
 │  │ 📎 node-detail.pdf                                               │    │
 │  └──────────────────────────────────────────────────────────────────┘    │
 │  ┌──────────────────────────────────────────────────────────────────┐    │
-│  │ [Merged → V4]  外墙保温层厚度修正                                 │    │
+│  │ 外墙保温层厚度修正                                                │    │
 │  │ Apr 5, 2026 · 张三                                               │    │
+│  │ Based on SUB-2026-003                                            │    │
 │  └──────────────────────────────────────────────────────────────────┘    │
 │  （无局部更新时显示 "No Data"）                                           │
 │                                                                          │
@@ -479,27 +480,26 @@ flowchart TD
 
 | Tab | 标题格式 | 数量来源 |
 |-----|---------|---------|
-| Part Print | `Part Print ({n})` | 该版本关联的 Markup 总数（含 ACTIVE 与 MERGED） |
+| Part Print | `Part Print ({n})` | 该版本关联的 Part Print 总数（ACTIVE） |
 | Attachments | `Attachments ({n})` | 该版本的附件总数 |
 
 ---
 
 **Part Print Tab 规格**：
 
-- 展示所有基于当前版本（`baseVersionId`）发布的 Markup（局部更新），按发布时间倒序排列
-- 纯**只读**展示，无发布/汇总操作（发布入口在图纸列表主页面 Actions 列）
-- 每条 Markup 展示为卡片：
+- 展示所有基于当前版本（`baseVersionId`）发布的 Part Print（局部更新），按发布时间倒序排列
+- 纯**只读**展示，无发布/删除操作（发布入口在图纸列表主页面 Actions 列）
+- 每条 Part Print 展示为卡片：
 
 | 卡片字段 | 说明 |
 |---------|------|
-| 状态标签 | `ACTIVE`（绿色）/ `Merged → V{n}`（灰色，含目标版本号） |
-| 标题 | Markup 标题 |
-| 元信息行 | 发布日期（`MMM D, YYYY`）· 创建人姓名 |
-| 受影响区域 | 灰色 Tag 展示 `affectedArea`；无内容时隐藏 |
+| 标题 | Part Print Drawing No. / 描述标题，14px，font-weight 600 |
+| 元信息行 | 发布日期（`MMM D, YYYY`）· 创建人姓名，12px，灰色 `#909399` |
+| 报审号 + 页码行 | 格式：`Based on {submissionNo}`；若 `appliedPageNo` 不为 null 则追加 ` · Page {n}`；12px，灰色 `#909399` |
 | 说明文字 | 最多 3 行，超出显示"…Show more"展开 |
 | 附件列表 | 📎 文件名，点击可下载 |
 
-- 无 Markup 时显示空状态 `"No Data"`
+- 无 Part Print 时显示空状态 `"No Data"`
 
 ---
 
@@ -695,19 +695,21 @@ Then   该行从表格中移除，标题计数减 1，主列表 Attachments 列�
 ```
 Given  Attachments 二级弹框已打开
 When   用户点击 Part Print Tab
-Then   展示所有基于当前版本（baseVersionId）发布的 Markup 列表，按发布时间倒序排列；
-       每条 Markup 显示状态标签（ACTIVE 绿色 / Merged → V{n} 灰色）、标题、
-       发布日期 + 创建人、受影响区域（有则显示 Tag）、说明文字（超 3 行折叠）、附件文件名；
-       无 Markup 时显示"No Data"；
-       Part Print Tab 标题格式为"Part Print ({n})"，n 为该版本关联的 Markup 总数
+Then   展示所有基于当前版本（baseVersionId）发布的 Part Print 列表，按发布时间倒序排列；
+       每条 Part Print 显示：标题、发布日期 + 创建人、
+       "Based on {submissionNo}"（有页码时追加 " · Page {n}"）、
+       说明文字（超 3 行折叠，显示"…Show more"）、附件文件名；
+       不显示状态标签、不显示受影响区域 Tag；
+       无 Part Print 时显示"No Data"；
+       Part Print Tab 标题格式为"Part Print ({n})"，n 为该版本关联的 Part Print 总数
 ```
 
 ### AC-007C-018：Part Print Tab — 只读，无操作入口
 
 ```
-Given  Part Print Tab 已激活，当前用户拥有发布 Markup 权限
+Given  Part Print Tab 已激活，当前用户拥有发布 Part Print 权限
 When   查看局部更新列表
-Then   不显示任何发布、删除、汇总操作按钮（这些操作入口仅在图纸列表页 Actions 列提供）；
+Then   不显示任何发布、删除操作按钮（这些操作入口仅在图纸列表页 Part Print 抽屉提供）；
        附件文件名可点击下载
 ```
 
