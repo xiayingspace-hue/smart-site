@@ -240,7 +240,7 @@ flowchart TD
 │ Internal approved by: 王总工  |  2026-04-02 14:30               │
 │ Version Note: 修正轴网尺寸                                       │
 │                                                                  │
-│                            [Detail]   [✅ Mark Result]           │
+│                                                  [Detail]        │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -255,7 +255,6 @@ flowchart TD
 | Internal approved by | `{approverName}  \|  {internalApprovedTime}` | 内部审批人 + 通过时间 |
 | Version Note | 版本修改说明 | 选填，无则不显示该行 |
 | [Detail] | 打开图纸待办详情侧滑弹框（F-002） | 次要样式按钮 |
-| [✅ Mark Result] | 打开标记 Dialog（F-003） | 绿色主按钮 |
 
 ### 7.2 功能 F-002：图纸待办详情侧滑弹框（Detail Drawer）
 

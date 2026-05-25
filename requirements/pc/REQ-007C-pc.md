@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-007C-pc
 req_title: "PC 端 — 版本历史抽屉 4 阶段生命周期视图"
-version: 0.2.3
+version: 0.2.5
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
 owner: ""
 created_at: 2026-05-05
-updated_at: 2026-05-23
+updated_at: 2026-05-25
 
 depends_on:
   - REQ-007-shared
@@ -92,7 +92,7 @@ REQ-003-pc 定义了图纸的版本历史抽屉，展示各版本的基本状态
 | ③ 卡片 [Download]（审批凭证） | ✅ | ✅ | ✅ | ✅ | ❌ |
 | ④ 卡片 [Preview] / [Download]（签字版） | ✅ | ✅ | ✅ | ✅ | ❌ |
 | QR 列 [View] | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Attachments 列 — 点击打开附件弹框（查看列表） | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Actions 列 — 点击 [Details] 打开附件二级弹框 | ✅ | ✅ | ✅ | ✅ | ❌ |
 | Attachments 弹框 — [Download]（下载附件） | ✅ | ✅ | ✅ | ✅ | ❌ |
 | Attachments 弹框 — [Upload] / [Delete]（上传/删除附件） | ❌ | ❌ | ❌ | ✅（仅本版本上传人） | ❌ |
 
@@ -181,26 +181,27 @@ flowchart TD
 | 列 | 内容 | 说明 |
 |----|------|------|
 | Version | 版本号（V1、V2、V3），左侧有 ▶ 展开箭头 | 点击展开/折叠 4 阶段卡片 |
+| RFA No. | 外部审批报审编号（来自该版本 DrawingApproval.submissionRefNo，phase=EXTERNAL） | 外部审批尚未发起时显示 `—` |
 | Status | 状态标签（5 种，颜色见 §7.2） | — |
 | Designer | 设计人员（上传人）姓名 | — |
 | Confirmed | 已确认/总人数，如 `5/12` | 仅 `APPROVED` 状态显示；其他状态显示 `—` |
 | QR | `[View]` 链接 | 仅 `APPROVED` 且 QR 已生成时显示；其他显示 `—` |
-| Attachments | 附件数量，如 `📎 2`；无附件显示 `📎 0` | **点击该单元格**打开附件二级弹框（F-006），与版本行展开/折叠无关 |
+| Actions | 操作按钮入口 | [Details] 按钮：点击打开附件二级弹框（F-006），与版本行展开/折叠无关 |
 
 **主列表示意**：
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│  Version History — ARCH-001 首层平面图                                      [✕]  │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│  Version  │ Status              │ Designer  │ Confirmed │ QR      │ Attachments  │
-│───────────│─────────────────────│───────────│───────────│─────────│──────────────│
-│  ▶ V3     │ ✅ Approved         │ 张三      │ 5/12      │ [View]  │ 📎 3         │
-│  ▶ V2     │ ⏳ Pending External │ 李四      │ —         │ —       │ 📎 1         │
-│  ▶ V1     │ ❌ Int. Rejected    │ 张三      │ —         │ —       │ 📎 0         │
-│                                                                                  │
-└──────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────┐
+│  Version History — ARCH-001 首层平面图                                              [✕]  │
+├──────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                          │
+│  Version  │ RFA No.       │ Status              │ Designer  │ Confirmed │ QR      │ Actions     │
+│───────────│───────────────│─────────────────────│───────────│───────────│─────────│─────────────│
+│  ▶ V3     │ BEN-2026-001  │ ✅ Approved         │ 张三      │ 5/12      │ [View]  │ [Details]   │
+│  ▶ V2     │ BEN-2026-010  │ ⏳ Pending External │ 李四      │ —         │ —       │ [Details]   │
+│  ▶ V1     │ —             │ ❌ Int. Rejected    │ 张三      │ —         │ —       │ [Details]   │
+│                                                                                          │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 7.2 功能 F-002：状态标签颜色规范
@@ -401,7 +402,7 @@ flowchart TD
 ### 7.6 功能 F-006：Attachments 二级弹框
 
 **关联用户故事**：US-007C-001（扩展）
-**触发方式**：在主列表中**点击任意版本行的 Attachments 列单元格**（`📎 n` 或 `📎 0`）即打开弹框，与版本行是否展开**无关**，两个操作相互独立。
+**触发方式**：在主列表中**点击任意版本行 Actions 列的 [Details] 按钮**即打开弹框，与版本行是否展开**无关**，两个操作相互独立。
 
 **弹框形态**：从右侧滑入的抽屉（Drawer），宽度 **480px**，叠加在版本历史抽屉之上；有独立标题栏和 [✕] 关闭按钮，关闭后返回版本历史抽屉，版本历史抽屉保持原状。
 
@@ -509,7 +510,7 @@ flowchart TD
 - 位置：`Attachments (n)` 标题右侧图标按钮
 - **仅本版本上传人（设计人员）可见**；其他角色不显示
 - 点击触发文件选择器：支持任意文件类型，单文件 ≤ 50MB，单次最多 5 个
-- 上传成功：表格即时追加新行，标题计数同步更新，背后主列表 Attachments 列数字同步加 1
+- 上传成功：表格即时追加新行，标题计数同步更新（主列表已无 Attachments 列，无需同步）
 - 上传失败：Toast 提示错误（如文件过大）
 
 **Attachments 表格列定义**：
@@ -527,7 +528,7 @@ flowchart TD
 
 - **仅本版本上传人可见**，非上传人行中不显示
 - 点击弹出确认 Dialog：`"Delete {fileName}? This action cannot be undone."` → [Cancel] / [Delete]
-- 删除成功：行即时移除，标题计数减 1，主列表 Attachments 列数字同步减 1
+- 删除成功：行即时移除，标题计数减 1（主列表已无 Attachments 列，无需同步）
 
 ---
 
@@ -546,7 +547,9 @@ Then   抽屉宽度为 720px，标题格式为"Version History — {drawingCode}
 ```
 Given  版本历史抽屉已打开
 When   查看主列表
-Then   包含 Version、Status、Designer、Confirmed、QR 列；
+Then   包含 Version、RFA No.、Status、Designer、Confirmed、QR、Actions 列；Actions 列包含 [Details] 按钮；
+       RFA No. 列显示该版本的外部审批报审编号（DrawingApproval.submissionRefNo，phase=EXTERNAL）；
+       外部审批尚未发起的版本 RFA No. 列显示"—"；
        APPROVED 版本的 Confirmed 列显示"x/y"，其他状态显示"—"；
        APPROVED 且 QR 已生成时 QR 列显示"[View]"，其他显示"—"
 ```
@@ -630,19 +633,19 @@ When   用户点击 ④ 签字版卡片的 [Download]
 Then   下载的是 signedFileUrl（签字版原始文件）
 ```
 
-### AC-007C-011：Attachments 列计数显示
+### AC-007C-011：Actions 列 [Details] 按钮触发附件弹框
 
 ```
 Given  版本历史抽屉已打开
-When   查看主列表 Attachments 列
-Then   有附件的版本显示"📎 n"（n 为该版本的附件数量），无附件的版本显示"📎 0"
+When   用户点击某版本行 Actions 列的 [Details] 按钮
+Then   从右侧滑入宽度 480px 的附件二级抽屉，与版本行展开/折叠状态无关
 ```
 
 ### AC-007C-012：Attachments 二级弹框触发与内容展示
 
 ```
 Given  版本历史抽屉已打开（版本行无论展开或折叠均可）
-When   用户点击某版本行的 Attachments 列单元格（📎 n 或 📎 0）
+When   用户点击某版本行 Actions 列的 [Details] 按钮
 Then   从右侧滑入宽度 480px 的抽屉，叠加在版本历史抽屉之上，
        标题为"Version History — · {drawingName} {versionNo}"（不含 Drawing Code）；
        顶部依次显示该版本的 Status、Ver (System)、Description、
@@ -816,6 +819,8 @@ Then   不显示任何发布、删除、汇总操作按钮（这些操作入口�
 
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
 |-----|------|-------|---------|------------|
+| 0.2.5 | 2026-05-25 | agent | F-001 主列表移除 Attachments 列，新增 Actions 列（含 [Details] 按钮）；点击 [Details] 触发 F-006 附件二级弹框，与版本行展开/折叠无关；更新 §3 权限矩阵、§7.1 列定义、ASCII 示意图、F-006 触发描述、AC-007C-002、AC-007C-011、AC-007C-012 | UI、前端、QA |
+| 0.2.4 | 2026-05-25 | agent | F-001 主列表新增 RFA No. 列（位于 Version 列之后）：显示该版本外部审批报审编号（DrawingApproval.submissionRefNo, phase=EXTERNAL），外部审批未发起时显示 `—`；更新列定义表、ASCII 示意图、AC-007C-002 | UI、前端、QA |
 | 0.2.3 | 2026-05-23 | agent | F-006 弹框新增 Part Print / Attachments 双 Tab：Part Print Tab 只读展示当前版本关联的 Markup（局部更新）列表；Attachments Tab 保留原附件功能；默认激活 Attachments Tab；更新 ASCII 示意图、Tab 导航规格、AC-007C-012；新增 AC-007C-017/018 | UI、前端、QA |
 | 0.2.2 | 2026-05-23 | agent | F-006 Attachments 弹框顶部移除 Drawing Code，改为展示 Status、Ver (System)、Description、Submission Ref No.、Submission Subject、Uploaded by、Upload Date；弹框标题改用 drawingName；更新 ASCII 示意图及 AC-007C-012 | UI、前端、QA |
 | 0.2.1 | 2026-05-23 | agent | 对齐 REQ-007B-pc Status A–E：③ External Approval 卡片由简单 Approved/Rejected 改为展示具体 Status（A/B/D/C/E）及对应标签；新增 §7.3 Status 展示规则表；Evidence [Download] 条件收窄为仅 APPROVED（Status A/B/D）；更新 AC-007C-003、AC-007C-007 | UI、前端、QA |

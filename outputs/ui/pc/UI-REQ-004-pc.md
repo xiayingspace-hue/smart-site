@@ -1,20 +1,21 @@
-# UI 说明文档 — PC 管理端图纸局部更新（Markup）
+# UI 说明文档 — PC 管理端图纸局部更新（Part Print）
 
 > **来源需求**: [REQ-004-pc](../../../requirements/pc/REQ-004-pc.md) + [REQ-004-shared](../../../requirements/shared/REQ-004-shared.md)
 > **产品**: SMART SITE SYSTEM
 > **平台**: PC 管理端（Vue 2 + Element UI，桌面浏览器，1280px+）
 > **设计令牌参考**: [UI-REQ-001-pc § 3.2](./UI-REQ-001-pc.md)
 > **依赖文档**: [UI-REQ-003-pc.md](./UI-REQ-003-pc.md)（图纸列表页基础规范）
-> **生成日期**: 2026-04-08
+> **生成日期**: 2026-05-25
 
 ---
 
 ## 1. 设计目标
 
 - 以最小改动将局部更新能力无缝嵌入已有的图纸列表页，不破坏现有工作流
-- 发布局部更新的操作路径短（≤ 2 步），表单简洁，避免与完整版本上传混淆
-- 局部更新列表抽屉提供清晰的 Active / Merged 分层视图，并内置汇总操作入口
-- 汇总为新版本的弹窗延续 REQ-003 上传弹窗的视觉规范，降低学习成本
+- 发布入口收敛至 Part Print 抽屉内，避免 Actions 列过长
+- AI 自动识别 Title Block 信息，减少手动填写负担，✨ 标识帮助用户快速核验
+- 局部更新列表抽屉提供搜索与 Tab 筛选，快速定位目标记录
+- 每条卡片展示所属报审号，用户可清晰知晓局部更新对应的版本基础
 - 状态标签和操作按钮视觉区分度高，发布人权限控制明确
 - 支持多语言（中文 / English），默认英文界面
 
@@ -26,9 +27,8 @@
 
 | 序号 | 视图 / 面板 | 类型 | 说明 |
 |------|------------|------|------|
-| 1 | 发布局部更新弹窗 | el-dialog | 设计人员填写标题、说明、影响区域并上传附件 |
-| 2 | 局部更新列表抽屉 | 右侧 el-drawer | 查看某图纸所有局部更新，支持 Active/Merged 筛选，勾选汇总 |
-| 3 | 汇总为新版本弹窗 | el-dialog | 确认已选局部更新，上传汇总后图纸文件，选择审批人提交 |
+| 1 | 局部更新列表抽屉 | 右侧 el-drawer | 查看某图纸所有局部更新，支持 All/Active Tab 筛选与关键字搜索；设计人员可在此发布新 Part Print |
+| 2 | 发布局部更新弹窗 | el-dialog | 上传主图纸文件，AI 自动识别 Title Block 字段，用户核验后发布 |
 
 ### 2.2 图纸列表页改动点
 
@@ -36,53 +36,50 @@
 
 | 按钮 | 位置 | 显示条件 |
 |------|------|---------|
-| Markups | Assign 按钮之后 | 所有行（`drawing:view` 权限） |
-| + Markup | Markups 按钮之后 | 仅 `status = ACTIVE` 行（`drawing:markup:publish` 权限） |
+| Part Print | Assign 按钮之后 | 所有行（`drawing:view` 权限），任意图纸状态均显示 |
 
-新增表格列 **Markups**（可选，建议默认展示）：
+新增表格列 **Part Print**（可选，建议默认展示）：
 
 | 列名 | 字段 | 宽度 | 说明 |
 |------|------|------|------|
-| Markups | `activeMarkupCount` | 90px | 显示 ACTIVE 数量；0 时显示 `—`；数字为链接样式，点击打开局部更新抽屉 |
+| Part Print | `activeMarkupCount` | 90px | 显示 ACTIVE 数量；0 时显示 `—`；数字为链接样式，点击打开局部更新抽屉 |
 
 ### 2.3 核心用户流程
 
 ```
 设计人员 发布局部更新：
 
-  图纸列表（status=Active）
-       │ 点击 [+ Markup]
+  图纸列表（approvalStatus = APPROVED_EXTERNAL）
+       │ 点击 [Part Print]
        ▼
-  发布局部更新弹窗
-  填写 Title / Description / Affected Area
-  上传附件（可选）
+  局部更新列表抽屉
+       │ 点击右上角 [+ Part Print]
+       ▼
+  发布局部更新弹窗（阶段一）
+  上传 Part Print 主图纸文件
+       │ 文件上传成功
+       ▼
+  AI 自动识别 Title Block → 字段回填（✨ 标识）
+  用户核验并按需修改字段
+  选择 Applied to Page（选填）
        │ [Publish]
        ▼
   弹窗关闭
-  Markups 列 +1
+  抽屉列表刷新，新卡片出现
+  图纸列表 Part Print 列 +1
   Toast：已通知 Site Engineers
 ```
 
 ```
-设计人员 汇总局部更新为新版本：
+用户 查阅局部更新历史：
 
-  图纸列表
-       │ 点击 [Markups]
+  图纸列表（任意图纸状态）
+       │ 点击 [Part Print]
        ▼
   局部更新列表抽屉
-  Active Tab → 勾选局部更新（☑ Merge）
-       │ 底部汇总栏 → [Merge to New Version →]
-       ▼
-  汇总弹窗
-  确认已选列表
-  上传汇总后图纸文件
-  填写 Version Note（自动预填）
-  选择审批人
-       │ [Submit for Approval]
-       ▼
-  弹窗 + 抽屉关闭
-  图纸状态变为 Pending
-  审批人收到 Todo
+  All / Active Tab 筛选
+  搜索框输入关键字实时过滤
+  查看卡片：标题 / 日期 / 创建人 / 报审号 / 页码 / 说明 / 附件
 ```
 
 ---
@@ -94,19 +91,18 @@
 #### 3.1.1 操作列完整按钮组
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ [View] [History] [Confirms] [Assign] [Markups] [+ Markup] │ [Upload V{n}]   │
-└──────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│  [View] [History] [Confirms] [Assign] [Part Print] │ [Upload V{n}]      │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 | 按钮 | 样式 |
 |------|------|
-| Markups | el-button size="mini" icon="el-icon-document"，文字 "Markups"；若 `activeMarkupCount > 0`，图标右上角显示橙色计数角标 |
-| + Markup | el-button size="mini" type="warning" plain icon="el-icon-edit"，文字 "+ Markup"；仅 status=ACTIVE 时显示 |
+| Part Print | `el-button size="mini" icon="el-icon-document"`，文字 "Part Print"；若 `activeMarkupCount > 0`，图标右上角显示橙色计数角标 |
 
-> 操作列按钮超出宽度时，折叠规则：优先保留 View 和 Upload V{n}；Markups / + Markup / Confirms / Assign / History 折入 `el-dropdown` 更多菜单。
+> 操作列按钮超出宽度时，折叠规则：优先保留 View 和 Upload V{n}；Part Print / Confirms / Assign / History 折入 `el-dropdown` 更多菜单。
 
-#### 3.1.2 Markups 列样式
+#### 3.1.2 Part Print 列样式
 
 | 状态 | 展示 |
 |------|------|
@@ -115,265 +111,226 @@
 
 ---
 
-### 3.2 发布局部更新弹窗
+### 3.2 局部更新列表抽屉
 
-#### 3.2.1 弹窗结构
-
-```
-┌──────────────────────────────────────────────────────────┐
-│  Publish Markup                                    ✕    │  ← 标题栏
-│  ARCH-001 · 首层平面图 · V3                              │  ← 副标题（图纸信息，灰色）
-├──────────────────────────────────────────────────────────┤
-│                                                          │
-│  Title *                                                 │
-│  [________________________________________________]      │
-│                                                          │
-│  Description *                                           │
-│  [________________________________________________]      │
-│  [                                                ]      │
-│  [                                                ]      │
-│                                            0 / 2000      │
-│                                                          │
-│  Affected Area                                           │
-│  [________________________________________________]      │
-│  e.g. "A-C axis / Level 3-5"                            │
-│                                                          │
-│  Attachments  (0 / 10)                                   │
-│  ┌────────────────────────────────────────────────┐      │
-│  │  📎  Drag & Drop or  [Browse Files]            │      │
-│  │  PDF / PNG / JPG  ·  Max 20MB per file         │      │
-│  └────────────────────────────────────────────────┘      │
-│                                                          │
-├──────────────────────────────────────────────────────────┤
-│                            [Cancel]  [Publish]           │
-└──────────────────────────────────────────────────────────┘
-```
-
-#### 3.2.2 弹窗属性
-
-| 属性 | 规格 |
-|------|------|
-| 组件 | `el-dialog` |
-| 宽度 | 560px |
-| 标题行 | "Publish Markup"，16px，`--font-weight-semibold` |
-| 副标题 | "{drawingCode} · {drawingName} · {currentVersionNo}"，13px，`--color-text-secondary`，标题行下方 4px 处 |
-| 关闭 | ✕ / Cancel / 遮罩；有内容时弹出二次确认 |
-
-#### 3.2.3 表单字段规格
-
-| 字段 | 组件 | 规格 |
-|------|------|------|
-| Title | `el-input` | 必填；最大 200 字符；placeholder "Brief description of the change..." |
-| Description | `el-input` type="textarea" rows=4 | 必填；最大 2000 字符；右下角灰色计数 "x / 2000"；placeholder "Describe what changed and why..." |
-| Affected Area | `el-input` | 可选；最大 500 字符；placeholder "e.g. A-C axis / Level 3-5" |
-| Attachments | 自定义多文件上传 | 可选；PDF/PNG/JPG；单文件 ≤20MB；最多 10 个；上传区右上角显示计数 "(x / 10)" |
-
-#### 3.2.4 附件上传区
-
-| 属性 | 规格 |
-|------|------|
-| 背景 | #F5F7FA，圆角 6px，边框 1px 虚线 #D9D9D9 |
-| 高度 | 100px |
-| 图标 | 📎 20px，`--color-text-secondary` |
-| 主文字 | "Drag & Drop or"，`--color-text-secondary` |
-| 按钮 | "Browse Files"，文字链接，`--color-primary` |
-| 次文字 | "PDF / PNG / JPG · Max 20MB per file"，12px，`--color-text-secondary` |
-| 已选文件列表 | 在上传区下方逐行展示：文件名 + 大小 + 进度条（上传中）/ ✓（完成）/ [✕]（可删除）|
-| 达到上限 | 上传区显示禁用状态（背景 #FAFAFA，文字变灰），不可继续添加 |
-
-#### 3.2.5 底部操作行
-
-| 按钮 | 类型 | 规格 |
-|------|------|------|
-| Cancel | `el-button` | 灰色；有内容时弹关闭确认 |
-| Publish | `el-button type="primary"` | 蓝色；必填项未填时 disabled；提交中 loading 防重复点击 |
-
-#### 3.2.6 发布成功 Toast
-
-| 属性 | 规格 |
-|------|------|
-| 组件 | `el-notification`，右上角，持续 4 秒 |
-| 图标 | ✅ 绿色 |
-| 标题 | "Markup Published" |
-| 内容 | "Assigned Site Engineers have been notified." |
-
----
-
-### 3.3 局部更新列表抽屉
-
-#### 3.3.1 抽屉结构
+#### 3.2.1 抽屉结构
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ ←  Markups — ARCH-001 · 首层平面图                [+ Markup]│
-│    Based on V3  ·  2 Active  ·  1 Merged                │  ← 副标题
+│ ←  Part Print — ARCH-001 · 首层平面图                     │  ← 标题行
+│    Based on V3  ·  2 Active                              │  ← 副标题
 ├──────────────────────────────────────────────────────────┤
-│  [All (3)]  [Active (2)]  [Merged (1)]                   │  ← Tab 筛选
+│  [All (2)]  [Active (2)]          [+ Part Print]         │  ← Tab 筛选行
+├──────────────────────────────────────────────────────────┤
+│  🔍 Search by description or drawing no...               │  ← 搜索框
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │  ┌────────────────────────────────────────────────────┐  │
-│  │  ☐  [Active]  A轴节点详图修正                       │  │
-│  │     Apr 8, 2026  ·  张三                            │  │
-│  │     [A-C轴 / 3-5层]                                │  │
-│  │     A轴与3轴交叉节点详图已更新，新增钢筋排布...      │  │
-│  │     ...Show more                                    │  │
-│  │     📎 node-detail.pdf                             │  │
-│  │                              [🗑]                   │  │
+│  │  A轴节点详图修正                                    │  │
+│  │  Apr 8, 2026  ·  张三                              │  │
+│  │  Based on SUB-2026-003  ·  Page 3                  │  │
+│  │  A轴与3轴交叉节点详图已更新，新增钢筋排布说明...    │  │
+│  │  ...Show more                                      │  │
+│  │  📎 node-detail.pdf                               │  │
+│  │                                        [🗑 Delete] │  │
 │  └────────────────────────────────────────────────────┘  │
 │                                                          │
 │  ┌────────────────────────────────────────────────────┐  │
-│  │  ☐  [Active]  C区消防管道路由修正                   │  │
-│  │     Apr 7, 2026  ·  张三                            │  │
-│  │     [C区 / B1层]                                   │  │
-│  │     消防主管道路由变更，详见附图...                  │  │
-│  │     📎 route-update.png                            │  │
-│  │                              [🗑]                   │  │
+│  │  C区消防管道路由修正                                │  │
+│  │  Apr 7, 2026  ·  张三                              │  │
+│  │  Based on SUB-2026-003  ·  Page 5                  │  │
+│  │  消防主管道路由变更，详见附图...                    │  │
+│  │  📎 route-update.png                              │  │
+│  │                                        [🗑 Delete] │  │
 │  └────────────────────────────────────────────────────┘  │
 │                                                          │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │     [Merged → V4]  外墙保温层厚度修正               │  │
-│  │     Apr 5, 2026  ·  张三                            │  │
-│  └────────────────────────────────────────────────────┘  │
-│                                                          │
-├──────────────────────────────────────────────────────────┤
-│  ☑ 2 selected            [Merge to New Version →]       │  ← 底部汇总栏（勾选后出现）
 └──────────────────────────────────────────────────────────┘
 ```
 
-#### 3.3.2 抽屉属性
+#### 3.2.2 抽屉属性
 
 | 属性 | 规格 |
 |------|------|
 | 组件 | `el-drawer`，direction="rtl" |
 | 宽度 | 560px |
-| 标题 | "Markups — {drawingCode} · {drawingName}"，`--font-weight-semibold` |
-| [+ Markup] 按钮 | 标题行右侧，`el-button size="small" type="primary" plain`，仅 status=ACTIVE 图纸时显示 |
-| 副标题 | "Based on {versionNo} · {activeCount} Active · {mergedCount} Merged"，13px，`--color-text-secondary` |
-| Tab | el-tabs，标签：All ({total}) / Active ({n}) / Merged ({n}) |
+| 标题 | "Part Print — {drawingCode} · {drawingName}"，`--font-weight-semibold` |
+| 副标题 | "Based on {versionNo} · {activeCount} Active"，13px，`--color-text-secondary` |
+| Tab 筛选 | `el-tabs`，标签：All ({total}) / Active ({n})；右侧对齐显示 [+ Part Print] 按钮 |
+| [+ Part Print] 按钮 | Tab 行右侧，`el-button size="small" type="primary" plain`；仅设计人员（本图纸上传人）且当前版本 `approvalStatus = APPROVED_EXTERNAL` 时显示；点击打开 §3.3 发布弹窗 |
+| 搜索框 | Tab 行下方，全宽 `el-input` with prefix 搜索图标，placeholder "Search by description or drawing no..."；前端实时过滤，匹配 Description 和 Part Print Drawing No.（大小写不敏感）；无匹配时显示空态"No results found" |
 | 内容区背景 | #F5F7FA |
-| 内边距 | 0 16px 80px（底部留 80px 给汇总栏） |
+| 内边距 | 16px |
 
-#### 3.3.3 局部更新卡片
+#### 3.2.3 局部更新卡片
 
 | 属性 | 规格 |
 |------|------|
 | 背景 | 白色 #FFFFFF，圆角 4px，边框 1px #EBEEF5，内边距 12px 16px，底部间距 8px |
-| 复选框 | `el-checkbox`，仅 Active 卡片左侧显示；Merged 卡片无复选框，左侧缩进对齐 |
-| 状态标签 | 见 §3.3.4 |
 | 标题 | 14px，`--font-weight-semibold`，`--color-text-regular` |
 | 元信息行 | "{date} · {creatorName}"，12px，`--color-text-secondary`，标题下方 4px |
-| 影响区域 Tag | `el-tag size="mini"` 默认样式（灰色边框），文字 12px；无影响区域时不显示 |
-| 说明文字 | 13px，`--color-text-regular`，最多展示 3 行，超出显示 "...Show more" 文字链接（展开全文） |
-| 附件列表 | 📎 图标 + 文件名，12px，`--color-text-secondary`；文件名为链接，点击新标签预览 |
-| [🗑 删除] | 卡片右下角，`el-button size="mini" type="text"`，红色 `#C62828` 垃圾桶图标；仅创建人可见；hover 背景 #FFF5F5 |
-| Merged 卡片 | 无复选框，无删除按钮；整体透明度 0.75，状态标签样式见 §3.3.4 |
+| 报审号 + 页码行 | 元信息行下方；格式 "Based on {submissionNo}"，若 `appliedPageNo` 不为 null 则追加 " · Page {n}"；12px，`--color-text-secondary` |
+| 说明文字 | 13px，`--color-text-regular`，最多展示 3 行，超出显示 "...Show more" 文字链接（点击展开全文，再次点击收起） |
+| 附件列表 | 📎 图标 + 文件名，12px，`--color-text-secondary`；文件名为链接，点击新标签页预览/下载 |
+| [🗑 Delete] | 卡片右下角，`el-button size="mini" type="text"`，红色 `#C62828` 垃圾桶图标；仅 Part Print 创建人且状态为 ACTIVE 时可见；hover 背景 #FFF5F5 |
+| 空态 | 搜索无结果时，内容区居中显示灰色图标 + 文字 "No results found" |
 
-#### 3.3.4 状态标签样式
-
-| 状态 | 文字 | 背景色 | 文字色 | 边框 |
-|------|------|--------|--------|------|
-| Active | Active | #F0FAF0 | #2E7D32 | #A5D6A7 |
-| Merged → V{n} | Merged → V{n} | #F5F5F5 | #757575 | #E0E0E0 |
-
-标签规格：圆角 4px，内边距 2px 8px，12px，`--font-weight-medium`
-
-#### 3.3.5 底部汇总栏
+#### 3.2.4 删除确认弹窗
 
 | 属性 | 规格 |
 |------|------|
-| 显示条件 | 至少勾选 1 个 Active 局部更新时显示；全部取消勾选后隐藏 |
-| 位置 | 抽屉底部固定（position: sticky bottom），高度 60px |
-| 背景 | 白色 #FFFFFF，顶部边框 1px #EBEEF5，阴影 0 -2px 8px rgba(0,0,0,0.06) |
-| 已选计数 | "☑ {n} selected"，13px，`--color-text-secondary`，左对齐 |
-| [Merge to New Version →] | `el-button type="primary"`，右对齐；文字 "Merge to New Version →" |
-
-#### 3.3.6 删除确认弹窗
-
-| 属性 | 规格 |
-|------|------|
-| 组件 | `this.$confirm()`，Element UI MessageBox |
-| 内容 | "This markup will be permanently deleted. This action cannot be undone." |
-| 取消 | "Cancel" |
-| 确认 | "Delete"，`type="danger"` |
+| 组件 | `el-dialog`，宽度 420px |
+| 标题 | "Delete Part Print" |
+| 内容 | "Are you sure you want to delete this Part Print? This action cannot be undone." |
+| 取消按钮 | "Cancel"，`el-button`，关闭 Dialog，列表不变 |
+| 删除按钮 | "Delete"，`el-button type="danger"`，点击后进入 loading 状态防重复提交 |
+| 删除成功 | Dialog 关闭，卡片从列表移除，抽屉副标题 Active 计数 -1，图纸列表 Part Print 列 -1，Toast 提示 "Part Print deleted." |
+| 删除失败 | Dialog 保持打开，按钮恢复可点击，顶部 Toast 错误提示，用户可重试 |
 
 ---
 
-### 3.4 汇总为新版本弹窗
+### 3.3 发布局部更新弹窗
 
-#### 3.4.1 弹窗结构
+#### 3.3.1 弹窗结构（阶段一 — 初始态，未上传图纸）
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│  Merge to New Version                                ✕    │
-│  ARCH-001 · 首层平面图                                     │
-├────────────────────────────────────────────────────────────┤
-│                                                            │
-│  Markups to Merge (2)                                      │
-│  ┌──────────────────────────────────────────────────┐      │
-│  │  ✓  A轴节点详图修正             Apr 8, 2026      │      │
-│  │  ✓  C区消防管道路由修正         Apr 7, 2026      │      │
-│  └──────────────────────────────────────────────────┘      │
-│                                                            │
-│  ℹ  Current version: V3. After approval: V4.              │
-│                                                            │
-│  New Version File *                                        │
-│  ┌──────────────────────────────────────────────────┐      │
-│  │  📁  Drag & Drop or  [Browse Files]              │      │
-│  │  PDF / PNG / JPG  ·  Max 50MB                    │      │
-│  └──────────────────────────────────────────────────┘      │
-│                                                            │
-│  Version Note                                              │
-│  [Merged from 2 markups: A轴节点详图修正; C区消防管道...]   │
-│                                                            │
-│  Approver *                                                │
-│  [Select approver...             ▼]                        │
-│                                                            │
-├────────────────────────────────────────────────────────────┤
-│                       [Cancel]  [Submit for Approval]      │
-└────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  Publish Part Print — ARCH-001 · 首层平面图  V3      [✕] │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Part Print Drawing *                                   │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │                                                 │   │
+│  │    📎  Drag & Drop or  [Browse Files]           │   │
+│  │    Supports: PDF / PNG / JPG · Max 50MB         │   │
+│  │                                                 │   │
+│  └─────────────────────────────────────────────────┘   │
+│                                                         │
+│  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   │
+│  上传图纸后将自动识别 Title Block 信息                     │
+│  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   │
+│                                                         │
+├─────────────────────────────────────────────────────────┤
+│                           [Cancel]  [Publish]           │
+└─────────────────────────────────────────────────────────┘
 ```
 
-#### 3.4.2 弹窗属性
+#### 3.3.2 弹窗结构（阶段一 → 阶段二过渡 — AI 识别中）
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Publish Part Print — ARCH-001 · 首层平面图  V3      [✕] │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Part Print Drawing *                                   │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │  📄 ARCH-001-PP-0014.pdf (2.1 MB)           [✕]  │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ✨ Identifying drawing info...  ████████░░  80%        │
+│                                                         │
+├─────────────────────────────────────────────────────────┤
+│                           [Cancel]  [Publish]           │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### 3.3.3 弹窗结构（阶段二 — AI 识别完成，字段回填，可编辑）
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Publish Part Print — ARCH-001 · 首层平面图  V3      [✕] │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Part Print Drawing *                                   │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │  📄 ARCH-001-PP-0014.pdf (2.1 MB)           [✕]  │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ✨ Drawing info recognized — please verify and edit   │
+│     if needed                                           │
+│                                                         │
+│  Dwg No. *                                              │
+│  [CJY-P1-DW-SH-WFR-0117-ST-L1_0                    ✨] │
+│                                                         │
+│  Rev No.                                                │
+│  [0                                                 ✨] │
+│                                                         │
+│  Part Print Drawing No. *                               │
+│  [0014                                              ✨] │
+│                                                         │
+│  Description *                                          │
+│  [Updated beam and wall layout                      ✨] │
+│                                                  0/2000  │
+│                                                         │
+│  Issued Date                                            │
+│  [10-Mar-2026                                       ✨] │
+│                                                         │
+│  Drawn By                                               │
+│  [WANG WENHAO                                       ✨] │
+│                                                         │
+│  Approved By AES (C&S)                                  │
+│  [Dicky                                             ✨] │
+│                                                         │
+│  Approved Date                                          │
+│  [11/3/2026                                         ✨] │
+│                                                         │
+│  Applied to Page                                        │
+│  [  Page 2 of 8           ▼                         ]  │
+│                                                         │
+├─────────────────────────────────────────────────────────┤
+│                           [Cancel]  [Publish]           │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### 3.3.4 弹窗属性
 
 | 属性 | 规格 |
 |------|------|
 | 组件 | `el-dialog` |
-| 宽度 | 580px |
-| 标题行 | "Merge to New Version"，16px，`--font-weight-semibold` |
-| 副标题 | "{drawingCode} · {drawingName}"，13px，`--color-text-secondary` |
+| 宽度 | 560px |
+| 标题行 | "Publish Part Print — {drawingCode} · {drawingName}  {currentVersionNo}"，16px，`--font-weight-semibold` |
+| 关闭 | ✕ / Cancel / 遮罩；有内容时弹出二次确认 |
+| 内容区 | 高度超出时内部滚动 |
 
-#### 3.4.3 字段规格
+#### 3.3.5 表单字段规格
 
-| 字段 | 组件 | 规格 |
-|------|------|------|
-| Markups to Merge | 只读列表区 | 浅灰背景 #F5F7FA，圆角 4px，内边距 8px 12px；每行：✓ 图标（绿色）+ 标题 + 右对齐日期；最大高度 160px，超出内部滚动 |
-| 版本提示 | `el-alert type="info"` | "Current version: V{n}. After approval, this will become V{n+1}."；不可关闭；蓝色信息样式 |
-| New Version File | 自定义上传区 | 与 REQ-003 上传弹窗规范一致；必填；PDF/PNG/JPG；≤50MB |
-| Version Note | `el-input` | 自动预填 "Merged from {n} markups: {title1}; {title2}..."；可手动修改；最大 500 字符 |
-| Approver | `el-select filterable` | 必填；从 `/member/list?permission=drawing:approve` 拉取 |
+| 字段 | 必填 | 组件 | AI 识别 | 规格 |
+|------|:---:|------|:-------:|------|
+| Part Print Drawing | ✅ | 单文件上传区（`el-upload`） | — | PDF/PNG/JPG；≤ 50MB；仅 1 个；上传后显示文件名 + 大小 + [✕] 可替换 |
+| Dwg No. | ✅ | `el-input` | ✅ | ≤ 200 字符；AI 回填时右侧显示 ✨ 图标 |
+| Rev No. | — | `el-input` | ✅ | ≤ 50 字符 |
+| Part Print Drawing No. | ✅ | `el-input` | ✅ | ≤ 50 字符 |
+| Description | ✅ | `el-input` type="textarea" rows=3 | ✅ | ≤ 2000 字符；右下角字数计数 "x / 2000" |
+| Issued Date | — | `el-input` | ✅ | ≤ 50 字符；原始文本格式，不强制日期 picker |
+| Drawn By | — | `el-input` | ✅ | ≤ 200 字符 |
+| Approved By AES (C&S) | — | `el-input` | ✅ | ≤ 200 字符；识别文字签名部分 |
+| Approved Date | — | `el-input` | ✅ | ≤ 50 字符；原始文本格式 |
+| Applied to Page | — | `el-select`（单选） | — | 选项 Page 1 ～ Page N，N = 基础版本 PDF 总页数；获取失败退化为 `el-input-number`（min=1）；默认空（未选）；选填不影响提交 |
 
-#### 3.4.4 底部操作行
+#### 3.3.6 AI 识别交互规格
+
+| 场景 | 视觉表现 |
+|------|---------|
+| 上传完成，识别中 | 文件行下方显示进度条 + 文字 "✨ Identifying drawing info..."，进度条蓝色 `--color-primary` |
+| 识别成功 | 进度条消失，显示绿色提示条 "✨ Drawing info recognized — please verify and edit if needed"；回填字段右侧显示 ✨ 图标（`--color-warning` 金色）；字段背景 #FFFDE7 |
+| 识别失败 / 超时（>15s） | 进度条消失，显示 `el-alert type="warning"` 警告条："AI recognition failed. Please fill in the fields manually."；字段全部留空，可手动填写 |
+| 用户编辑 AI 回填字段 | 该字段 ✨ 图标消失，背景恢复默认，表示用户已覆盖 AI 值 |
+| 用户点击 [✕] 替换文件 | 所有 AI 回填字段清空，背景恢复，重新触发上传 + 识别流程 |
+
+#### 3.3.7 底部操作行
 
 | 按钮 | 类型 | 规格 |
 |------|------|------|
-| Cancel | `el-button` | 灰色，关闭弹窗 |
-| Submit for Approval | `el-button type="primary"` | 蓝色；File / Approver 未填时 disabled；提交中 loading |
+| Cancel | `el-button` | 灰色；有内容时弹出关闭确认 Dialog |
+| Publish | `el-button type="primary"` | 蓝色；必填项（Part Print Drawing / Dwg No. / Part Print Drawing No. / Description）未填时 disabled；提交中 loading 防重复点击；AI 识别进行中不阻塞提交 |
 
-#### 3.4.5 提交成功 Toast
-
-| 属性 | 规格 |
-|------|------|
-| 组件 | `el-notification`，右上角，持续 5 秒 |
-| 标题 | "Submitted for Approval" |
-| 内容 | "Version note includes {n} markups. The approver has been notified." |
-
-#### 3.4.6 图纸已有版本待审批时的错误提示
+#### 3.3.8 发布成功 Toast
 
 | 属性 | 规格 |
 |------|------|
-| 组件 | 弹窗内顶部 `el-alert type="error"`，不可关闭 |
-| 文字 | "A version of this drawing is already pending approval. Please wait for the review to complete." |
-| 触发时机 | 点击 Submit 后接口返回错误码 `1003004011` 时显示 |
+| 组件 | `el-notification`，右上角，持续 4 秒 |
+| 图标 | ✅ 绿色 |
+| 标题 | "Part Print Published" |
+| 内容 | "Assigned Site Engineers have been notified." |
 
 ---
 
@@ -383,66 +340,54 @@
 
 | Key | English | 中文 |
 |-----|---------|------|
-| action_markups | Markups | 局部更新 |
-| action_add_markup | + Markup | + 局部更新 |
-| col_markups | Markups | 局部更新 |
+| action_part_print | Part Print | 局部更新 |
+| col_part_print | Part Print | 局部更新 |
 
 ### 4.2 发布局部更新弹窗
 
 | Key | English | 中文 |
 |-----|---------|------|
-| publish_dialog_title | Publish Markup | 发布局部更新 |
-| field_title | Title | 标题 |
-| field_title_placeholder | Brief description of the change... | 简要描述本次改动... |
-| field_description | Description | 更新说明 |
-| field_description_placeholder | Describe what changed and why... | 详细描述改动内容和原因... |
-| field_affected_area | Affected Area | 影响区域 |
-| field_affected_area_placeholder | e.g. A-C axis / Level 3-5 | 如：A-C轴 / 3-5层 |
-| field_attachments | Attachments | 附件 |
-| upload_hint_markup | PDF / PNG / JPG · Max 20MB per file | PDF / PNG / JPG · 每个文件最大 20MB |
-| validation_title_required | Title is required | 请填写标题 |
-| validation_description_required | Description is required | 请填写更新说明 |
-| validation_attachment_format | Only PDF, PNG, JPG files are allowed | 仅支持 PDF、PNG、JPG 格式 |
-| validation_attachment_size | File size cannot exceed 20MB | 单个文件不能超过 20MB |
-| validation_attachment_limit | Maximum 10 attachments allowed | 最多上传 10 个附件 |
+| publish_dialog_title | Publish Part Print — {code} · {name}  {version} | 发布局部更新 — {code} · {name}  {version} |
+| field_part_print_drawing | Part Print Drawing | 局部更新图纸 |
+| upload_hint_part_print | Supports: PDF / PNG / JPG · Max 50MB | 支持 PDF / PNG / JPG · 最大 50MB |
+| ai_identifying | ✨ Identifying drawing info... | ✨ 正在识别图纸信息... |
+| ai_recognized | ✨ Drawing info recognized — please verify and edit if needed | ✨ 图纸信息已识别，请核验并按需修改 |
+| ai_failed | AI recognition failed. Please fill in the fields manually. | AI 识别失败，请手动填写字段。 |
+| field_dwg_no | Dwg No. | 图纸编号 |
+| field_rev_no | Rev No. | 版本号 |
+| field_part_print_drawing_no | Part Print Drawing No. | 局部更新图纸编号 |
+| field_description | Description | 说明 |
+| field_issued_date | Issued Date | 出图日期 |
+| field_drawn_by | Drawn By | 绘图人 |
+| field_approved_by_aes | Approved By AES (C&S) | AES 审批人 |
+| field_approved_date | Approved Date | 审批日期 |
+| field_applied_to_page | Applied to Page | 对应页码 |
+| validation_required | {field} is required | {field} 为必填项 |
+| validation_file_format | Only PDF, PNG, JPG files are allowed | 仅支持 PDF、PNG、JPG 格式 |
+| validation_file_size | File size cannot exceed 50MB | 文件不能超过 50MB |
 | btn_publish | Publish | 发布 |
-| toast_markup_published_title | Markup Published | 局部更新已发布 |
-| toast_markup_published_body | Assigned Site Engineers have been notified. | 已通知相关 Site Engineer。 |
+| toast_part_print_published_title | Part Print Published | 局部更新已发布 |
+| toast_part_print_published_body | Assigned Site Engineers have been notified. | 已通知相关 Site Engineer。 |
 
 ### 4.3 局部更新列表抽屉
 
 | Key | English | 中文 |
 |-----|---------|------|
-| drawer_title_markups | Markups — {code} · {name} | 局部更新 — {code} · {name} |
-| drawer_subtitle_markups | Based on {version} · {active} Active · {merged} Merged | 基于 {version} · {active} 生效中 · {merged} 已汇总 |
+| drawer_title | Part Print — {code} · {name} | 局部更新 — {code} · {name} |
+| drawer_subtitle | Based on {version} · {active} Active | 基于 {version} · {active} 生效中 |
 | tab_all | All ({n}) | 全部 ({n}) |
 | tab_active | Active ({n}) | 生效中 ({n}) |
-| tab_merged | Merged ({n}) | 已汇总 ({n}) |
-| label_status_active | Active | 生效中 |
-| label_status_merged | Merged → {version} | 已汇总 → {version} |
+| search_placeholder | Search by description or drawing no... | 按说明或图纸编号搜索... |
+| search_empty | No results found | 无匹配结果 |
+| card_based_on | Based on {submissionNo} | 基于 {submissionNo} |
+| card_page | · Page {n} | · 第 {n} 页 |
 | label_show_more | ...Show more | ...展开全文 |
 | label_show_less | Show less | 收起 |
-| btn_delete_markup | Delete | 删除 |
-| confirm_delete_title | Delete Markup | 删除局部更新 |
-| confirm_delete_body | This markup will be permanently deleted. This action cannot be undone. | 该局部更新将被永久删除，此操作不可撤销。 |
-| label_selected_count | {n} selected | 已选 {n} 条 |
-| btn_merge_to_version | Merge to New Version → | 汇总为新版本 → |
-
-### 4.4 汇总为新版本弹窗
-
-| Key | English | 中文 |
-|-----|---------|------|
-| merge_dialog_title | Merge to New Version | 汇总为新版本 |
-| merge_markups_label | Markups to Merge ({n}) | 待汇总的局部更新 ({n}) |
-| merge_version_tip | Current version: {cur}. After approval, this will become {next}. | 当前版本：{cur}。审批通过后将升级为 {next}。 |
-| field_new_version_file | New Version File | 新版图纸文件 |
-| field_version_note | Version Note | 版本说明 |
-| version_note_placeholder | Merged from {n} markups: {titles} | 汇总自 {n} 条局部更新：{titles} |
-| field_approver | Approver | 审批人 |
-| btn_submit_approval | Submit for Approval | 提交审批 |
-| toast_merge_success_title | Submitted for Approval | 已提交审批 |
-| toast_merge_success_body | Version note includes {n} markups. The approver has been notified. | 版本说明已包含 {n} 条局部更新，审批人已收到通知。 |
-| error_pending_version | A version of this drawing is already pending approval. Please wait for the review to complete. | 该图纸已有版本正在审批中，请等待审批完成后再提交。 |
+| btn_add_part_print | + Part Print | + 局部更新 |
+| btn_delete | Delete | 删除 |
+| confirm_delete_title | Delete Part Print | 删除局部更新 |
+| confirm_delete_body | Are you sure you want to delete this Part Print? This action cannot be undone. | 确定要删除该局部更新吗？此操作不可撤销。 |
+| toast_part_print_deleted | Part Print deleted. | 局部更新已删除。 |
 
 ---
 
@@ -452,8 +397,7 @@
 |------|------|
 | 发布局部更新弹窗 | 固定宽度 560px，内容区高度超出时内部滚动 |
 | 局部更新列表抽屉 | 固定宽度 560px，不随分辨率变化 |
-| 汇总弹窗 | 固定宽度 580px，内容区高度超出时内部滚动 |
-| 操作列折叠 | 1280px 最小宽度下，Markups / + Markup 折入更多菜单 |
+| 操作列折叠 | 1280px 最小宽度下，Part Print 可折入更多菜单 |
 
 ---
 
@@ -463,47 +407,39 @@
 
 | # | 验收项 | 通过标准 |
 |---|--------|---------|
-| 1 | Markups 列显示 | Active 状态数量以橙色数字链接展示，0 时显示 `—` |
-| 2 | [Markups] 按钮 | 所有行可见，点击打开对应图纸的局部更新抽屉 |
-| 3 | [+ Markup] 按钮 | 仅 status=ACTIVE 行显示，其他状态行不显示 |
-| 4 | 权限控制 | 无 `drawing:markup:publish` 权限时，[+ Markup] 按钮不可见 |
+| 1 | Part Print 列显示 | ACTIVE 数量以橙色数字链接展示，0 时显示 `—` |
+| 2 | [Part Print] 按钮 | 所有图纸行可见（任意状态），点击打开对应图纸的局部更新抽屉 |
+| 3 | 权限控制 | 无 `drawing:view` 权限时，[Part Print] 按钮不可见 |
 
-### 6.2 发布局部更新弹窗
-
-| # | 验收项 | 通过标准 |
-|---|--------|---------|
-| 1 | 弹窗标题 | 副标题正确显示图纸编号、名称和当前版本号 |
-| 2 | 必填校验 | Title / Description 为空时 [Publish] 禁用，提交后显示 inline 错误提示 |
-| 3 | 字数限制 | Description 超 2000 字时阻止输入并提示；计数器实时更新 |
-| 4 | 附件格式 | 非 PDF/PNG/JPG 文件被拦截，显示格式错误提示 |
-| 5 | 附件大小 | 超 20MB 文件被拦截，显示大小错误提示 |
-| 6 | 附件上限 | 已有 10 个附件时上传区进入禁用状态 |
-| 7 | 发布成功 | 弹窗关闭，Markups 列 +1，Toast 正确显示 |
-| 8 | 关闭确认 | 有内容时点击取消或遮罩弹出二次确认 |
-
-### 6.3 局部更新列表抽屉
+### 6.2 局部更新列表抽屉
 
 | # | 验收项 | 通过标准 |
 |---|--------|---------|
-| 1 | 数据加载 | 打开时正确展示所有局部更新，All / Active / Merged Tab 数量准确 |
-| 2 | 状态标签 | Active 绿色，Merged 灰色且显示目标版本号 |
-| 3 | 说明展开 | 超 3 行内容显示 "...Show more"，点击展开全文 |
-| 4 | 附件预览 | 点击附件文件名在新标签页打开预览 |
-| 5 | 复选框 | 仅 Active 卡片有复选框，Merged 卡片无 |
-| 6 | 底部汇总栏 | 有勾选时出现，全部取消后消失；数量计数准确 |
-| 7 | 删除按钮可见性 | 仅卡片创建人可见删除按钮；非创建人不可见 |
-| 8 | 删除流程 | 点击删除 → 二次确认 → 确认后卡片消失，Markups 列 -1 |
+| 1 | 数据加载 | 打开时正确展示所有 Part Print，All / Active Tab 数量准确 |
+| 2 | [+ Part Print] 按钮 | 仅设计人员（本图纸上传人）且 `approvalStatus = APPROVED_EXTERNAL` 时显示；其他角色或其他状态时不显示 |
+| 3 | 搜索过滤 | 输入关键字后实时过滤，匹配 Description 和 Part Print Drawing No.（大小写不敏感）；无结果时显示空态 |
+| 4 | 报审号展示 | 每张卡片正确显示 "Based on {submissionNo}"；有页码时追加 " · Page {n}" |
+| 5 | 说明展开 | 超 3 行内容显示 "...Show more"，点击展开全文；再次点击收起 |
+| 6 | 附件下载 | 点击附件文件名在新标签页预览 / 下载 |
+| 7 | 删除按钮可见性 | 仅 Part Print 创建人可见 [🗑 Delete]；非创建人不可见 |
+| 8 | 删除成功 | 点击删除 → 二次确认 Dialog → 确认后卡片消失，抽屉 Active 计数 -1，图纸列表 Part Print 列 -1，Toast 提示 |
+| 9 | 删除失败 | 接口报错时 Dialog 保持打开，按钮恢复，Toast 错误提示 |
 
-### 6.4 汇总为新版本弹窗
+### 6.3 发布局部更新弹窗
 
 | # | 验收项 | 通过标准 |
 |---|--------|---------|
-| 1 | 已选列表 | 只读展示正确的局部更新标题和日期 |
-| 2 | 版本提示 | 正确显示当前版本号和下一版本号 |
-| 3 | Version Note | 自动预填汇总摘要；内容可手动修改 |
-| 4 | 必填校验 | 未选文件或未选审批人时 [Submit for Approval] 禁用 |
-| 5 | 提交成功 | 弹窗和抽屉均关闭，图纸状态变为 Pending，Toast 正确显示 |
-| 6 | 已有待审批版本 | 提交后接口报错，弹窗内顶部显示红色错误提示，弹窗不关闭 |
+| 1 | 弹窗标题 | 标题正确显示图纸编号、名称和当前版本号 |
+| 2 | 文件上传后自动触发 AI 识别 | 上传完成后立即显示进度条与识别提示 |
+| 3 | AI 识别成功 | 字段自动回填，右侧显示 ✨ 图标，字段背景高亮；字段可手动编辑，编辑后 ✨ 消失 |
+| 4 | AI 识别失败 | 显示 warning 警告条，字段留空，不阻塞提交 |
+| 5 | 替换文件重新识别 | 点击 [✕] 移除文件后，AI 回填字段清空，进度条重新出现 |
+| 6 | 必填校验 | Part Print Drawing / Dwg No. / Part Print Drawing No. / Description 为空时 [Publish] disabled；提交后显示 inline 错误提示 |
+| 7 | Applied to Page 选项范围 | el-select 选项为 Page 1 ～ Page N（N = 基础版本 PDF 总页数）；获取失败时退化为 el-input-number |
+| 8 | 文件格式校验 | 非 PDF/PNG/JPG 被拦截，显示格式错误提示 |
+| 9 | 文件大小校验 | 超 50MB 被拦截，显示大小超限提示 |
+| 10 | 发布成功 | 弹窗关闭，抽屉列表刷新，图纸列表 Part Print 列 +1，Toast 正确显示 |
+| 11 | 关闭确认 | 有内容时点击取消或遮罩弹出二次确认 |
 
 ---
 
@@ -511,6 +447,6 @@
 
 | 文档 | 说明 |
 |------|------|
-| [REQ-004-pc.md](../../../requirements/pc/REQ-004-pc.md) | PC 端产品需求 |
+| [REQ-004-pc.md](../../../requirements/pc/REQ-004-pc.md) | PC 端产品需求（单一事实源） |
 | [REQ-004-shared.md](../../../requirements/shared/REQ-004-shared.md) | 跨端共享业务规则与 API |
 | [UI-REQ-003-pc.md](./UI-REQ-003-pc.md) | 图纸列表页基础 UI 规范（本功能依赖） |
