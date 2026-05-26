@@ -1,11 +1,12 @@
 ---
 doc_type: backend_spec
 req_id: REQ-003E-pc
-version: 0.1.0
+version: 0.2.0
 status: draft
 generated_from: REQ-003E-pc.md@0.3.1
 data_contract_ref: data-contract.md@0.1.0
 generated_at: 2026-05-24
+updated_at: 2026-05-25
 owner: ""
 ---
 
@@ -136,8 +137,11 @@ API: POST /api/drawing/create（复用 REQ-003A，扩展字段）
    - Category 存在
    - Internal Approver 存在且有 drawing:approve 权限
 3. 若 aiRecognitionJobId 非空：
-   - 校验该 job 存在、归属当前项目
-   - 校验 job.status = DONE 或 FAILED（不允许识别中状态提交）
+   - 校验该 job 存在且归属当前项目（防越权）
+   - 校验 job.status = DONE 或 FAILED（不允许识别进行中 PENDING/PROCESSING 时提交）
+     - DONE：AI 识别成功，Drawing 关联 job 并持久保存识别页面信息 // AC-003E-012
+     - FAILED：AI 识别失败但用户选择手动填写，Drawing 仍关联 job（可溯源失败原因），job 字段非 null
+     - 若 status = PENDING / PROCESSING：返回 422，`AI_RECOGNITION_IN_PROGRESS`
 4. 开启事务：
    a. INSERT Drawing（含 ai_recognition_job_id 字段）
    b. INSERT DrawingVersion（V0，status = PENDING_INTERNAL）
@@ -147,8 +151,9 @@ API: POST /api/drawing/create（复用 REQ-003A，扩展字段）
 7. 返回 { drawingId, drawingCode, status: 'PENDING_INTERNAL' }
 ```
 
-> - `aiRecognitionJobId` 为 null 时（降级手动输入）：正常创建，`Drawing.ai_recognition_job_id` 为 NULL // AC-003E-013
-> - `aiRecognitionJobId` 非 null 时：Drawing 持久关联识别任务 // AC-003E-012
+> - `aiRecognitionJobId` 为 null 时（降级完全手动输入，未上传或用户未触发识别）：正常创建，`Drawing.ai_recognition_job_id` 为 NULL // AC-003E-013
+> - `aiRecognitionJobId` 非 null 且 status=DONE 时：Drawing 持久关联识别任务，详情页展示 AI 页面信息 // AC-003E-012
+> - `aiRecognitionJobId` 非 null 且 status=FAILED 时：Drawing 记录关联该 job（`ai_recognition_job_id` 非空），但详情页行为与 AC-003E-013 一致（不展示 AI 识别结果区域，因无有效 pages 数据）
 
 ### 3.5 Drawing 详情查询（扩展，覆盖 AC-003E-012、AC-003E-013）
 
@@ -158,11 +163,14 @@ API: POST /api/drawing/getDetail（扩展响应）
 
 1. 查询 Drawing 记录
 2. 若 Drawing.ai_recognition_job_id 非 null：
-   - JOIN AIRecognitionJob 获取 pages 信息
-   - 响应中包含 aiRecognitionInfo: {
+   - JOIN AIRecognitionJob 获取 status 和 pages 信息
+   - 若 job.status = DONE（有有效 pages）：
+     响应中包含 aiRecognitionInfo: {
        jobId, totalPages,
        pages: [{ pageNo, drawingNo, drawingName }]
      }
+   - 若 job.status = FAILED（无有效 pages）：
+     响应中 aiRecognitionInfo = null（前端不展示 AI 识别结果区域，同 AC-003E-013 行为）
 3. 若 ai_recognition_job_id 为 null：
    - 响应中 aiRecognitionInfo = null // AC-003E-013
 ```
@@ -449,3 +457,4 @@ ALTER TABLE drawings
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
 | 0.1.0 | 2026-05-24 | agent | 初稿，从 REQ-003E-pc@0.3.1 派生 |
+| 0.2.0 | 2026-05-25 | agent | §3.4 补充 job status=FAILED 时仍可关联的逻辑及 PENDING/PROCESSING 422 错误码；§3.5 补充 FAILED job 对应 `aiRecognitionInfo=null` 的返回行为；注释更精确区分三种 aiRecognitionJobId 场景 |

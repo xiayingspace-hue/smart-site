@@ -1,12 +1,13 @@
 ---
 doc_type: frontend_spec
 req_id: REQ-003E-pc
-version: 0.1.0
+version: 0.2.0
 status: draft
 generated_from: REQ-003E-pc.md@0.3.1
 data_contract_ref: data-contract.md@0.1.0
 ui_spec_ref: UI-REQ-003E-pc.md@0.1.0
 generated_at: 2026-05-24
+updated_at: 2026-05-25
 owner: ""
 preferred_runtime_ui: "Element UI"
 ---
@@ -230,6 +231,29 @@ data() {
 
 ---
 
+#### `<AiFailureBanner>`
+
+**关联 AC**：AC-003E-006、AC-003E-007、AC-003E-008
+
+**Props**：
+```js
+{
+  // 无外部 Props；展示内容固定
+}
+```
+
+**Emits**：
+- `'reupload'` — 用户点击 [Re-upload] 按钮，父组件调用 `handleReupload()`
+
+**职责**：
+- 渲染橙色降级提示横幅：`"Unable to analyse the drawing automatically. Please enter the drawing information manually, or re-upload the file."`
+- 提供 [Re-upload] 按钮，点击后 `$emit('reupload')`
+
+**不该做**：
+- 不直接操作 Drawing Code / Name 输入框（由父组件 `handleReupload()` 统一重置）
+
+---
+
 ## 5. 状态管理
 
 ### 5.1 状态分层
@@ -364,6 +388,7 @@ computed: {
 
 ```js
 // AC-003E-008
+// 由 <AiFailureBanner> emit 'reupload' 事件触发
 handleReupload() {
   this.stopPolling()
   this.uploadedFileUrl = null
@@ -372,11 +397,27 @@ handleReupload() {
   this.recognitionPages = []
   this.form.drawingCode = ''
   this.form.drawingName = ''
-  this.$refs.fileUploader.reset() // 触发文件选择框重置
+  this.$refs.fileUploader.reset() // 触发文件选择框重置，重新进入上传待机状态
 }
 ```
 
-### 7.5 表单提交
+### 7.5 弹窗关闭时资源清理
+
+```js
+// 弹窗关闭时必须停止轮询，防止内存泄漏 / 后台静默重置表单
+handleClose() {
+  this.stopPolling()
+  this.$refs.uploadForm && this.$refs.uploadForm.resetFields()
+  this.uploadedFileUrl = null
+  this.recognitionJobId = null
+  this.recognitionStatus = null
+  this.recognitionPages = []
+  this.isSubmitting = false
+  this.$emit('close')
+}
+```
+
+### 7.6 表单提交
 
 ```js
 // AC-003E-005: 校验通过后调用单条创建接口
@@ -458,3 +499,4 @@ async handleSubmit() {
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
 | 0.1.0 | 2026-05-24 | agent | 初稿，从 REQ-003E-pc@0.3.1 派生 |
+| 0.2.0 | 2026-05-25 | agent | 补充 `<AiFailureBanner>` Props/Emits 定义及事件流；补充弹窗关闭时资源清理逻辑 `handleClose()`；`handleReupload()` 注明事件来源；小节编号修正 |

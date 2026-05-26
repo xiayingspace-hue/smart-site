@@ -1,11 +1,12 @@
 ---
 doc_type: qa_spec
 req_id: REQ-003E-pc
-version: 0.1.0
+version: 0.2.0
 status: draft
 generated_from: REQ-003E-pc.md@0.3.1
 data_contract_ref: data-contract.md@0.1.0
 generated_at: 2026-05-24
+updated_at: 2026-05-25
 owner: ""
 ---
 
@@ -538,9 +539,18 @@ cleanup:
 | TC-API-003E-CREATE-01 | 正常创建（含 jobId）| 合法参数 + 有效 jobId | 200，Drawing 创建成功，`ai_recognition_job_id` 有值 |
 | TC-API-003E-CREATE-02 | 降级创建（不含 jobId）| 合法参数，`aiRecognitionJobId=null` | 200，Drawing 创建成功，`ai_recognition_job_id` 为 null |
 | TC-API-003E-CREATE-03 | Drawing Code 重复 | 项目内已存在该 Code | 409，`DRAWING_CODE_DUPLICATE` |
-| TC-API-003E-CREATE-04 | jobId 识别中状态（PENDING）| `aiRecognitionJobId` = 识别中的 jobId | 400 或 422，不允许识别进行中时提交 |
+| TC-API-003E-CREATE-04 | jobId 识别中状态（PENDING/PROCESSING） | `aiRecognitionJobId` = 识别中的 jobId | 422，`AI_RECOGNITION_IN_PROGRESS` |
 | TC-API-003E-CREATE-05 | 缺少必填字段 Drawing Code | `drawingCode = ""` | 400 |
 | TC-API-003E-CREATE-06 | 缺少 Internal Approver | `internalApproverId = null` | 400 |
+| TC-API-003E-CREATE-07 | jobId 识别失败（FAILED），用户手动填写提交 | 合法参数 + status=FAILED 的 jobId | 200，Drawing 创建成功，`ai_recognition_job_id` 有值 |
+
+#### API: `drawing/getDetail`（扩展，含 aiRecognitionInfo）
+
+| TC ID | 描述 | 输入 | 期望 |
+|-------|------|-----|-----|
+| TC-API-003E-DETAIL-01 | 查询 AI 识别成功创建的 Drawing | 合法 drawingId，job.status=DONE | 200，`aiRecognitionInfo` 非 null，含 totalPages 及 pages 数组 |
+| TC-API-003E-DETAIL-02 | 查询降级手动输入创建的 Drawing（无 jobId）| 合法 drawingId，ai_recognition_job_id=null | 200，`aiRecognitionInfo=null` |
+| TC-API-003E-DETAIL-03 | 查询 AI 识别失败后手动提交的 Drawing（有 jobId，FAILED）| 合法 drawingId，job.status=FAILED | 200，`aiRecognitionInfo=null`（无有效 pages）|
 
 ---
 
@@ -699,3 +709,4 @@ QA 测试完成的判定：
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
 | 0.1.0 | 2026-05-24 | agent | 初稿，从 REQ-003E-pc@0.3.1 派生 |
+| 0.2.0 | 2026-05-25 | agent | §6.2 `drawing/create` 用例调整（TC-CREATE-04 错误码更正为 422 + `AI_RECOGNITION_IN_PROGRESS`，TC-CREATE-07 整理 FAILED job 场景）；新增 §6.2 `drawing/getDetail` 接口测试三条（DETAIL-01/02/03），覆盖 aiRecognitionInfo 三种返回场景 |
