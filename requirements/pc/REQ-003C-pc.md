@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-003C-pc
 req_title: "PC 端 — 图纸版本历史与查阅确认记录"
-version: 0.1.1
+version: 0.1.2
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
 owner: ""
 created_at: 2026-05-04
-updated_at: 2026-05-23
+updated_at: 2026-05-27
 
 depends_on:
   - REQ-003A-pc
@@ -16,6 +16,7 @@ depends_on:
 related_to:
   - REQ-003D-pc
   - REQ-003-shared
+  - REQ-007C-pc
 blocks: []
 
 generate:
@@ -180,6 +181,9 @@ flowchart TD
 ## 7. 功能需求详述
 
 ### 7.1 功能 F-001：版本历史抽屉（History Drawer）
+
+> ⚠️ **已被取代**：本功能（版本历史抽屉）已由 [REQ-007C-pc](./REQ-007C-pc.md) 升级替代（4 阶段生命周期视图）。
+> 引入两级审批后，实现以 REQ-007C-pc 为准；本节仅保留历史参考，不再作为开发依据。
 
 **关联用户故事**：US-003C-001
 **所属流程节点**：流程 6.1
@@ -387,6 +391,7 @@ Then   显示 —，无可点击链接
 |-----|------|-------|---------|------------|
 | 0.1.0 | 2026-05-04 | agent | 从 REQ-003-pc 按 US-003C-001/002 拆分初稿 | 全部 |
 | 0.1.1 | 2026-05-23 | agent | 与 REQ-003A 列表对齐，移除版本历史抽屉标题及查阅确认面板标题中的 Drawing Code 展示 | UI spec、Frontend spec |
+| 0.1.2 | 2026-05-27 | agent | F-001（版本历史抽屉）标注已由 REQ-007C-pc 取代，仅保留历史参考；related_to 新增 REQ-007C-pc | 无 |
 
 ---
 

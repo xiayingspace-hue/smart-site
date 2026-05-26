@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-007C-pc
 req_title: "PC 端 — 版本历史抽屉 4 阶段生命周期视图"
-version: 0.2.5
+version: 0.2.6
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
 owner: ""
 created_at: 2026-05-05
-updated_at: 2026-05-25
+updated_at: 2026-05-27
 
 depends_on:
   - REQ-007-shared
@@ -18,6 +18,7 @@ related_to:
   - REQ-007D-pc
   - REQ-003A-pc
   - REQ-006-shared
+  - REQ-003C-pc
 blocks: []
 
 generate:
@@ -28,7 +29,7 @@ generate:
   qa_spec: true
 ---
 
-# 需求文档：PC 端 — 版本历史抽屉 4 阶段生命周期视图
+# 需求文档：PC 端 — 图纸版本历史抽屉 4 阶段生命周期视图
 
 > **使用说明**：本文档是整个交付链路的**单一事实源**。所有下游文档（UI/前端/QA）从本文档派生。
 > 审批业务规则见 [REQ-007-shared.md](../shared/REQ-007-shared.md)。
@@ -42,6 +43,9 @@ generate:
 REQ-003-pc 定义了图纸的版本历史抽屉，展示各版本的基本状态。升级为两级审批后，每个版本经历**上传 → 内部审批 → 外部审批 → 签字版**四个阶段，原有的简单列表无法直观展示版本在每个阶段的状态、责任人和具体文件。
 
 管理员和 Drawing 团队需要在版本历史中看到完整的流转记录，以便责任追溯和流程监控。
+
+> 📌 **与 REQ-003C-pc 的关系**：本文档是 [REQ-003C-pc](./REQ-003C-pc.md) 中"版本历史抽屉（F-001）"的**升级替代文档**。
+> REQ-003C-pc 的 F-002（SE 查阅确认面板）与本文档无关，仍由 REQ-003C-pc 独立维护。
 
 ### 1.2 业务目标
 
@@ -822,6 +826,7 @@ Then   不显示任何发布、删除操作按钮（这些操作入口仅在图�
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
 |-----|------|-------|---------|------------|
 | 0.2.5 | 2026-05-25 | agent | F-001 主列表移除 Attachments 列，新增 Actions 列（含 [Details] 按钮）；点击 [Details] 触发 F-006 附件二级弹框，与版本行展开/折叠无关；更新 §3 权限矩阵、§7.1 列定义、ASCII 示意图、F-006 触发描述、AC-007C-002、AC-007C-011、AC-007C-012 | UI、前端、QA |
+| 0.2.6 | 2026-05-27 | agent | §1.1 新增与 REQ-003C-pc 关系说明（本文档为其 F-001 的升级替代）；related_to 新增 REQ-003C-pc | 无 |
 | 0.2.4 | 2026-05-25 | agent | F-001 主列表新增 RFA No. 列（位于 Version 列之后）：显示该版本外部审批报审编号（DrawingApproval.submissionRefNo, phase=EXTERNAL），外部审批未发起时显示 `—`；更新列定义表、ASCII 示意图、AC-007C-002 | UI、前端、QA |
 | 0.2.3 | 2026-05-23 | agent | F-006 弹框新增 Part Print / Attachments 双 Tab：Part Print Tab 只读展示当前版本关联的 Markup（局部更新）列表；Attachments Tab 保留原附件功能；默认激活 Attachments Tab；更新 ASCII 示意图、Tab 导航规格、AC-007C-012；新增 AC-007C-017/018 | UI、前端、QA |
 | 0.2.2 | 2026-05-23 | agent | F-006 Attachments 弹框顶部移除 Drawing Code，改为展示 Status、Ver (System)、Description、Submission Ref No.、Submission Subject、Uploaded by、Upload Date；弹框标题改用 drawingName；更新 ASCII 示意图及 AC-007C-012 | UI、前端、QA |
