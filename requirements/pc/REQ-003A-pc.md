@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-003A-pc
 req_title: "PC 端 — 图纸管理列表页"
-version: 0.4.5
+version: 0.4.6
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
 owner: ""
 created_at: 2026-05-04
-updated_at: 2026-05-25
+updated_at: 2026-05-26
 
 depends_on:
   - REQ-007-shared
@@ -132,6 +132,23 @@ PC 管理端图纸列表页是所有图纸管理操作的入口枢纽：设计�
 | `INTERNAL_REJECTED` | Int. Rejected | 红色 `#F56C6C` |
 | `EXTERNAL_REJECTED` | Ext. Rejected | 红色 `#F56C6C` |
 
+**外部审批结果代码附加显示规则**：
+
+外部审批完成后（Status 进入 `ACTIVE` 或 `EXTERNAL_REJECTED`），Status 列的状态标签右侧以灰色小字附加显示外部审批结果代码，格式为 `(A)` / `(B)` / `(C)` / `(D)` / `(E)`，与纸质报审表保持对应，便于用户在列表层直接感知审批结论。
+
+| 外部审批结果 | 描述 | 对应状态值 | 列表 Status 展示示例 |
+|------------|------|----------|-------------------|
+| A | Approved / No Exception Taken | `ACTIVE` | 🟢 Active **(A)** |
+| B | Approved with comment, resubmission required | `ACTIVE` | 🟢 Active **(B)** |
+| C | Revise And Resubmit | `EXTERNAL_REJECTED` | 🔴 Ext. Rejected **(C)** |
+| D | For Record Purpose | `ACTIVE` | 🟢 Active **(D)** |
+| E | Others | `EXTERNAL_REJECTED` | 🔴 Ext. Rejected **(E)** |
+
+> **设计说明**：
+> - 5 个工作流状态值本身不变，代表图纸所处的流程节点；审批结果代码仅作为辅助信息附加展示，不新增独立状态值。
+> - **Status B 需特别关注**：版本虽已生效（ACTIVE），但业主/审批方要求设计人员提交修改版，设计人员看到 `Active (B)` 应知晓需要跟进上传新版本。
+> - 外部审批尚未发生时（`PENDING_INTERNAL`、`INTERNAL_REJECTED`、`PENDING_EXTERNAL`），Status 列不附加代码，仅展示工作流状态文案。
+
 ---
 
 ## 5. 功能需求详述
@@ -239,6 +256,32 @@ Then   PENDING_INTERNAL 显示橙色"Pending Internal"；
        ACTIVE 显示绿色"Active"；
        INTERNAL_REJECTED 显示红色"Int. Rejected"；
        EXTERNAL_REJECTED 显示红色"Ext. Rejected"
+```
+
+### AC-003A-011C：外部审批完成后 Status 列附加显示审批结果代码
+
+```
+Given  DC 已在 REQ-007B 流程中完成外部审批标记，图纸状态进入 ACTIVE 或 EXTERNAL_REJECTED
+When   用户查看图纸列表 Status 列
+Then   状态标签右侧以灰色小字附加显示外部审批结果代码，格式为 (A) / (B) / (C) / (D) / (E)；
+       具体示例：
+         - 审批结果 A → 显示"Active (A)"（绿色）
+         - 审批结果 B → 显示"Active (B)"（绿色）
+         - 审批结果 C → 显示"Ext. Rejected (C)"（红色）
+         - 审批结果 D → 显示"Active (D)"（绿色）
+         - 审批结果 E → 显示"Ext. Rejected (E)"（红色）；
+       外部审批尚未完成的状态（PENDING_INTERNAL / PENDING_EXTERNAL / INTERNAL_REJECTED）
+       不显示结果代码
+```
+
+### AC-003A-011D：Status B 时设计人员可感知需要跟进上传新版本
+
+```
+Given  外部审批结果为 B（Approved with comment, resubmission required），图纸状态为 ACTIVE
+When   设计人员查看图纸列表 Status 列
+Then   Status 列显示"Active (B)"；
+       [Upload New Version] 按钮在状态为 ACTIVE 时为可点击状态，
+       设计人员可据此发起新版本上传以响应审批方的修改意见
 ```
 
 ### AC-003A-012：Filter Search Popover 字段
@@ -358,6 +401,7 @@ Then   列表新增 1 行，对应该 PDF 的提交记录（DrawingVersion V0）
 | 0.4.2 | 2026-05-25 | agent | 修正列表行含义：每行代表一次**提交记录**（DrawingVersion），而非一个独立 Drawing 实体；同一张图纸的多个版本各占独立一行；更新 §1.1、§4.1 实体清单（突出 DrawingVersion 为列表主体）、§5.1 列表行含义说明、US-003A-LIST-001 背景、AC-003A-011、AC-003A-016 | Frontend、QA |
 | 0.4.3 | 2026-05-25 | agent | 修正列表行与图纸页的关系：每行（DrawingVersion）= 一个 PDF 文件；Drawing No / Drawing Name 为 PDF 页级属性，不在列表列中展示；移除表格列 Drawing Code、Drawing Name；Filter Search 字段由 5 项缩减为 3 项（Description、Category、Status）；更新 §1.1、§4.1、§5.1 表格列与行含义说明、US-003A-LIST-001 背景、AC-003A-011、AC-003A-012、AC-003A-014、AC-003A-016 | Frontend、QA |
 | 0.4.4 | 2026-05-25 | agent | 明确 Actions 列 6 个按钮的排列顺序与点击行为：从左到右为 View / History / Confirms / Assign / Part Print / Upload New Version；扩展权限矩阵（§3）、重写 §5.1 Actions 列按钮规则为表格形式；AC-003A-005 拆分为 AC-003A-005（按钮排列与行为）+ AC-003A-005B（置灰规则） | Frontend、QA |
+| 0.4.6 | 2026-05-26 | agent | 补充外部审批结果代码附加显示规则：Status 列在 ACTIVE / EXTERNAL_REJECTED 时以灰色小字附加 (A)–(E) 结果代码；§4.2 新增结果代码映射表与设计说明；新增 AC-003A-011C（结果代码展示）、AC-003A-011D（Status B 时设计人员感知跟进动作） | Frontend、QA |
 | 0.4.5 | 2026-05-25 | agent | 关联 REQ-004-pc：[Part Print] 按钮对应 REQ-004-pc 局部更新需求（[+ Markup] 发布局部更新弹窗入口）；新增 related_to REQ-004-pc；更新 §3 权限矩阵（Part Print 仅状态 ACTIVE 时可见）、§5.1 Actions 表（Part Print 行补充引用与状态限制）、AC-003A-005 行为说明 | Frontend、QA |
 
 ---

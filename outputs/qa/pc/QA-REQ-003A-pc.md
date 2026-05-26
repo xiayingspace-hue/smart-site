@@ -2,9 +2,9 @@
 doc_type: qa_spec
 req_id: REQ-003A-pc
 req_title: "PC 端 — 图纸管理列表页"
-version: 0.4.5
+version: 0.4.6
 status: draft
-generated_from: REQ-003A-pc@0.4.5
+generated_from: REQ-003A-pc@0.4.6
 generated_at: 2026-05-26
 owner: ""
 ---
@@ -27,7 +27,7 @@ owner: ""
 | 来源需求 | REQ-003A-pc @ v0.4.5 |
 | 依赖需求 | REQ-003-shared、REQ-003E-pc、REQ-003F-pc、REQ-003C-pc、REQ-003D-pc、REQ-004-pc、REQ-007B-pc |
 | 覆盖 Story | US-003A-LIST-001 |
-| 覆盖 AC | AC-003A-005、AC-003A-005B、AC-003A-011、AC-003A-011B、AC-003A-012、AC-003A-013、AC-003A-014、AC-003A-015、AC-003A-016 |
+| 覆盖 AC | AC-003A-005、AC-003A-005B、AC-003A-011、AC-003A-011B、AC-003A-011C、AC-003A-011D、AC-003A-012、AC-003A-013、AC-003A-014、AC-003A-015、AC-003A-016 |
 | 测试平台 | PC（Chrome 100+ / Edge 100+ / Safari 15+，1280px+） |
 | 测试环境 | dev / staging |
 
@@ -35,7 +35,7 @@ owner: ""
 
 ## 1. 测试目标
 
-验证图纸管理列表页的表格列完整性与行含义、5 种状态标签颜色、Filter Search 浮层字段与条件计数、点击 Popover 外部不触发查询、Actions 列六按钮的权限控制与状态限制（特别是 [Part Print] 隐藏逻辑和 [Upload New Version] 置灰逻辑）、以及上传后列表即时更新等功能的正确性。
+验证图纸管理列表页的表格列完整性与行含义、5 种状态标签颜色、**外部审批结果代码 (A)–(E) 附加显示**（AC-003A-011C）、**Status B 时设计人员可感知跟进动作**（AC-003A-011D）、Filter Search 浮层字段与条件计数、点击 Popover 外部不触发查询、Actions 列六按钮的权限控制与状态限制（特别是 [Part Print] 隐藏逻辑和 [Upload New Version] 置灰逻辑）、以及上传后列表即时更新等功能的正确性。
 
 ---
 
@@ -49,6 +49,8 @@ owner: ""
 - RFA No. / Subject of RFA 字段的显示规则（PENDING_INTERNAL / INTERNAL_REJECTED 时显示 `—`）
 - Confirmed 列条件显示（仅 ACTIVE 时显示 x/y）
 - 5 种状态标签颜色（橙/绿/红）
+- **外部审批结果代码附加显示**：ACTIVE / EXTERNAL_REJECTED 时 Status 标签右侧附加灰色 (A)–(E)；PENDING_* / INTERNAL_REJECTED 时不附加；Tooltip 显示完整描述
+- **Status B 感知**：显示 `Active (B)` 时 [Upload New Version] 可点
 - Filter Search：3 字段、Status 6 选项、条件计数、点击外部不触发查询
 - Actions 列 6 按钮：顺序、权限、状态限制
 - [Part Print] 状态非 ACTIVE 时隐藏
@@ -99,13 +101,16 @@ owner: ""
 
 ### 3.4 状态相关场景
 
-| 场景 ID | approvalStatus | 测试核心 |
-|--------|---------------|---------|
-| SC-003A-ST01 | `ACTIVE` | Confirmed 显示 x/y；[Part Print] 可见；[Upload New Version] 可点 |
-| SC-003A-ST02 | `PENDING_INTERNAL` | RFA No. = —；[Upload New Version] 置灰；[Part Print] 隐藏 |
-| SC-003A-ST03 | `PENDING_EXTERNAL` | RFA No. 有值；[Upload New Version] 置灰；[Part Print] 隐藏 |
-| SC-003A-ST04 | `INTERNAL_REJECTED` | RFA No. = —；[Part Print] 隐藏 |
-| SC-003A-ST05 | `EXTERNAL_REJECTED` | RFA No. 有值；[Part Print] 隐藏 |
+| 场景 ID | approvalStatus | externalApprovalResult | 测试核心 |
+|--------|---------------|----------------------|---------|
+| SC-003A-ST01 | `ACTIVE` | A | Confirmed 显示 x/y；[Part Print] 可见；[Upload New Version] 可点；Status 显示 `Active (A)` |
+| SC-003A-ST01B | `ACTIVE` | B | Status 显示 `Active (B)`；[Upload New Version] 可点（设计人员可跟进上传新版本） |
+| SC-003A-ST01D | `ACTIVE` | D | Status 显示 `Active (D)` |
+| SC-003A-ST02 | `PENDING_INTERNAL` | null | RFA No. = —；[Upload New Version] 置灰；[Part Print] 隐藏；Status 不附加代码 |
+| SC-003A-ST03 | `PENDING_EXTERNAL` | null | RFA No. 有值；[Upload New Version] 置灰；[Part Print] 隐藏；Status 不附加代码 |
+| SC-003A-ST04 | `INTERNAL_REJECTED` | null | RFA No. = —；[Part Print] 隐藏；Status 不附加代码 |
+| SC-003A-ST05 | `EXTERNAL_REJECTED` | C | RFA No. 有值；[Part Print] 隐藏；Status 显示 `Ext. Rejected (C)` |
+| SC-003A-ST05E | `EXTERNAL_REJECTED` | E | Status 显示 `Ext. Rejected (E)` |
 
 ---
 
@@ -128,6 +133,31 @@ owner: ""
 | TC ID | 关联 AC | 前置条件 | 步骤 | 预期结果 |
 |-------|--------|---------|------|---------|
 | TC-003A-008 | AC-003A-011B | 列表含 5 种状态各一行 | 检查 Status 列标签 | `PENDING_INTERNAL` → 橙色标签 "Pending Internal"；`PENDING_EXTERNAL` → 橙色标签 "Pending External"；`ACTIVE` → 绿色标签 "Active"；`INTERNAL_REJECTED` → 红色标签 "Int. Rejected"；`EXTERNAL_REJECTED` → 红色标签 "Ext. Rejected" |
+
+### TC 组 12：外部审批结果代码附加显示
+
+| TC ID | 关联 AC | 前置条件 | 步骤 | 预期结果 |
+|-------|--------|---------|------|---------|
+| TC-003A-042 | AC-003A-011C | 图纸外部审批结果为 A（ACTIVE） | 查看 Status 列 | 显示 🟢 `Active` 加灰色小字 `(A)`；整体在同一行内联排列 |
+| TC-003A-043 | AC-003A-011C | 图纸外部审批结果为 B（ACTIVE） | 查看 Status 列 | 显示 🟢 `Active` 加灰色小字 `(B)` |
+| TC-003A-044 | AC-003A-011C | 图纸外部审批结果为 C（EXTERNAL_REJECTED） | 查看 Status 列 | 显示 🔴 `Ext. Rejected` 加灰色小字 `(C)` |
+| TC-003A-045 | AC-003A-011C | 图纸外部审批结果为 D（ACTIVE） | 查看 Status 列 | 显示 🟢 `Active` 加灰色小字 `(D)` |
+| TC-003A-046 | AC-003A-011C | 图纸外部审批结果为 E（EXTERNAL_REJECTED） | 查看 Status 列 | 显示 🔴 `Ext. Rejected` 加灰色小字 `(E)` |
+| TC-003A-047 | AC-003A-011C | 图纸处于 PENDING_INTERNAL 状态（尚无外部审批） | 查看 Status 列 | 显示 `Pending Internal`，**不附加**任何结果代码 |
+| TC-003A-048 | AC-003A-011C | 图纸处于 PENDING_EXTERNAL 状态（外部审批进行中） | 查看 Status 列 | 显示 `Pending External`，**不附加**任何结果代码 |
+| TC-003A-049 | AC-003A-011C | 图纸处于 INTERNAL_REJECTED 状态 | 查看 Status 列 | 显示 `Int. Rejected`，**不附加**任何结果代码 |
+| TC-003A-050 | AC-003A-011C | 图纸外部审批结果为 A（ACTIVE） | 鼠标悬停结果代码 `(A)` | Tooltip 显示 `"A – Approved / No Exception Taken"` |
+| TC-003A-051 | AC-003A-011C | 图纸外部审批结果为 B（ACTIVE） | 鼠标悬停结果代码 `(B)` | Tooltip 显示 `"B – Approved with comment, resubmission required"` |
+| TC-003A-052 | AC-003A-011C | 图纸外部审批结果为 C（EXTERNAL_REJECTED） | 鼠标悬停结果代码 `(C)` | Tooltip 显示 `"C – Revise And Resubmit"` |
+| TC-003A-053 | AC-003A-011C | 图纸外部审批结果为 E（EXTERNAL_REJECTED） | 鼠标悬停结果代码 `(E)` | Tooltip 显示 `"E – Others (please state reason)"` |
+
+### TC 组 13：Status B — 设计人员感知跟进动作
+
+| TC ID | 关联 AC | 前置条件 | 步骤 | 预期结果 |
+|-------|--------|---------|------|---------|
+| TC-003A-054 | AC-003A-011D | 图纸外部审批结果为 B，当前用户为**设计人员** | 查看 Status 列与 Actions 列 | Status 列显示 `Active (B)`（绿色标签 + 灰色代码）；[Upload New Version] 按钮**可见且可点**（不置灰） |
+| TC-003A-055 | AC-003A-011D | 图纸外部审批结果为 B，当前用户为**设计人员** | 点击 [Upload New Version] | 上传新版本弹框**正常弹出**，可发起新版本上传 |
+| TC-003A-056 | AC-003A-011D | 图纸外部审批结果为 A，当前用户为**设计人员** | 查看 Status 列与 Actions 列 | Status 列显示 `Active (A)`；[Upload New Version] 同样**可点**（ACTIVE 状态下可上传） |
 
 ### TC 组 3：Filter Search 浮层字段
 
@@ -219,6 +249,8 @@ owner: ""
 | UI-003A-004 | [Upload New Version] 置灰样式 | 按钮视觉上明显为不可点状态；Tooltip 在鼠标悬停 300ms 后出现 |
 | UI-003A-005 | Filter Search Popover 位置 | 在 [Filter Search] 按钮下方对齐弹出 |
 | UI-003A-006 | 列表骨架屏 | 加载超 300ms 时显示骨架占位行 |
+| UI-003A-007 | Status 结果代码视觉 | 结果代码 `(A)`–`(E)` 以灰色小字内联显示在状态标签右侧，间距 4px；字号小于状态标签主文字 |
+| UI-003A-008 | 结果代码 Tooltip | 鼠标悬停结果代码时弹出完整描述文案（如 `"B – Approved with comment, resubmission required"`） |
 
 ---
 
@@ -237,11 +269,12 @@ owner: ""
 ## 7. 集成验收检查清单（上线前）
 
 - [ ] `/drawing/list` 接口返回 10 列所需全部字段（含 rfaNo / rfaSubject，PENDING_INTERNAL 和 INTERNAL_REJECTED 状态下为 null）
+- [ ] **`/drawing/list` 响应包含 `externalApprovalResult` 字段**：ACTIVE / EXTERNAL_REJECTED 时返回 'A'–'E'；其余状态返回 null
 - [ ] Confirmed 列：`confirmedCount` / `totalSeCount` 仅在 ACTIVE 状态返回有效值，其他状态返回 null 或 0
 - [ ] Filter Search 查询参数正确传递至后端（description / category / status / sortBy / sortDir）
 - [ ] Status 筛选为 "All"（或不传）时返回全部状态数据
 - [ ] Description 字段模糊搜索有效（不区分大小写）
-- [ ] 上传图纸成功后，列表接口刷新可见新行（V0，状态 PENDING_INTERNAL）
+- [ ] 上传图纸成功后，列表接口刷新可见新行（V0，状态 PENDING_INTERNAL，`externalApprovalResult = null`）
 - [ ] [Part Print] / [Upload New Version] 权限后端再次校验（前端隐藏/置灰仅为 UX 层）
 
 ---
@@ -253,7 +286,7 @@ owner: ""
 | 项目管理员账号 | `admin_01` |
 | 设计人员账号 | `designer_01` |
 | 内部审批人账号 | `approver_01` |
-| 图纸数据集 | 项目 PROJ-001 含 5 种状态各一条 DrawingVersion；ACTIVE 行 confirmedCount=2，totalSeCount=5；PENDING_EXTERNAL 行有 RFA No. = "RFA-2024-001" 和 Subject = "Foundation Plan" |
+| 图纸数据集 | 项目 PROJ-001 含 5 种状态各一条 DrawingVersion；ACTIVE 行 confirmedCount=2，totalSeCount=5，**externalApprovalResult='A'**；另需补充 externalApprovalResult='B' 的 ACTIVE 行一条；PENDING_EXTERNAL 行有 RFA No. = "RFA-2024-001" 和 Subject = "Foundation Plan"，externalApprovalResult=null；EXTERNAL_REJECTED 行 externalApprovalResult='C' |
 | 上传测试文件 | 3 页图纸 PDF（< 50MB） |
 
 ---
@@ -262,4 +295,5 @@ owner: ""
 
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
+| 0.4.6 | 2026-05-26 | agent | 同步 REQ-003A-pc@0.4.6：① 覆盖 AC 新增 011C / 011D；② 测试目标、必测范围、状态场景表更新（新增结果代码列）；③ 新增 TC 组 12（外部审批结果代码附加显示，TC-003A-042–053，覆盖 5 种代码展示 + 3 种不展示 + 5 条 Tooltip）；④ 新增 TC 组 13（Status B 设计人员跟进，TC-003A-054–056）；⑤ 界面验收新增 UI-003A-007 / UI-003A-008；⑥ 集成检查清单新增 externalApprovalResult 字段验证项；⑦ 测试数据补充 externalApprovalResult 字段 |
 | 0.4.5 | 2026-05-26 | agent | 基于 REQ-003A-pc@0.4.5 首次生成。涵盖 AC-003A-005/005B/011/011B/012/013/014/015/016 全部 9 个 AC；TC 组 1（列表基础展示含 RFA 规则）、TC 组 2（状态标签）、TC 组 3–5（Filter Search）、TC 组 6（Actions 6 按钮）、TC 组 7（Part Print 隐藏）、TC 组 8（Upload New Version 置灰）、TC 组 9（上传后列表更新）、TC 组 10–11（权限 + 异常）|

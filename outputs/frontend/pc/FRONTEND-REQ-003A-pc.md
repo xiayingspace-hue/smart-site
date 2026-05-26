@@ -1,9 +1,9 @@
 ---
 doc_type: frontend_spec
 req_id: REQ-003A-pc
-version: 0.4.5
+version: 0.4.6
 status: draft
-generated_from: REQ-003A-pc.md@0.4.5
+generated_from: REQ-003A-pc.md@0.4.6
 ui_spec_ref: UI-REQ-003A-pc.md
 generated_at: 2026-05-26
 owner: ""
@@ -32,10 +32,10 @@ preferred_runtime_ui: "Element UI"
 
 | 项 | 值 |
 |---|---|
-| 来源需求 | REQ-003A-pc @ v0.4.5 |
+| 来源需求 | REQ-003A-pc @ v0.4.6 |
 | UI 设计 | UI-REQ-003A-pc.md |
 | 覆盖 Story | US-003A-LIST-001 |
-| 覆盖 AC | AC-003A-005、AC-003A-005B、AC-003A-011、AC-003A-011B、AC-003A-012、AC-003A-013、AC-003A-014、AC-003A-015、AC-003A-016 |
+| 覆盖 AC | AC-003A-005、AC-003A-005B、AC-003A-011、AC-003A-011B、AC-003A-011C、AC-003A-011D、AC-003A-012、AC-003A-013、AC-003A-014、AC-003A-015、AC-003A-016 |
 
 ---
 
@@ -174,9 +174,12 @@ async loadList(params = this.filterParams) {
     <template slot-scope="{ row }">{{ row.rfaSubject || '—' }}</template>
   </el-table-column>
   <el-table-column prop="currentVersion"   label="Current Version"  width="120" />
-  <el-table-column label="Status"          width="160">
+  <el-table-column label="Status"          width="180">
     <template slot-scope="{ row }">
-      <DrawingStatusTag :status="row.approvalStatus" />
+      <DrawingStatusTag
+        :status="row.approvalStatus"
+        :external-approval-result="row.externalApprovalResult"
+      />
     </template>
   </el-table-column>
   <el-table-column label="Confirmed"       width="100">
@@ -202,12 +205,14 @@ async loadList(params = this.filterParams) {
 
 ### 5.2 `DrawingStatusTag.vue`（状态标签组件）
 
-**关联 AC**: AC-003A-011B
+**关联 AC**: AC-003A-011B / AC-003A-011C / AC-003A-011D
 
 **Props**:
 ```ts
 interface DrawingStatusTagProps {
   status: 'PENDING_INTERNAL' | 'PENDING_EXTERNAL' | 'ACTIVE' | 'INTERNAL_REJECTED' | 'EXTERNAL_REJECTED'
+  /** 外部审批结果代码（A/B/C/D/E），仅 ACTIVE 或 EXTERNAL_REJECTED 时传入；其余状态传 null/undefined */
+  externalApprovalResult?: 'A' | 'B' | 'C' | 'D' | 'E' | null
 }
 ```
 
@@ -221,18 +226,72 @@ const STATUS_MAP = {
   INTERNAL_REJECTED: { label: 'Int. Rejected',     color: '#F56C6C', bg: '#fef0f0' },
   EXTERNAL_REJECTED: { label: 'Ext. Rejected',     color: '#F56C6C', bg: '#fef0f0' },
 }
+
+// 结果代码 Tooltip 文案映射（AC-003A-011C）
+const APPROVAL_RESULT_LABEL = {
+  A: 'A – Approved / No Exception Taken',
+  B: 'B – Approved with comment, resubmission required',
+  C: 'C – Revise And Resubmit',
+  D: 'D – For Record Purpose',
+  E: 'E – Others (please state reason)',
+}
 ```
 
 ```vue
 <template>
-  <span class="drawing-status-tag"
-        :style="{ color: config.color, background: config.bg, border: `1px solid ${config.color}` }">
-    {{ config.label }}
+  <span class="drawing-status-tag-wrapper">
+    <!-- 状态标签 -->
+    <span
+      class="drawing-status-tag"
+      :style="{ color: config.color, background: config.bg, border: `1px solid ${config.color}` }"
+      :aria-label="config.label"
+    >
+      {{ config.label }}
+    </span>
+
+    <!-- 外部审批结果代码（AC-003A-011C）：仅 externalApprovalResult 有值时展示 -->
+    <el-tooltip
+      v-if="externalApprovalResult"
+      :content="resultLabel"
+      placement="top"
+    >
+      <span class="drawing-status-result-code">
+        ({{ externalApprovalResult }})
+      </span>
+    </el-tooltip>
   </span>
 </template>
+
+<style scoped>
+.drawing-status-tag-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.drawing-status-result-code {
+  font-size: 11px;
+  color: #909399;  /* --text-color-secondary */
+  cursor: default;
+}
+</style>
 ```
 
-> 该组件为全局复用组件，供图纸列表、版本历史抽屉等多处使用。
+**computed**:
+
+```javascript
+computed: {
+  config() { return STATUS_MAP[this.status] },
+  resultLabel() {
+    return this.externalApprovalResult
+      ? APPROVAL_RESULT_LABEL[this.externalApprovalResult]
+      : ''
+  }
+}
+```
+
+> **AC-003A-011D 说明（Status B）**：`externalApprovalResult = 'B'` 时，组件渲染 `Active (B)`；此时 `approvalStatus = 'ACTIVE'`，`ActionsCell` 中 `isUploadDisabled = false`，[Upload New Version] 按钮可点——设计人员看到 `Active (B)` 即可感知需要跟进上传新版本。
+>
+> 该组件为全局复用组件，供图纸列表、版本历史抽屉等多处使用；调用方须同时传入 `status` 与 `externalApprovalResult`（可为 null）。
 
 ---
 
@@ -504,6 +563,8 @@ interface DrawingVersionRow {
   currentVersion:  string              // e.g. "V2"
   approvalStatus:  'PENDING_INTERNAL' | 'PENDING_EXTERNAL' | 'ACTIVE'
                    | 'INTERNAL_REJECTED' | 'EXTERNAL_REJECTED'
+  /** 外部审批结果代码（A/B/C/D/E）；仅 approvalStatus 为 ACTIVE 或 EXTERNAL_REJECTED 时有值，其余为 null */
+  externalApprovalResult: 'A' | 'B' | 'C' | 'D' | 'E' | null
   confirmedCount:  number
   totalSeCount:    number
   totalMarkups:    number
@@ -543,6 +604,8 @@ interface DrawingVersionRow {
 | AC-003A-005B | PENDING_* 状态时 [Upload New Version] 置灰 + Tooltip | `ActionsCell` `isUploadDisabled` + `el-tooltip` |
 | AC-003A-011 | 表格 10 列定义，每行 = DrawingVersion，不展示 Drawing No/Name | `DrawingMasterlist` `el-table` 列定义 |
 | AC-003A-011B | 5 种状态颜色标签 | `DrawingStatusTag` `STATUS_MAP` |
+| AC-003A-011C | 外部审批完成后 Status 标签右侧附加灰色 (A)–(E) 结果代码；外部审批未完成时不显示 | `DrawingStatusTag` `externalApprovalResult` prop + `<el-tooltip>` 结果代码 span；`DrawingVersionRow.externalApprovalResult` 字段 |
+| AC-003A-011D | Status B 时显示 `Active (B)`；[Upload New Version] 在 ACTIVE 状态可点 | `DrawingStatusTag`（Status B → `Active (B)`）；`ActionsCell.isUploadDisabled`（`ACTIVE` 时为 false） |
 | AC-003A-012 | Filter Search 3 个字段（Description/Category/Status），不含 Drawing Code/Name | `FilterSearchPopover` 表单字段 |
 | AC-003A-013 | Status 下拉 6 个选项（All/Active/Pending Internal/Pending External/Int. Rejected/Ext. Rejected） | `FilterSearchPopover` `el-select` options |
 | AC-003A-014 | 按钮文案动态显示条件计数 `Filter Search (n)` | `DrawingMasterlist` `filterButtonLabel` computed |
@@ -555,4 +618,5 @@ interface DrawingVersionRow {
 
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
+| 0.4.6 | 2026-05-26 | agent | 同步 REQ-003A-pc@0.4.6：① `DrawingStatusTag` 新增 `externalApprovalResult` prop（'A'–'E' \| null），渲染灰色 `(A)`–`(E)` 结果代码 + el-tooltip 完整描述；② `DrawingMasterlist` Status 列传入 `externalApprovalResult` 字段；③ `DrawingVersionRow` 接口新增 `externalApprovalResult` 字段；④ AC 覆盖矩阵新增 AC-003A-011C / 011D | UI、QA |
 | 0.4.5 | 2026-05-26 | agent | 基于 REQ-003A-pc@0.4.5 首次生成。涵盖主列表 10 列（含 RFA No./Subject of RFA）、5 态状态标签组件、FilterSearchPopover（3 字段 + 条件计数 + 外部点击不触发查询逻辑）、ActionsCell 6 按钮（权限控制 + [Part Print] 隐藏逻辑 + [Upload New Version] 置灰 Tooltip）、API 封装、AC 覆盖矩阵 |

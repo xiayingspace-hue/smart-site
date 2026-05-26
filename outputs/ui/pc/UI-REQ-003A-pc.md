@@ -1,10 +1,10 @@
 ---
 doc_type: ui_spec
 req_id: REQ-003A-pc
-version: 0.4.5
+version: 0.4.6
 status: draft
-generated_from: REQ-003A-pc@0.4.5
-generated_at: 2026-05-25
+generated_from: REQ-003A-pc@0.4.6
+generated_at: 2026-05-26
 owner: ""
 ---
 
@@ -24,10 +24,10 @@ owner: ""
 
 | 项 | 值 |
 |---|---|
-| 来源需求 | REQ-003A-pc @ v0.4.5 |
+| 来源需求 | REQ-003A-pc @ v0.4.6 |
 | 覆盖用户故事 | US-003A-LIST-001 |
-| 覆盖 AC | AC-003A-005、AC-003A-005B、AC-003A-011、AC-003A-011B、AC-003A-012、AC-003A-013、AC-003A-014、AC-003A-015、AC-003A-016 |
-| 上次同步时间 | 2026-05-25 |
+| 覆盖 AC | AC-003A-005、AC-003A-005B、AC-003A-011、AC-003A-011B、AC-003A-011C、AC-003A-011D、AC-003A-012、AC-003A-013、AC-003A-014、AC-003A-015、AC-003A-016 |
+| 上次同步时间 | 2026-05-26 |
 
 > ⚠️ 当来源需求版本变更时，本文档需更新此块，并 review 受影响章节。
 
@@ -41,7 +41,7 @@ owner: ""
 
 ### 1.2 设计原则
 
-1. **状态一目了然**：5 种审批状态以颜色标签区分，橙色=待审批、绿色=生效、红色=驳回。
+1. **状态一目了然**：5 种审批状态以颜色标签区分，橙色=待审批、绿色=生效、红色=驳回；外部审批完成后在状态标签右侧附加结果代码 (A)–(E)，便于用户在列表层直接读取审批结论。
 2. **非侵入式筛选**：Filter Search 以 Popover 浮层展开，不推动表格，不打断浏览体验；点击外部自动关闭并保留条件。
 3. **操作前置守卫**：审批中状态时 [Upload New Version] 置灰并带 Tooltip 说明，防止误操作；[Assign] 仅对项目管理员可见；[Part Print] 仅对设计人员可见。
 4. **列精简，行语义明确**：表格每一行代表**一次提交记录（DrawingVersion）**，对应设计人员上传的一个 PDF 文件（含多页图纸）；Drawing No / Drawing Name 为页级属性，**不在列表列中展示**，需进入详情页查看。列展示以 Description、Category、RFA No.、Subject of RFA、Version、Status、Confirmed、Total Markups、Last Updated、Actions 为准。
@@ -127,7 +127,7 @@ owner: ""
 | RFA No. | 外部报审编号 | ❌ | 见 RFA No. 列显示规则 |
 | Subject of RFA | 外部报审主题 | ❌ | 见 Subject of RFA 列显示规则 |
 | Current Version | 当前版本号（如 V3） | ❌ | — |
-| Status | `<DrawingStatusTag>` 颜色标签 | ❌ | 5 态，见 §4.1 |
+| Status | `<DrawingStatusTag>` 颜色标签 | ❌ | 5 态，见 §4.1；外部审批完成后右侧附加灰色小字 (A)–(E)，见 §4.1 结果代码规则 |
 | Confirmed | 已确认/总分配数（如 3/5） | ❌ | Status = `ACTIVE` 时显示 x/y；其他状态显示 `—` |
 | Total Markups | 标注总数（数字） | ❌ | — |
 | Last Updated | 最后更新日期时间 | ✅ 默认倒序 | — |
@@ -227,6 +227,25 @@ owner: ""
 | `ACTIVE` | Active | `--color-status-success` | `#67C23A` | `el-tag` type=`success` |
 | `INTERNAL_REJECTED` | Int. Rejected | `--color-status-danger` | `#F56C6C` | `el-tag` type=`danger` |
 | `EXTERNAL_REJECTED` | Ext. Rejected | `--color-status-danger` | `#F56C6C` | `el-tag` type=`danger` |
+
+**外部审批结果代码附加显示规则**（AC-003A-011C / AC-003A-011D）：
+
+外部审批完成后（状态进入 `ACTIVE` 或 `EXTERNAL_REJECTED`），Status 标签右侧以**灰色小字**附加结果代码，格式为 `(A)` / `(B)` / `(C)` / `(D)` / `(E)`。
+
+| 结果代码 | 描述 | 对应状态 | Status 列完整展示示例 |
+|---------|------|---------|-------------------|
+| A | Approved / No Exception Taken | `ACTIVE` | 🟢 `Active` `(A)` |
+| B | Approved with comment, resubmission required | `ACTIVE` | 🟢 `Active` `(B)` |
+| C | Revise And Resubmit | `EXTERNAL_REJECTED` | 🔴 `Ext. Rejected` `(C)` |
+| D | For Record Purpose | `ACTIVE` | 🟢 `Active` `(D)` |
+| E | Others | `EXTERNAL_REJECTED` | 🔴 `Ext. Rejected` `(E)` |
+
+**视觉规范**：
+- 结果代码文字颜色：`var(--text-color-secondary, #909399)`（灰色），独立于状态标签颜色
+- 结果代码字号：`11px`，与状态标签主文字（`12px`）区分
+- 布局：结果代码与状态标签**内联排列**，间距 `4px`，整体保持在同一单元格内
+- Tooltip：鼠标悬停结果代码时，展示完整描述文案，例如：`"B – Approved with comment, resubmission required"`
+- 外部审批尚未完成的状态（`PENDING_INTERNAL` / `PENDING_EXTERNAL` / `INTERNAL_REJECTED`）**不附加**结果代码
 
 ### 4.2 间距与布局
 
@@ -354,6 +373,11 @@ owner: ""
 | RFA No. 未发起时占位 | — |
 | Subject of RFA 未发起时占位 | — |
 | Confirmed（非 ACTIVE 状态）占位 | — |
+| Status 结果代码 Tooltip（结果 A） | A – Approved / No Exception Taken |
+| Status 结果代码 Tooltip（结果 B） | B – Approved with comment, resubmission required |
+| Status 结果代码 Tooltip（结果 C） | C – Revise And Resubmit |
+| Status 结果代码 Tooltip（结果 D） | D – For Record Purpose |
+| Status 结果代码 Tooltip（结果 E） | E – Others (please state reason) |
 
 ---
 
@@ -365,6 +389,8 @@ owner: ""
 | AC-003A-005B | §3.1 Actions 列 [Upload New Version] | PENDING_INTERNAL / PENDING_EXTERNAL 时置灰 + Tooltip | ✅ |
 | AC-003A-011 | §3.1 表格列定义 | 展示 Description / Category / RFA No. 等列，不展示 Drawing Code / Name | ✅ |
 | AC-003A-011B | §3.1 Status 颜色标签 + §4.1 | 5 态颜色正确对应 | ✅ |
+| AC-003A-011C | §3.1 Status 列说明 + §4.1 结果代码规则 | 外部审批完成后 Status 标签右侧附加灰色 (A)–(E) 结果代码；外部审批未完成时不显示代码 | ✅ |
+| AC-003A-011D | §4.1 结果代码规则 + §3.1 Actions | Status B 时显示 `Active (B)`；[Upload New Version] 在 ACTIVE 状态可点，设计人员可据此发起新版本上传 | ✅ |
 | AC-003A-012 | §3.1 Filter Search Popover 字段 | 包含 Description / Category / Status；不包含 Drawing Code / Name | ✅ |
 | AC-003A-013 | §3.1 Status 下拉选项 | 6 项：All / Active / Pending Internal / Pending External / Int. Rejected / Ext. Rejected | ✅ |
 | AC-003A-014 | §3.1 Filter Search 按钮文案 | 有 n 条件时显示"Filter Search (n)"；清空后恢复"Filter Search" | ✅ |
@@ -391,6 +417,7 @@ owner: ""
 - [ ] Filter Search Popover 设计稿（收起态 / 展开空态 / 已填写态 / 按钮计数态）
 - [ ] 列表 6 态设计稿（空-无图纸 / 空-无结果 / 加载 / 正常 / 错误 / 极端数据）
 - [ ] DrawingStatusTag 所有 5 种状态色块设计稿
+- [ ] DrawingStatusTag 结果代码附加展示设计稿（Active (A) / Active (B) / Active (D) / Ext. Rejected (C) / Ext. Rejected (E)），包含结果代码 Tooltip 气泡
 - [ ] Actions 列 6 个按钮正常态设计稿（含各按钮 Tooltip 气泡）
 - [ ] Actions 列 [Upload New Version] 置灰态 + Tooltip 设计稿
 - [ ] Actions 列 [Part Print] 按钮状态设计稿（ACTIVE 时展示 vs 非 ACTIVE 时隐藏）
@@ -414,4 +441,5 @@ owner: ""
 | 0.1.0 | 2026-05-04 | agent | 从 REQ-003A-pc.md@0.1.0 生成初稿（含列表页 + Upload New Drawing 侧滑面板 + Upload New Version 侧滑面板） |
 | 0.4.3 | 2026-05-25 | agent | 同步 REQ-003A-pc@0.4.3：① 明确列表行语义——每行 = DrawingVersion（一次 PDF 上传），Drawing No / Drawing Name 为页级属性不在列展示；② §1.2 设计原则第 4 条更新；③ §3.1 新增列表行语义说明块；④ AC 覆盖表新增 AC-003A-016 |
 | 0.4.4 | 2026-05-25 | agent | 同步 REQ-003A-pc@0.4.4：① Actions 列扩展为 6 个按钮，从左到右：View / History / Confirms / Assign / Part Print / Upload New Version；② 更新信息架构（§2.1 页面层级、§2.2 导航入口）；③ 重写 §3.1 Actions 列按钮表格（含顺序、图标、行为、可见角色、状态规则、Tooltip）；④ 扩充关键交互表（新增 6 个按钮点击交互行为）；⑤ 权限可见性表扩展为 9 行；⑥ 新增 el-dialog 现有组件 + DrawingHistoryDialog / DrawingConfirmsDialog / DrawingAssignDialog / DrawingPartPrintDialog 新建组件；⑦ 文案规范重整，按钮分别列出；⑧ AC 覆盖表新增 AC-003A-005B；⑨ Open Questions 新增 OQ-UI-004 / OQ-UI-005；⑩ 设计交付验收清单更新 Actions 列验收项 |
+| 0.4.6 | 2026-05-26 | agent | 同步 REQ-003A-pc@0.4.6：① §4.1 新增外部审批结果代码附加显示规则（A–E 代码映射表、视觉规范：灰色 `#909399` 11px 小字、间距 4px、Tooltip 完整描述）；② §1.2 设计原则第 1 条更新；③ §3.1 Status 列备注补充结果代码说明；④ §9 文案规范新增 5 条结果代码 Tooltip 文案；⑤ §10 AC 覆盖表新增 AC-003A-011C / 011D；⑥ §12 设计交付验收清单新增结果代码设计稿项 | Frontend、QA |
 | 0.4.5 | 2026-05-25 | agent | 同步 REQ-003A-pc@0.4.5：① [Part Print] 关联 REQ-004-pc——点击触发 REQ-004 [+ Markup] 发布局部更新弹窗；② 状态限制更新：非 `ACTIVE` 时**隐藏**按钮（而非始终可见）；③ 更新 §2.1 页面层级、§2.2 导航入口、§3.1 Actions 按钮表（第 5 行）、关键交互、权限可见性；④ §8 DrawingPartPrintDialog 补充引用 REQ-004-pc 与 UI-REQ-004-pc；⑤ AC-003A-005 补充 Part Print 状态限制说明；⑥ OQ-UI-005 标记已关闭；⑦ 验收清单新增 Part Print 状态设计稿与弹框设计稿 |① 移除 §3.2 Upload New Drawing / §3.3 Upload New Version（分别迁至 UI-REQ-003E-pc / UI-REQ-003F-pc）；② 表格列更新：移除 Drawing Code / Name，新增 Description、RFA No.、Subject of RFA、Total Markups；③ Filter Search 从推开面板改为 Popover，筛选字段改为 Description / Category / Status（移除 Drawing Code / Name）；④ Status 枚举更新为 5 态（PENDING_INTERNAL / PENDING_EXTERNAL / ACTIVE / INTERNAL_REJECTED / EXTERNAL_REJECTED），颜色语义表更新；⑤ Status 筛选下拉更新为 6 项；⑥ [Upload New Version] 置灰条件更新为 PENDING_INTERNAL 或 PENDING_EXTERNAL；⑦ AC 覆盖表更新为 003A-005 / 011 / 011B / 012 / 013 / 014 / 015；⑧ 新建组件清单新增 DrawingSearchPopover，替换原 DrawingSearchPanel |
