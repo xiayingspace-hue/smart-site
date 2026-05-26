@@ -3,7 +3,7 @@
 > 按需求编号记录每个 REQ 的功能范围、涉及端、对已有需求的影响。
 > 快速了解"每个需求做了什么"以及"改了什么"。
 >
-> **最后更新**：2026-05-24
+> **最后更新**：2026-05-26
 
 ---
 
@@ -565,6 +565,42 @@
 
 ---
 
+## REQ-003F · 上传新版本（PC端）
+
+- **状态**: 草稿（v0.5.0，2026-05-25）
+- **涉及端**: PC
+- **依赖**: REQ-003A-pc、REQ-007-shared、REQ-003-shared
+
+### 新增内容
+- 设计人员在图纸列表对状态为 `ACTIVE`、`INTERNAL_REJECTED`、`EXTERNAL_REJECTED` 的图纸点击 [Upload New Version]，打开上传新版本弹窗
+- 弹窗展示 Drawing 主记录只读字段（Drawing Code、Drawing Name、Category、Description、Current Version），不允许修改
+- 上传 PDF 后触发 AI 识别（异步轮询，最长 60s），识别期间显示 Loading 动画，[Submit] 置灰
+- AI 识别 DONE：以**只读列表**展示各页（页码 / 缩略图 / Drawing Code / Drawing Name），供设计人员核对 PDF 内容是否正确；有未识别字段时页级显示 ⚠ 橙色标记
+- AI 识别 FAILED / 超时：显示橙色降级横幅，提供 [Re-upload]（清空重来）和 [Proceed Anyway]（跳过识别直接提交）两条路径
+- 文件校验：仅接受 PDF，最大 50MB；非 PDF 或超大文件即时提示拒绝
+- 可编辑字段仅三项：Drawing File（新版本 PDF）、Version Note（选填）、Internal Approver（必填）
+- 提交时展示上传进度条，[Submit] 在提交过程中禁用（防止重复提交）
+- 提交成功后：弹窗关闭、列表刷新、状态变为 `PENDING_INTERNAL`、系统版本号自动 +1、Snackbar 提示、指定内部审批人 Todo 即时出现
+- 状态守卫：图纸处于 `PENDING_INTERNAL` / `PENDING_EXTERNAL` 时，列表页 [Upload New Version] 按钮置灰，并发提交时后端返回 409
+
+### 对已有需求的影响
+| 需求 | 影响 |
+|------|------|
+| **REQ-003A** | "上传新版本"入口及状态守卫规则在 REQ-003A 列表页生效（按钮置灰逻辑需同步更新） |
+| **REQ-003E** | REQ-003F 与 REQ-003E 共用 `AiResultList.vue` 组件（readonly 模式）和 AI 识别轮询逻辑，REQ-003F 中识别结果仅供核对，不填入表单 |
+| **REQ-007A** | 提交成功后触发内部审批 Todo，逻辑与 REQ-007A 中描述一致 |
+
+### 文档清单
+| 类型 | 文件 |
+|------|------|
+| PC 端需求 | `requirements/pc/REQ-003F-pc.md` |
+| UI 设计 | `outputs/ui/pc/UI-REQ-003F-pc.md` |
+| 前端开发 | `outputs/frontend/pc/FRONTEND-REQ-003F-pc.md` |
+| 后端开发 | `outputs/backend/BACKEND-REQ-003F.md` |
+| QA 测试 | `outputs/qa/pc/QA-REQ-003F-pc.md` |
+
+---
+
 ## REQ-003D · 项目管理员图纸 SE 分配（PC端）
 
 - **状态**: 草稿
@@ -792,6 +828,7 @@ REQ-001 登录和首页（基础）
   ├── REQ-003 工程图纸管理（核心模块）
   │     ├── REQ-003A 图纸上传与审批发起（PC端）
   │     │     ├── REQ-003E 图纸上传 AI 自动识别页信息（PC端，增强 REQ-003A 上传弹窗）
+  │     │     ├── REQ-003F 上传新版本（PC端，共用 REQ-003E AiResultList 组件）
   │     │     └── REQ-003B 审批人图纸审批（PC端）
   │     │           ├── REQ-003C 图纸版本历史与查阅确认记录（PC端）
   │     │           └── REQ-003D 项目管理员图纸 SE 分配（PC端）
