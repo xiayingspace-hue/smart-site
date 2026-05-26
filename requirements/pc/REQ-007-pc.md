@@ -1,4 +1,24 @@
-# PC 管理端 — 图纸两级审批流程
+# ~~PC 管理端 — 图纸两级审批流程~~
+
+> [!WARNING]
+> **⚠️ 此文档已废弃（Deprecated）**
+>
+> 本文档已于 2026-05-27 被以下子需求文档完整替代，**请勿继续引用或基于本文档生成下游产物**。
+> 下游文档（`FRONTEND-REQ-007-pc` 等）需重新基于下列文档重新生成。
+>
+> | 替代文档 | 覆盖范围 |
+> |---|---|
+> | [REQ-007A-pc.md](REQ-007A-pc.md) | 内部审批 Todo、详情查看与原文件下载 |
+> | [REQ-007B-pc.md](REQ-007B-pc.md) | DC 外部审批 Todo 与 Mark Result Dialog |
+> | [REQ-007C-pc.md](REQ-007C-pc.md) | 版本历史抽屉 4 阶段生命周期视图 |
+> | [REQ-007D-pc.md](REQ-007D-pc.md) | DC 配置页面 |
+> | [REQ-003A-pc.md](REQ-003A-pc.md) | 图纸列表状态标签扩展（5 种状态） |
+> | [REQ-003E-pc.md](REQ-003E-pc.md) / [REQ-003F-pc.md](REQ-003F-pc.md) | 上传弹窗变更（Internal Approver 标签、阻断条件） |
+> | [REQ-007-shared.md](../shared/REQ-007-shared.md) | 站内消息通知扩展 |
+>
+> **注意**：子文档中新增了详情侧滑（Detail Drawer）、原文件下载等能力，与本文档描述存在差异，以子文档为准。
+
+---
 
 > **端**: PC 管理端（桌面浏览器 Web 管理后台）
 > **共享需求**: [REQ-007-shared.md](../shared/REQ-007-shared.md)（角色定义、完整审批流程、数据模型、API 接口）

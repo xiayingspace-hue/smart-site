@@ -1,4 +1,23 @@
-# PC 管理端 — 工程图纸管理
+# ~~PC 管理端 — 工程图纸管理~~
+
+> [!WARNING]
+> **⚠️ 此文档已废弃（Deprecated）**
+>
+> 本文档已于 2026-05-27 被以下子需求文档完整替代，**请勿继续引用或基于本文档生成下游产物**。
+> 下游文档（`FRONTEND-REQ-003-pc`、`QA-REQ-003-pc` 等）需重新基于下列文档重新生成。
+>
+> | 替代文档 | 覆盖范围 |
+> |---|---|
+> | [REQ-003A-pc.md](REQ-003A-pc.md) | 图纸管理列表页（布局、筛选、表格列、操作按钮） |
+> | [REQ-003E-pc.md](REQ-003E-pc.md) | 新建图纸上传（含 AI 自动识别页信息） |
+> | [REQ-003F-pc.md](REQ-003F-pc.md) | 上传新版本 |
+> | [REQ-003C-pc.md](REQ-003C-pc.md) | 版本历史抽屉 + 查阅确认记录面板 |
+> | [REQ-003D-pc.md](REQ-003D-pc.md) | 分配 Site Engineer |
+> | [REQ-007A-pc.md](REQ-007A-pc.md) / [REQ-007B-pc.md](REQ-007B-pc.md) | 审批 Todo（Approve / Reject） |
+>
+> **注意**：子文档中数据模型已重构——"每行 = 一次提交记录（DrawingVersion）"，与本文档中旧模型不同，以子文档为准。
+
+---
 
 > **端**: PC 管理端（桌面浏览器 Web 管理后台）
 > **共享需求**: [REQ-003-shared.md](../shared/REQ-003-shared.md)（业务规则、数据模型、API 接口、审批流程）
