@@ -14,7 +14,6 @@ depends_on:
   - REQ-003A-pc
   - REQ-003-shared
 related_to:
-  - REQ-003B-pc
   - REQ-003D-pc
   - REQ-007A-pc
 blocks: []

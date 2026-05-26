@@ -12,7 +12,7 @@ updated_at: 2026-05-23
 
 depends_on:
   - REQ-003A-pc
-  - REQ-003B-pc
+  - REQ-007A-pc
 related_to:
   - REQ-003D-pc
   - REQ-003-shared
@@ -45,7 +45,7 @@ generate:
 ### 1.3 非目标（Out of Scope）
 
 - 图纸上传（由 REQ-003A-pc 覆盖）
-- 审批操作（由 REQ-003B-pc 覆盖）
+- 审批操作（由 REQ-007A-pc / REQ-007B-pc 覆盖）
 - SE 分配操作（由 REQ-003D-pc 覆盖）
 - APP 端查阅确认（由 REQ-003-app 覆盖）
 
@@ -322,7 +322,8 @@ Then   显示 —，无可点击链接
 | 依赖系统 | 用途 | 集成方式 | Owner |
 |---------|------|---------|-------|
 | REQ-003A-pc | 版本数据来源 | 业务数据 | — |
-| REQ-003B-pc | 审批记录来源 | 业务数据 | — |
+| REQ-007A-pc | 内部审批记录来源 | 业务数据 | — |
+| REQ-007B-pc | 外部审批记录来源 | 业务数据 | — |
 | REQ-003D-pc | SE 分配数据来源 | 业务数据 | — |
 | REQ-003-shared | 接口定义、业务规则 | 文档引用 | — |
 
@@ -392,4 +393,4 @@ Then   显示 —，无可点击链接
 ## 19. 备注
 
 - 本文档从 REQ-003-pc.md 按用户故事拆分而来，原始共享业务规则与 API 定义见 [REQ-003-shared.md](../shared/REQ-003-shared.md)。
-- 图纸管理其他用户故事见：REQ-003A-pc（上传）、REQ-003B-pc（审批）、REQ-003D-pc（分配 SE）。
+- 图纸管理其他用户故事见：REQ-003A-pc（上传）、REQ-007A-pc（内部审批）、REQ-007B-pc（外部审批）、REQ-003D-pc（分配 SE）。

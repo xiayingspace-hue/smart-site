@@ -17,7 +17,6 @@ related_to:
   - REQ-007B-pc
   - REQ-007C-pc
   - REQ-007D-pc
-  - REQ-003B-pc
 blocks:
   - REQ-007B-pc
 

@@ -16,7 +16,6 @@ depends_on:
 related_to:
   - REQ-003E-pc
   - REQ-003F-pc
-  - REQ-003B-pc
   - REQ-003C-pc
   - REQ-003D-pc
   - REQ-004-pc
@@ -411,5 +410,5 @@ Then   列表新增 1 行，对应该 PDF 的提交记录（DrawingVersion V0）
 - 本文档从原 REQ-003A-pc v0.3.1（图纸上传与审批发起）拆分重构，原文档同时承担列表、上传新建、上传新版本三项职责，拆分后职责收窄。
 - 新建图纸上传：见 [REQ-003E-pc](REQ-003E-pc.md)
 - 上传新版本：见 [REQ-003F-pc](REQ-003F-pc.md)
-- 图纸管理其他用户故事：REQ-003B-pc（审批）、REQ-003C-pc（查看历史/确认）、REQ-003D-pc（分配 SE）
+- 图纸管理其他用户故事：REQ-003C-pc（查看历史/确认）、REQ-003D-pc（分配 SE）
 

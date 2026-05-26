@@ -357,7 +357,6 @@ owner: ""
 
 | 受影响功能 | 影响原因 | 回归用例 |
 |----------|---------|---------|
-| Todo 列表（REQ-003B-pc 旧单级审批） | 内部审批卡片操作区变更 | 验证旧 Todo 卡片样式不受影响 |
 | 图纸上传流程（REQ-003A-pc） | fileUrl 字段由上传流程写入 | 上传后 /detail 接口返回正确 fileUrl |
 | 外部审批 Todo（REQ-007B-pc） | 内部审批通过后触发创建 | DC 用户收到正确的 External Approval Required Todo |
 | 图纸状态标签（REQ-007-pc） | INTERNAL_APPROVED 状态展示 | 版本标签显示 Pending External |
