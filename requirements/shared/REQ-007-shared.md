@@ -758,7 +758,7 @@ Then   API 返回 403；UI 对应入口不显示或置灰
   - [REQ-007B-pc](../pc/REQ-007B-pc.md)：PC 端 DC 外部审批 Todo 与 Mark Result Dialog
   - [REQ-007C-pc](../pc/REQ-007C-pc.md)：PC 端版本历史抽屉（4 阶段生命周期视图）
   - [REQ-007D-pc](../pc/REQ-007D-pc.md)：PC 端 DC 配置页
-- APP 端内部审批 Todo 沿用 REQ-003-app，仅状态标签变更
+- APP 端内部审批 Todo 见 REQ-003-app，仅状态标签变更
 - H5 端不涉及图纸审批操作
 - 对现有需求的影响摘要：
   | 需求 | 影响说明 |

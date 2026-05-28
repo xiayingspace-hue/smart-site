@@ -1,6 +1,6 @@
 # 后端开发说明文档 — REQ-003 图纸版本管理与查阅确认
 
-> **来源需求**: [REQ-003-shared.md](../../requirements/shared/REQ-003-shared.md) + [REQ-003-app.md](../../requirements/app/REQ-003-app.md)
+> **来源需求**: [REQ-003-shared.md](../../requirements/shared/REQ-003-shared.md) + [REQ-005-app.md](../../requirements/app/REQ-005-app.md) + [REQ-003-app.md](../../requirements/app/REQ-003-app.md)
 > **产品**: SMART SITE SYSTEM
 > **服务模块**: `drawing-service`
 > **生成日期**: 2026-04-08

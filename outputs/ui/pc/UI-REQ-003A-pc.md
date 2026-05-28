@@ -1,10 +1,10 @@
 ---
 doc_type: ui_spec
 req_id: REQ-003A-pc
-version: 0.4.6
+version: 0.5.0
 status: draft
-generated_from: REQ-003A-pc@0.4.6
-generated_at: 2026-05-26
+generated_from: REQ-003A-pc@0.5.0
+generated_at: 2026-05-27
 owner: ""
 ---
 
@@ -24,10 +24,10 @@ owner: ""
 
 | 项 | 值 |
 |---|---|
-| 来源需求 | REQ-003A-pc @ v0.4.6 |
-| 覆盖用户故事 | US-003A-LIST-001 |
-| 覆盖 AC | AC-003A-005、AC-003A-005B、AC-003A-011、AC-003A-011B、AC-003A-011C、AC-003A-011D、AC-003A-012、AC-003A-013、AC-003A-014、AC-003A-015、AC-003A-016 |
-| 上次同步时间 | 2026-05-26 |
+| 来源需求 | REQ-003A-pc @ v0.5.0 |
+| 覆盖用户故事 | US-003A-LIST-001、US-003A-LIST-002 |
+| 覆盖 AC | AC-003A-005、AC-003A-005B、AC-003A-011、AC-003A-011B、AC-003A-011C、AC-003A-011D、AC-003A-012、AC-003A-013、AC-003A-014、AC-003A-015、AC-003A-016、AC-003A-017、AC-003A-018 |
+| 上次同步时间 | 2026-05-27 |
 
 > ⚠️ 当来源需求版本变更时，本文档需更新此块，并 review 受影响章节。
 
@@ -43,7 +43,7 @@ owner: ""
 
 1. **状态一目了然**：5 种审批状态以颜色标签区分，橙色=待审批、绿色=生效、红色=驳回；外部审批完成后在状态标签右侧附加结果代码 (A)–(E)，便于用户在列表层直接读取审批结论。
 2. **非侵入式筛选**：Filter Search 以 Popover 浮层展开，不推动表格，不打断浏览体验；点击外部自动关闭并保留条件。
-3. **操作前置守卫**：审批中状态时 [Upload New Version] 置灰并带 Tooltip 说明，防止误操作；[Assign] 仅对项目管理员可见；[Part Print] 仅对设计人员可见。
+3. **操作前置守卫**：审批中状态时 [Upload New Version] 置灰并带 Tooltip 说明，防止误操作；[Assign] 仅对项目管理员可见；[Part Print] 仅对设计人员可见；[Export] 仅对项目管理员可见。
 4. **列精简，行语义明确**：表格每一行代表**一次提交记录（DrawingVersion）**，对应设计人员上传的一个 PDF 文件（含多页图纸）；Drawing No / Drawing Name 为页级属性，**不在列表列中展示**，需进入详情页查看。列展示以 Description、Category、RFA No.、Subject of RFA、Version、Status、Confirmed、Total Markups、Last Updated、Actions 为准。
 5. **跨文档职责清晰**：本页面仅承载列表展示与筛选；新建图纸弹窗见 UI-REQ-003E-pc，上传新版本弹窗见 UI-REQ-003F-pc。
 
@@ -58,6 +58,7 @@ owner: ""
 └── Drawing Management（一级菜单）
     └── Drawing Masterlist（二级菜单）→ 图纸列表页（本文档）
         ├── [Filter Search] Popover（点击按钮浮出）
+        ├── [Export]           → 触发 Excel 文件下载（仅项目管理员可见）
         ├── [+ Upload Drawing] → 触发新建图纸弹窗（见 UI-REQ-003E-pc）
         ├── 图纸列表表格
         │   └── Actions 列（从左到右）
@@ -74,6 +75,7 @@ owner: ""
 | 入口位置 | 链接到 | 触发角色 |
 |---------|-------|---------|
 | 侧边栏 Drawing Management → Drawing Masterlist | 图纸列表页 | 所有角色 |
+| 图纸列表页右上角 [Export] | 触发 Excel 文件下载 | 项目管理员 |
 | 图纸列表页右上角 [+ Upload Drawing] | 新建图纸弹窗（UI-REQ-003E-pc） | 设计人员 |
 | 列表行 Actions 列 [View] | 最新版本图纸 PDF 预览 | 所有角色 |
 | 列表行 Actions 列 [History] | 提交历史弹框（UI-REQ-003C-pc） | 所有角色 |
@@ -88,8 +90,8 @@ owner: ""
 
 ### 3.1 图纸管理列表页（Drawing Masterlist）
 
-**关联 Story**：US-003A-LIST-001
-**关联 AC**：AC-003A-005、AC-003A-005B、AC-003A-011、AC-003A-011B、AC-003A-012、AC-003A-013、AC-003A-014、AC-003A-015、AC-003A-016
+**关联 Story**：US-003A-LIST-001、US-003A-LIST-002
+**关联 AC**：AC-003A-005、AC-003A-005B、AC-003A-011、AC-003A-011B、AC-003A-012、AC-003A-013、AC-003A-014、AC-003A-015、AC-003A-016、AC-003A-017、AC-003A-018
 
 > **列表行语义**：每一行 = 一次提交记录（**DrawingVersion**），对应一个上传的 PDF 文件。该 PDF 内各页图纸各自拥有 Drawing No 和 Drawing Name（页级属性），**不在列表列中展示**；可点击行进入详情页查看页级图纸信息。
 
@@ -99,7 +101,7 @@ owner: ""
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  顶部操作区                                                                   │
 │  [⚙ Filter Search]  /  [⚙ Filter Search (2)]                                │
-│                                               [+ Upload Drawing]             │
+│                                        [↓ Export]  [+ Upload Drawing]        │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  表格                                                                        │
 │  Description | Category | RFA No. | Subject of RFA | Current Version        │
@@ -117,6 +119,18 @@ owner: ""
 │               [Cancel]  [Search] │
 └──────────────────────────────────┘
 ```
+
+**顶部操作区布局**：
+- 左侧：[Filter Search] 按钮
+- 右侧（从左到右）：[Export]（仅项目管理员可见）、[+ Upload Drawing]
+
+**[Export] 按钮规格**：
+- **可见性**：仅项目管理员角色渲染此按钮，其他角色完全隐藏（不占位）
+- **默认态**：次要按钮（`el-button` plain），图标使用 `el-icon-download`，文案"Export"
+- **Loading 态**：点击后按钮进入 loading 状态（`el-button` loading），不可重复点击，文案变为"Exporting…"
+- **完成态**：文件下载触发后按钮恢复可点击默认态
+- **失败态**：下载失败时按钮恢复默认态，同时页面右上角弹出 `el-message` error 类型，文案"Export failed, please try again"
+- **导出范围**：当前 Filter Search 筛选条件下的全部记录（与当前列表所展示数据一致）
 
 #### 表格列定义
 
@@ -175,6 +189,9 @@ owner: ""
 
 | 交互 | 触发 | 反馈 |
 |-----|------|-----|
+| 点击 [+ Upload Drawing] | 点击顶部按钮 | 打开新建图纸弹窗（UI-REQ-003E-pc） |
+| 点击 [Export]（默认态） | 项目管理员点击 Export 按钮 | 按钮进入 loading 态（"Exporting…"）→ 触发文件下载 → 按钮恢复默认态 |
+| 点击 [Export]（失败） | 导出接口返回错误 | 按钮恢复默认态，右上角弹出 error toast："Export failed, please try again" |
 | 点击 [Filter Search] | 点击顶部按钮 | Popover 浮出（fade + 向下位移 4px，150ms ease-out），按钮高亮 |
 | 执行搜索（有条件） | 点击 Popover 内 [Search] | Loading 态 → Popover 关闭 → 列表更新 → 按钮显示"Filter Search (n)" |
 | 执行搜索（无条件） | 点击 Popover 内 [Search] | 等同全量查询，Popover 关闭，按钮显示"Filter Search" |
@@ -205,6 +222,7 @@ owner: ""
 | UI 元素 | 设计人员 | 内部审批人 | 项目管理员 | Site Engineer |
 |--------|:-------:|:---------:|:---------:|:-------------:|
 | 列表整体 | ✅ | ✅ | ✅ | — |
+| [Export] | ❌ 隐藏 | ❌ 隐藏 | ✅ | — |
 | [+ Upload Drawing] | ✅ | ❌ | ❌ | — |
 | [View] | ✅ | ✅ | ✅ | — |
 | [History] | ✅ | ✅ | ✅ | — |
@@ -252,6 +270,7 @@ owner: ""
 | 组件 | 属性 | 值 |
 |-----|------|----|
 | 顶部操作区 | display | flex；justify-content: space-between；align-items: center |
+| 顶部操作区右侧按钮组 | display | flex；gap: 8px；align-items: center |
 | Filter Search 按钮容器 | height | 32px；padding: 5px 8px；border-radius: 2px |
 | Filter Search 按钮容器 | border | 1px solid `var(--border-color, #D8E2F0)` |
 | Filter Search 按钮容器 | background | `var(--Vertical-Menu-White, #FFF)` |
@@ -334,7 +353,7 @@ owner: ""
 | 组件 | 来源 | 备注 |
 |-----|------|------|
 | `el-table` | Element UI 现有 | 表格主体 |
-| `el-button` | Element UI 现有 | 顶部操作按钮、Actions 列图标按钮 |
+| `el-button` | Element UI 现有 | 顶部操作按钮（含 [Export]、[+ Upload Drawing]）、Actions 列图标按钮 |
 | `el-select` | Element UI 现有 | Popover 内 Category / Status 下拉 |
 | `el-input` | Element UI 现有 | Popover 内 Description 文本输入 |
 | `el-popover` | Element UI 现有 | Filter Search 浮层容器 |
@@ -356,6 +375,9 @@ owner: ""
 |-----|----------|
 | 页面标题 | Drawing Masterlist |
 | 新建按钮 | + Upload Drawing |
+| 导出按钮（默认态） | Export |
+| 导出按钮（loading 态） | Exporting… |
+| 导出失败提示 | Export failed, please try again |
 | [View] 按钮 Tooltip | View |
 | [History] 按钮 Tooltip | History |
 | [Confirms] 按钮 Tooltip | Confirms |
@@ -396,6 +418,8 @@ owner: ""
 | AC-003A-014 | §3.1 Filter Search 按钮文案 | 有 n 条件时显示"Filter Search (n)"；清空后恢复"Filter Search" | ✅ |
 | AC-003A-015 | §3.1 点击 Popover 外部 | Popover 关闭，条件保留，不触发查询 | ✅ |
 | AC-003A-016 | §3.1 列表行语义说明 + 表格列定义 | 上传 1 个 PDF → 列表新增 1 行（DrawingVersion V0）；页级 Drawing No / Name 不在列展示 | ✅ |
+| AC-003A-017 | §3.1 权限可见性 + [Export] 按钮规格 | [Export] 仅对项目管理员渲染，其他角色隐藏 | ✅ |
+| AC-003A-018 | §3.1 [Export] 按钮规格 + 关键交互 | 点击触发文件下载；loading 态；失败时 error toast | ✅ |
 
 ---
 
@@ -413,6 +437,8 @@ owner: ""
 
 ## 12. 设计交付验收清单
 
+- [ ] [Export] 按钮设计稿（默认态 / loading 态，仅项目管理员视角可见）
+- [ ] [Export] 失败 error toast 设计稿
 - [ ] Figma 稿覆盖图纸管理列表页全部列（含 Description / RFA No. / Subject of RFA / Total Markups）
 - [ ] Filter Search Popover 设计稿（收起态 / 展开空态 / 已填写态 / 按钮计数态）
 - [ ] 列表 6 态设计稿（空-无图纸 / 空-无结果 / 加载 / 正常 / 错误 / 极端数据）
@@ -441,5 +467,6 @@ owner: ""
 | 0.1.0 | 2026-05-04 | agent | 从 REQ-003A-pc.md@0.1.0 生成初稿（含列表页 + Upload New Drawing 侧滑面板 + Upload New Version 侧滑面板） |
 | 0.4.3 | 2026-05-25 | agent | 同步 REQ-003A-pc@0.4.3：① 明确列表行语义——每行 = DrawingVersion（一次 PDF 上传），Drawing No / Drawing Name 为页级属性不在列展示；② §1.2 设计原则第 4 条更新；③ §3.1 新增列表行语义说明块；④ AC 覆盖表新增 AC-003A-016 |
 | 0.4.4 | 2026-05-25 | agent | 同步 REQ-003A-pc@0.4.4：① Actions 列扩展为 6 个按钮，从左到右：View / History / Confirms / Assign / Part Print / Upload New Version；② 更新信息架构（§2.1 页面层级、§2.2 导航入口）；③ 重写 §3.1 Actions 列按钮表格（含顺序、图标、行为、可见角色、状态规则、Tooltip）；④ 扩充关键交互表（新增 6 个按钮点击交互行为）；⑤ 权限可见性表扩展为 9 行；⑥ 新增 el-dialog 现有组件 + DrawingHistoryDialog / DrawingConfirmsDialog / DrawingAssignDialog / DrawingPartPrintDialog 新建组件；⑦ 文案规范重整，按钮分别列出；⑧ AC 覆盖表新增 AC-003A-005B；⑨ Open Questions 新增 OQ-UI-004 / OQ-UI-005；⑩ 设计交付验收清单更新 Actions 列验收项 |
+| 0.5.0 | 2026-05-27 | agent | 同步 REQ-003A-pc@0.5.0：① 顶部操作区新增 [Export] 按钮（次要按钮，icon `el-icon-download`，位于 [+ Upload Drawing] 左侧），仅项目管理员可见；② 更新顶部操作区 ASCII 布局图；③ 新增 [Export] 按钮规格说明（默认态/loading 态/失败态）；④ 新增右侧按钮组 flex 容器间距规则（gap: 8px）；⑤ §2.1 页面层级新增 [Export] 节点；⑥ §2.2 导航表新增 Export 行；⑦ §1.2 设计原则第 3 条补充 Export 可见性说明；⑧ 权限可见性表新增 [Export] 行；⑨ 关键交互表新增 Export 点击与失败两条；⑩ 文案规范新增 Export 相关 3 条；⑪ AC 覆盖表新增 AC-003A-017 / AC-003A-018；⑫ 溯源块更新版本与 AC 列表；⑬ 验收清单新增 Export 设计稿项 |
 | 0.4.6 | 2026-05-26 | agent | 同步 REQ-003A-pc@0.4.6：① §4.1 新增外部审批结果代码附加显示规则（A–E 代码映射表、视觉规范：灰色 `#909399` 11px 小字、间距 4px、Tooltip 完整描述）；② §1.2 设计原则第 1 条更新；③ §3.1 Status 列备注补充结果代码说明；④ §9 文案规范新增 5 条结果代码 Tooltip 文案；⑤ §10 AC 覆盖表新增 AC-003A-011C / 011D；⑥ §12 设计交付验收清单新增结果代码设计稿项 | Frontend、QA |
 | 0.4.5 | 2026-05-25 | agent | 同步 REQ-003A-pc@0.4.5：① [Part Print] 关联 REQ-004-pc——点击触发 REQ-004 [+ Markup] 发布局部更新弹窗；② 状态限制更新：非 `ACTIVE` 时**隐藏**按钮（而非始终可见）；③ 更新 §2.1 页面层级、§2.2 导航入口、§3.1 Actions 按钮表（第 5 行）、关键交互、权限可见性；④ §8 DrawingPartPrintDialog 补充引用 REQ-004-pc 与 UI-REQ-004-pc；⑤ AC-003A-005 补充 Part Print 状态限制说明；⑥ OQ-UI-005 标记已关闭；⑦ 验收清单新增 Part Print 状态设计稿与弹框设计稿 |① 移除 §3.2 Upload New Drawing / §3.3 Upload New Version（分别迁至 UI-REQ-003E-pc / UI-REQ-003F-pc）；② 表格列更新：移除 Drawing Code / Name，新增 Description、RFA No.、Subject of RFA、Total Markups；③ Filter Search 从推开面板改为 Popover，筛选字段改为 Description / Category / Status（移除 Drawing Code / Name）；④ Status 枚举更新为 5 态（PENDING_INTERNAL / PENDING_EXTERNAL / ACTIVE / INTERNAL_REJECTED / EXTERNAL_REJECTED），颜色语义表更新；⑤ Status 筛选下拉更新为 6 项；⑥ [Upload New Version] 置灰条件更新为 PENDING_INTERNAL 或 PENDING_EXTERNAL；⑦ AC 覆盖表更新为 003A-005 / 011 / 011B / 012 / 013 / 014 / 015；⑧ 新建组件清单新增 DrawingSearchPopover，替换原 DrawingSearchPanel |

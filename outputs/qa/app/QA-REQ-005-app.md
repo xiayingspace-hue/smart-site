@@ -22,14 +22,18 @@ generated_at: 2026-05-28
 | TC-005-APP-004 | Confirm Reading 成功 | AC-005-APP-004 |
 | TC-005-APP-005 | Confirm Reading deviceInfo=APP | AC-005-APP-005 |
 | TC-005-APP-006 | 跨端同步（PC 确认 → APP 已读） | AC-005-APP-006 |
-| TC-005-APP-007 | Markups 卡片字段正确渲染 | AC-005-APP-007 |
-| TC-005-APP-008 | Markups 卡片 appliedPageNo 为 null | AC-005-APP-007 |
-| TC-005-APP-009 | Markups 卡片不含 Affected Area | AC-005-APP-007 |
-| TC-005-APP-010 | Mark as Read 成功 + 角标更新 | AC-005-APP-008 |
-| TC-005-APP-011 | Mark as Read 跨端同步 | AC-005-APP-009 |
-| TC-005-APP-012 | App Push 通知接收 | AC-005-APP-010 |
-| TC-005-APP-013 | App Push 热启动跳转 | AC-005-APP-011 |
-| TC-005-APP-014 | App Push 冷启动跳转 | AC-005-APP-012 |
+| TC-005-APP-007 | Markups Tab 仅显示 ACTIVE | AC-005-APP-007 |
+| TC-005-APP-008 | Markups 卡片字段正确渲染 | AC-005-APP-008 |
+| TC-005-APP-009 | Markups 卡片 appliedPageNo 为 null | AC-005-APP-008 |
+| TC-005-APP-010 | Markups 卡片不含 Affected Area | AC-005-APP-008 |
+| TC-005-APP-011 | Mark as Read 成功 + 角标更新 | AC-005-APP-009 |
+| TC-005-APP-012 | Mark as Read 跨端同步 | AC-005-APP-010 |
+| TC-005-APP-013 | Markup 发布 App Push 通知接收 | AC-005-APP-011 |
+| TC-005-APP-014 | Markup 通知热启动跳转 | AC-005-APP-012 |
+| TC-005-APP-015 | Markup 通知冷启动跳转 | AC-005-APP-012 |
+| TC-005-APP-016 | 新版图纸发布 App Push 通知接收 | AC-005-APP-013 |
+| TC-005-APP-017 | 新版图纸通知热启动跳转 | AC-005-APP-014 |
+| TC-005-APP-018 | 新版图纸通知冷启动跳转 | AC-005-APP-014 |
 
 ---
 
@@ -182,7 +186,7 @@ generated_at: 2026-05-28
 
 ---
 
-### TC-005-APP-012：App Push 通知接收
+### TC-005-APP-012：App Push 通知接收（Markup 发布）
 
 **用途**：验证 Markup 发布后推送通知只达到已分配的 SE。
 
@@ -194,13 +198,13 @@ generated_at: 2026-05-28
 
 ---
 
-### TC-005-APP-013：App Push 热启动跳转
+### TC-005-APP-013：Markup 通知热启动跳转
 
-**用途**：验证 APP 在前台/后台时点击通知能正确跳转。
+**用途**：验证 APP 在前台/后台时点击 Markup 通知能正确跳转。
 
 | # | 操作 | 期望结果 |
 |---|------|----------|
-| 1 | APP 在前台时收到通知 | 弹出 Modal 提示（title + content）|
+| 1 | APP 在前台时收到通知 | 弹出 Modal 提示（title + content） |
 | 2 | 点击 [View] | 跳转到对应图纸查看页，**默认激活 Markups Tab** |
 | 3 | APP 在后台（进程存在）收到通知 | 系统通知弹出 |
 | 4 | 点击通知 | 跳转到对应图纸查看页，默认激活 Markups Tab |
@@ -208,16 +212,68 @@ generated_at: 2026-05-28
 
 ---
 
-### TC-005-APP-014：App Push 冷启动跳转
+### TC-005-APP-014：Markup 通知冷启动跳转
 
-**用途**：验证 APP 进程被杀死时通过通知冷启动能正确跳转。
+**用途**：验证 APP 进程被杀死时通过 Markup 通知冷启动能正确跳转。
 
 | # | 操作 | 期望结果 |
 |---|------|----------|
 | 1 | 完全退出 APP | 进程不存在 |
 | 2 | 点击系统通知栏的推送通知 | APP 启动（冷启动） |
 | 3 | 启动完成后 | 自动跳转到对应图纸查看页，**默认激活 Markups Tab** |
-| 4 | payload 解析 | `drawingVersionId` 正确；无异常 |
+| 4 | payload 解析 | `drawingVersionId` 正确；`type = MARKUP_PUBLISHED`；无异常 |
+| 5 | 异常 payload | 若 payload 解析失败，APP 正常启动到首页，不崩溃 |
+
+---
+
+### TC-005-APP-015：Markups Tab 仅显示 ACTIVE 局部更新
+
+**用途**：验证 Markups Tab 过滤规则（对应 AC-005-APP-007）。
+
+| # | 操作 | 期望结果 |
+|---|------|----------|
+| 1 | DrawingVersion 有 2 条 ACTIVE Markup 和 1 条 MERGED Markup | 进入 Markups Tab |
+| 2 | 查看列表 | 仅显示 2 条 ACTIVE，不显示 MERGED 条目 |
+| 3 | 排序 | 按 publishTime 降序，最新在上 |
+
+---
+
+### TC-005-APP-016：新版图纸发布 App Push 通知接收（F-005）
+
+**用途**：验证 DrawingVersion 审批通过后，已分配 SE 收到图纸发布通知。
+
+| # | 操作 | 期望结果 |
+|---|------|----------|
+| 1 | 管理员在 PC 端审批通过 DrawingVersion A，SE-A 已被分配该图纸 | SE-A 的 APP 收到通知，标题为 "Drawing Updated"，正文含 Description |
+| 2 | 未被分配该图纸的 SE-B | SE-B **不收到**该通知 |
+| 3 | 通知 APP 角标 | APP 角标数 +1 |
+| 4 | 通知正文 | 包含 Description；**不包含**系统版本号（versionNo） |
+
+---
+
+### TC-005-APP-017：新版图纸通知热启动跳转（F-005）
+
+**用途**：验证 APP 在前台/后台时点击新版图纸通知能正确跳转到列表页。
+
+| # | 操作 | 期望结果 |
+|---|------|----------|
+| 1 | APP 在前台时收到新版图纸通知 | 弹出 Modal 提示（title + content） |
+| 2 | 点击 [View] | 跳转到图纸列表页，目标 DrawingVersion 被定位/高亮 |
+| 3 | APP 在后台收到通知，点击通知 | 跳转到图纸列表页，目标条目高亮 |
+| 4 | 跳转后 URL 参数 | `highlightId = drawingVersionId` 正确；**无** `tab=markups` 参数 |
+
+---
+
+### TC-005-APP-018：新版图纸通知冷启动跳转（F-005）
+
+**用途**：验证 APP 进程被杀死时通过新版图纸通知冷启动能正确跳转。
+
+| # | 操作 | 期望结果 |
+|---|------|----------|
+| 1 | 完全退出 APP | 进程不存在 |
+| 2 | 点击系统通知栏的新版图纸通知 | APP 启动（冷启动） |
+| 3 | 启动完成后 | 自动跳转到图纸列表页，目标 DrawingVersion 被高亮 |
+| 4 | payload 解析 | `drawingVersionId` 正确；`type = DRAWING_PUBLISHED`；无异常 |
 | 5 | 异常 payload | 若 payload 解析失败，APP 正常启动到首页，不崩溃 |
 
 ---
@@ -244,5 +300,7 @@ generated_at: 2026-05-28
 | DrawingVersion（markupsUnread=0） | TC-005-APP-002 无角标场景 |
 | DrawingVersion（markupsUnread=100） | TC-005-APP-002 `99+` 场景 |
 | DrawingVersion（PC 已确认） | TC-005-APP-006 跨端同步 |
-| DrawingMarkup（appliedPageNo=null） | TC-005-APP-008 无 Page 行 |
-| 两个 SE 账号（其中一个未分配） | TC-005-APP-012 Push 精准推送 |
+| DrawingMarkup（appliedPageNo=null） | TC-005-APP-009 无 Page 行 |
+| DrawingVersion（含 ACTIVE + MERGED Markup） | TC-005-APP-015 过滤验证 |
+| 两个 SE 账号（其中一个未分配） | TC-005-APP-013、TC-005-APP-016 Push 精准推送 |
+| 已审批通过的 DrawingVersion | TC-005-APP-016～018 新版图纸 Push 验证 |

@@ -21,7 +21,8 @@ generated_at: 2026-05-28
 | Confirm Reading | 底部 Popup 确认，写入 DrawingConfirmation（deviceInfo="APP"），跨端幂等 |
 | Markups Tab | 卡片含元信息行（`{日期}·{创建人}`）+ 报审行（`Based on {submissionNo}·Page {n}`）；无 Affected Area |
 | Mark as Read | 调用 `/drawing/markup/confirm`，卡片实时更新；跨端同步 |
-| App Push 通知 | 热启动 / 冷启动跳转到图纸查看页 Markups Tab |
+| App Push — Markup 发布 | 热启动/冷启动跳转到图纸查看页 Markups Tab（F-004） |
+| App Push — 新版图纸发布 | 热启动/冷启动跳转到图纸列表页并高亮目标条目（F-005） |
 
 ---
 
@@ -478,22 +479,20 @@ async handleMarkRead(markup) {
 export function initPushListener(router) {
   plus.push.addEventListener('receive', (msg) => {
     const payload = JSON.parse(msg.payload || '{}')
-    if (payload.type === 'MARKUP_PUBLISHED') {
-      uni.showModal({
-        title: msg.title,
-        content: msg.content,
-        confirmText: 'View',
-        success({ confirm }) {
-          if (confirm) navigateToMarkups(router, payload)
-        }
-      })
-    }
+    uni.showModal({
+      title: msg.title,
+      content: msg.content,
+      confirmText: 'View',
+      success({ confirm }) {
+        if (confirm) navigateByPayload(router, payload)
+      }
+    })
   })
 
   // 用户点击通知（APP 在后台）
   plus.push.addEventListener('click', (msg) => {
     const payload = JSON.parse(msg.payload || '{}')
-    navigateToMarkups(router, payload)
+    navigateByPayload(router, payload)
   })
 }
 
@@ -503,16 +502,25 @@ export function handleColdStart() {
   if (!args) return
   try {
     const payload = JSON.parse(args)
-    if (payload.type === 'MARKUP_PUBLISHED') {
-      navigateToMarkups(null, payload)
-    }
+    navigateByPayload(null, payload)
   } catch {}
 }
 
-function navigateToMarkups(router, payload) {
-  uni.navigateTo({
-    url: `/pages/drawings/detail?drawingVersionId=${payload.drawingVersionId}&tab=markups`
-  })
+/**
+ * 根据 payload.type 路由跳转
+ * MARKUP_PUBLISHED  → 图纸查看页 Markups Tab（F-004）
+ * DRAWING_PUBLISHED → 图纸列表页并高亮目标条目（F-005）
+ */
+function navigateByPayload(router, payload) {
+  if (payload.type === 'MARKUP_PUBLISHED') {
+    uni.navigateTo({
+      url: `/pages/drawings/detail?drawingVersionId=${payload.drawingVersionId}&tab=markups`
+    })
+  } else if (payload.type === 'DRAWING_PUBLISHED') {
+    uni.navigateTo({
+      url: `/pages/drawings/list?highlightId=${payload.drawingVersionId}`
+    })
+  }
 }
 ```
 
@@ -600,6 +608,10 @@ markup.status.read              → "✓ Read" / "✓ 已读"
 markup.badge.new                → "New" / "新"
 markup.basedOn                  → "Based on {submissionNo}"
 markup.page                     → "· Page {n}"
+push.markup.title               → "Drawing Update — {description}"
+push.markup.body                → "{markupTitle}. Please review the latest markup."
+push.drawing.title              → "Drawing Updated"
+push.drawing.body               → "{description} has a new version. Please confirm reading."
 ```
 
 ---
@@ -636,5 +648,7 @@ markup.page                     → "· Page {n}"
 
 - [ ] Markup 发布后，已分配 SE 收到通知，APP 角标 +1
 - [ ] 未分配图纸的 SE 不收到通知
-- [ ] 热启动：点击通知跳转到图纸查看页 Markups Tab
-- [ ] 冷启动：解析 payload 正确并跳转到目标页
+- [ ] 热启动：点击 Markup 通知跳转到图纸查看页 Markups Tab
+- [ ] 冷启动：解析 MARKUP_PUBLISHED payload 正确并跳转到目标页
+- [ ] 热启动：点击新版图纸通知跳转到图纸列表页，目标条目高亮
+- [ ] 冷启动：解析 DRAWING_PUBLISHED payload 正确并跳转图纸列表页

@@ -1,6 +1,6 @@
 # 后端开发说明文档 — REQ-004 图纸标注（Markup）管理
 
-> **来源需求**: [REQ-004-shared.md](../../requirements/shared/REQ-004-shared.md) + [REQ-004-pc.md](../../requirements/pc/REQ-004-pc.md) + [REQ-004-app.md](../../requirements/app/REQ-004-app.md)
+> **来源需求**: [REQ-004-shared.md](../../requirements/shared/REQ-004-shared.md) + [REQ-004-pc.md](../../requirements/pc/REQ-004-pc.md) + [REQ-005-app.md](../../requirements/app/REQ-005-app.md)（⚠️ REQ-004-app 已废弃，由 REQ-005-app 替代）
 > **产品**: SMART SITE SYSTEM
 > **服务模块**: `drawing-service`
 > **生成日期**: 2026-04-08

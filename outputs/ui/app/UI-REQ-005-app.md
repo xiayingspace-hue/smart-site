@@ -307,12 +307,25 @@ generated_at: 2026-05-28
 
 ### 3.4 App Push 通知样式
 
+#### 3.4.1 F-004：Markup 发布通知
+
 | 字段 | 内容 | 规格 |
 |------|------|------|
 | 标题 | Drawing Update — {description} | 系统通知标题样式 |
 | 正文 | {markupTitle}. Please review the latest markup. | 系统通知正文样式 |
 | 角标 | APP 图标右上角 +1 | 系统 Badge |
 | 点击 | 跳转到图纸查看页 Markups Tab | 路由参数含 drawingVersionId + tab=markups |
+
+#### 3.4.2 F-005：新版图纸发布通知
+
+| 字段 | 内容 | 规格 |
+|------|------|------|
+| 标题 | Drawing Updated | 系统通知标题样式 |
+| 正文 | {description} has a new version. Please confirm reading. | 系统通知正文样式 |
+| 角标 | APP 图标右上角 +1 | 系统 Badge |
+| 点击 | 跳转到图纸列表页，定位/高亮对应 DrawingVersion | 路由参数含 drawingVersionId |
+
+> **触发时机**：DrawingVersion 状态变为 `ACTIVE`（审批通过）时，系统自动向已被分配该图纸的所有 SE 发送通知；未被分配的 SE 不收到。
 
 ---
 
@@ -341,8 +354,10 @@ generated_at: 2026-05-28
 | btn_mark_as_read | ✓ Mark as Read | ✓ 标记已读 |
 | label_read | ✓ Read | ✓ 已读 |
 | empty_markups | No markups for this drawing yet. | 该图纸暂无局部更新 |
-| push_title | Drawing Update — {description} | 图纸更新 — {description} |
-| push_body | {markupTitle}. Please review the latest markup. | {markupTitle}。请查阅最新局部更新。 |
+| push_title_markup | Drawing Update — {description} | 图纸更新 — {description} |
+| push_body_markup | {markupTitle}. Please review the latest markup. | {markupTitle}。请查阅最新局部更新。 |
+| push_title_drawing | Drawing Updated | 图纸已更新 |
+| push_body_drawing | {description} has a new version. Please confirm reading. | {description} 有新版本，请确认查阅。 |
 
 ---
 
@@ -385,10 +400,14 @@ generated_at: 2026-05-28
 
 | # | 验收项 | 通过标准 |
 |---|--------|---------|
-| 1 | 推送接收 | Markup 发布后，已分配 SE 收到通知，APP 角标 +1 |
-| 2 | 未分配用户 | 未分配该图纸的 SE 不收到通知 |
-| 3 | 热启动跳转 | 点击通知跳转到图纸查看页 Markups Tab |
-| 4 | 冷启动跳转 | 冷启动后正确解析 payload 并跳转 |
+| 1 | Markup 推送接收 | Markup 发布后，已分配 SE 收到通知，APP 角标 +1 |
+| 2 | Markup 未分配用户 | 未分配该图纸的 SE 不收到通知 |
+| 3 | Markup 热启动跳转 | 点击通知跳转到图纸查看页 Markups Tab |
+| 4 | Markup 冷启动跳转 | 冷启动后正确解析 payload 并跳转 |
+| 5 | 新版图纸推送接收 | DrawingVersion 审批通过后，已分配 SE 收到通知，内容含 Description |
+| 6 | 新版图纸未分配用户 | 未被分配该图纸的 SE 不收到通知 |
+| 7 | 新版图纸跳转 | 点击通知跳转到图纸列表页，目标 DrawingVersion 被定位/高亮 |
+| 8 | 新版图纸冷启动跳转 | 冷启动场景下跳转同样正常 |
 
 ---
 

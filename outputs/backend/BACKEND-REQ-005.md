@@ -1,6 +1,6 @@
 ---
 doc_type: backend_spec
-source_req: REQ-005-pc (v0.3.5)
+source_req: REQ-005-pc (v0.3.5) + REQ-005-app (v0.1.0)
 service_module: drawing-service / notification-service
 generated_at: 2026-05-28
 ---
@@ -394,7 +394,8 @@ SE 专用图纸列表。后端自动过滤：`status=ACTIVE` + `drawing_assignme
 - [ ] Markup 列表按 `publish_time DESC` 排序
 - [ ] 响应中包含 `submissionNo`、`appliedPageNo`（nullable）、`creatorName`
 - [ ] `POST /drawing/confirm` 幂等：重复提交返回 200，不报错，数据库只有一条记录
-- [ ] `drawing_confirmation.device_info` = "PC"（PC 端提交时）
-- [ ] Markup 发布后，已分配 SE 的 in_app_notification 正确创建，`target_route` 包含正确 drawingVersionId 和 `tab=markups`
-- [ ] 未分配该图纸的 SE 不会收到通知
+- [ ] `drawing_confirmation.device_info` = `"APP"` 时（APP 端提交）正确写入；`"PC"` 时同理
+- [ ] **F-004**：Markup 发布后，已分配 SE 的 in_app_notification 正确创建，`payload.type = MARKUP_PUBLISHED`，`target_route` 包含正确 drawingVersionId 和 `tab=markups`
+- [ ] **F-005**：DrawingVersion 状态变为 `ACTIVE` 后，系统向已分配该图纸的所有 SE 发送 App Push 通知，`payload.type = DRAWING_PUBLISHED`，通知正文含 Description；未分配的 SE 不收到推送
+- [ ] 未分配该图纸的 SE 不会收到任何通知（F-004 / F-005 均不收到）
 - [ ] `PATCH /notification/{id}/read` 越权操作返回 1003005004

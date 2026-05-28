@@ -737,5 +737,5 @@
 | 端 | 需求文档 | 说明 |
 |----|---------|------|
 | PC 管理端 | [REQ-003-pc.md](../pc/REQ-003-pc.md) | 图纸上传、审批 Todo、版本历史、确认记录查看 |
-| APP 移动端 | [REQ-003-app.md](../app/REQ-003-app.md) | 推送通知、图纸列表、在线查看、查阅确认、审批 Todo |
+| APP 移动端 | [REQ-005-app.md](../app/REQ-005-app.md) + [REQ-003-app.md](../app/REQ-003-app.md) | SE：推送通知、图纸列表、在线查看、查阅确认；Approver：审批 Todo |
 | H5 移动端 | 不涉及 | 本功能不涉及 H5 端 |

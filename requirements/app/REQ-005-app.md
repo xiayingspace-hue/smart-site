@@ -14,10 +14,12 @@ depends_on:
   - REQ-003A-pc
   - REQ-003-shared
   - REQ-004-shared
-  - REQ-003-app
-  - REQ-004-app
 related_to:
   - REQ-005-pc
+  - REQ-003-app
+supersedes:
+  - REQ-003-app
+  - REQ-004-app
 blocks: []
 
 generate:
@@ -304,7 +306,7 @@ Site Engineer 主要在施工现场通过手机使用系统。本需求基于 RE
 
 ---
 
-### 7.4 F-004：App Push 通知
+### 7.4 F-004：App Push 通知 — Markup 发布
 
 **触发时机**: Admin 发布 DrawingMarkup 时，系统向已分配该图纸的所有 SE 发送 App Push 通知
 
@@ -320,6 +322,29 @@ Site Engineer 主要在施工现场通过手机使用系统。本需求基于 RE
 **通知跳转处理**:
 - 热启动：监听 `plus.push.addEventListener` 解析 payload，调用路由跳转
 - 冷启动：在 `App.vue` onLaunch 中解析 `plus.runtime.arguments`，跳转目标页
+
+---
+
+### 7.5 F-005：App Push 通知 — 新版图纸发布
+
+**触发时机**: 图纸审批通过（DrawingVersion 状态变为 `ACTIVE`）时，系统向已被分配该图纸的所有 SE 发送 App Push 通知
+
+**通知格式**:
+
+| 字段 | 内容 |
+|------|------|
+| 标题 | Drawing Updated |
+| 正文 | {description} has a new version. Please confirm reading. |
+| 角标 | APP 图标 +1 |
+| 跳转 | 点击通知 → 进入图纸列表页，自动定位/高亮该 DrawingVersion |
+
+**通知跳转处理**:
+- 热启动：监听 `plus.push.addEventListener` 解析 payload，调用路由跳转
+- 冷启动：在 `App.vue` onLaunch 中解析 `plus.runtime.arguments`，跳转图纸列表页并高亮目标条目
+
+**通知权限说明**:
+- 首次安装时引导用户开启通知权限
+- 若用户关闭通知权限，不影响 APP 内正常使用；图纸列表仍可手动下拉刷新查看最新状态
 
 ---
 
@@ -429,6 +454,25 @@ When   用户点击该通知
 Then   跳转到对应图纸查看页，Markups Tab 自动激活
 ```
 
+### AC-005-APP-013：新版图纸发布 App Push 通知接收
+
+```
+Given  DrawingVersion A 审批通过（状态变为 ACTIVE），SE 已被分配 A
+When   审批通过事件触发
+Then   SE 的 APP 图标角标 +1，通知栏出现对应通知；
+       通知正文包含 Description；
+       未被分配 A 的 SE 不收到通知
+```
+
+### AC-005-APP-014：新版图纸发布通知跳转
+
+```
+Given  SE 的通知栏有一条新版图纸发布通知
+When   用户点击该通知
+Then   跳转到图纸列表页，并自动定位/高亮对应 DrawingVersion；
+       冷启动场景下跳转同样正常
+```
+
 ---
 
 ## 9. 非功能需求
@@ -466,9 +510,10 @@ Then   跳转到对应图纸查看页，Markups Tab 自动激活
 
 | 文档 | 说明 |
 |------|------|
-| [REQ-005-pc.md](./REQ-005-pc.md) | PC 端对等功能（v0.3.5，数据模型来源） |
-| [REQ-003-app.md](./REQ-003-app.md) | APP 端图纸查阅基础需求 |
-| [REQ-004-app.md](./REQ-004-app.md) | APP 端局部更新基础需求 |
+| [REQ-005-pc.md](../pc/REQ-005-pc.md) | PC 端对等功能（v0.3.5，数据模型来源） |
+| [REQ-003-app.md](./REQ-003-app.md) | APP 端 Approver 审批 Todo |
 | [REQ-003-shared.md](../shared/REQ-003-shared.md) | 图纸共享业务规则与 API |
 | [REQ-004-shared.md](../shared/REQ-004-shared.md) | 局部更新共享业务规则与 API |
-| [REQ-003A-pc.md](./REQ-003A-pc.md) | 图纸管理列表页基础规范（列表行含义与数据模型） |
+| [REQ-003A-pc.md](../pc/REQ-003A-pc.md) | 图纸管理列表页基础规范（列表行含义与数据模型） |
+| ~~旧版 REQ-003-app / REQ-004-app~~ | ⚠️ 已废弃，由本文档 + 新版 REQ-003-app 替代 |
+| ~~REQ-004-app.md~~ | ⚠️ 已废弃，由本文档替代 |

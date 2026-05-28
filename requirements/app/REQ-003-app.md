@@ -1,194 +1,78 @@
-# APP 移动端 — 工程图纸查阅确认与审批
+---
+doc_type: requirement
+req_id: REQ-003-app
+req_title: "APP 端图纸审批 Todo"
+version: 0.1.0
+status: draft
+priority: P1
+product: SMART SITE SYSTEM
+owner: ""
+created_at: 2026-05-28
+updated_at: 2026-05-28
+
+depends_on:
+  - REQ-003-shared
+related_to:
+  - REQ-003-pc
+  - REQ-005-app
+blocks: []
+
+generate:
+  data_contract: false
+  ui_spec: true
+  frontend_spec: true
+  backend_spec: false
+  qa_spec: true
+---
+
+# 需求文档：APP 端图纸审批 Todo
 
 > **端**: APP 移动端（iOS & Android，UNIAPP + Vue 2）
-> **共享需求**: [REQ-003-shared.md](../shared/REQ-003-shared.md)（业务规则、数据模型、API 接口、审批流程）
-> **本文档仅包含**: APP 端特有的页面布局、交互方式、推送通知、在线查看与查阅确认、审批 Todo
-
-## 基本信息
-
-- **需求ID**: REQ-003-app
-- **需求标题**: APP 端工程图纸查阅确认与审批
-- **产品**: SMART SITE SYSTEM
-- **平台**: APP 移动端（iOS & Android，UNIAPP + Vue 2）
-- **优先级**: 高
-- **状态**: 草稿
+> **主 Persona**: 审批人员（Approver）
+> **共享需求**: [REQ-003-shared.md](../shared/REQ-003-shared.md)（审批流程、API 接口）
+> **本文档仅包含**: APP 端 Approver 处理待审批图纸的 Todo 交互；SE 查阅图纸相关功能见 [REQ-005-app.md](./REQ-005-app.md)
+> **提取自**: 原 REQ-003-app §4（审批 Todo）、§5（App Push 通知）Approver 相关部分
 
 ---
 
-## 需求描述
+## 1. 背景与目标
 
-### 背景与目标
+### 1.1 业务背景
 
-Site Engineer 长期在施工现场作业，主要通过手机使用系统。APP 端图纸管理功能的核心目标：
-- 确保 Site Engineer 始终看到的是经审批的最新版图纸，杜绝按旧版图纸施工的情况
-- 新版图纸发布时，通过 App Push 主动推送至 Site Engineer，无需主动查询
-- 提供简洁的在线查看体验，支持缩放操作
-- 通过"查阅确认"功能留存 Site Engineer 的阅读记录
+审批人员需要对 PC 端提交的图纸进行审批（通过/驳回），审批流程不应强依赖 PC 端。当审批人员在施工现场时，应能通过 APP 端 Todo 列表及时处理待审批任务，避免图纸发布流程阻塞。
 
-审批人员也可在 APP 端通过 Todo 列表处理待审批图纸，保证审批流程不依赖 PC 端。
+### 1.2 业务目标
 
-### 用户故事
+1. Approver 在 APP 端收到待审批图纸的 Todo 任务，可直接在 APP 端完成通过或驳回操作
+2. 驳回时必须填写意见，确保决策可追溯
+3. Approver 可在 APP 端在线预览待审批图纸，辅助审批决策
 
-```
-作为 Site Engineer
-我想要 收到新版图纸的推送通知，打开后能直接在线查看最新图纸，并点击确认查阅
-以便 始终掌握最新的设计要求，避免因使用旧图纸造成施工错误
-```
+### 1.3 非目标（Out of Scope）
 
-```
-作为 Site Engineer
-我想要 只收到和我相关的图纸通知，图纸列表里也只显示分配给我的图纸
-以便 避免被大量无关图纸信息干扰，快速找到我需要关注的内容
-```
-
-```
-作为 审批人员
-我想要 在 APP 端 Todo 列表中查看并处理待审批的图纸
-以便 即使不在 PC 端也能及时完成审批，不影响图纸发布流程
-```
+- APP 端上传或编辑图纸
+- SE 查阅确认相关功能（见 REQ-005-app）
+- Approver 的 App Push 通知（新图纸待审批通知由通用 Todo 系统处理）
 
 ---
 
-## 功能需求
+## 2. 用户与角色
 
-### 1. 入口位置
-
-- **首页快捷入口**: Drawing（图纸）
-- 图标为图纸/文件夹图标
-
----
-
-### 2. 图纸列表页
-
-#### 2.1 页面布局
-
-```
-┌─────────────────────────┐
-│ ← Drawing               │
-│                         │
-│ [🔍 Search...]          │
-│ [All ▼] [Category ▼]   │
-│                         │
-│ ┌─────────────────────┐ │
-│ │ ARCH-001            │ │
-│ │ 首层平面图           │ │
-│ │ Architectural · V3  │ │
-│ │ Updated 2026-04-01  │ │
-│ │             [✓ Read]│ │
-│ └─────────────────────┘ │
-│ ┌─────────────────────┐ │
-│ │ STRU-001            │ │
-│ │ 基础结构图           │ │
-│ │ Structural · V2     │ │
-│ │ Updated 2026-03-20  │ │
-│ │        [Confirm →] │ │
-│ └─────────────────────┘ │
-│ ┌─────────────────────┐ │
-│ │ ARCH-002            │ │
-│ │ 立面图               │ │
-│ │ Architectural · V1  │ │
-│ │ Updated 2026-03-15  │ │
-│ │        [Confirm →] │ │
-│ └─────────────────────┘ │
-└─────────────────────────┘
-```
-
-#### 2.2 显示规则
-
-- **仅显示**满足以下两个条件的图纸：
-  1. `status = ACTIVE`（已审批通过）
-  2. 当前登录用户已被管理员**分配**该图纸（通过 DrawingAssignment 关联）
-- 后端同时执行两个过滤条件，前端无法绕过
-- 若当前用户尚未被分配任何图纸，图纸列表显示空状态："No drawings assigned to you yet."
-- 每条图纸卡片显示：图纸编号、图纸名称、分类、当前版本号、最后更新时间
-- 右侧状态标识：
-  - `✓ Read`（绿色）：当前用户已确认查阅当前版本
-  - `Confirm →`（蓝色）：当前版本尚未确认，提示用户去确认
-- 下拉刷新，上拉加载更多（每次 20 条）
-
-#### 2.3 筛选
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| Search | 文本搜索 | 图纸编号或名称模糊搜索 |
-| Category | 下拉单选 | 按分类筛选 |
+| 角色 ID | 角色名 | 典型场景 |
+|--------|-------|---------|
+| ROLE-003 | Approver（审批人员） | 不在 PC 端时，通过 APP 处理待审批图纸 |
 
 ---
 
-### 3. 图纸在线查看页
+## 3. 功能需求
 
-#### 3.1 触发方式
-
-点击图纸列表卡片（任意区域）进入在线查看页。
-
-#### 3.2 页面布局
-
-```
-┌─────────────────────────┐
-│ ← ARCH-001 · V3    [⋯] │
-│ 首层平面图               │
-├─────────────────────────┤
-│                         │
-│                         │
-│   （图纸在线预览区域）    │
-│   支持双指缩放           │
-│   支持单指平移           │
-│                         │
-│                         │
-│                         │
-│                         │
-├─────────────────────────┤
-│ V3 · Updated 2026-04-01 │
-│                         │
-│ ┌─────────────────────┐ │
-│ │  ✓  Confirm Reading │ │
-│ └─────────────────────┘ │
-└─────────────────────────┘
-```
-
-#### 3.3 在线预览
-
-- PDF 文件：使用 WebView 内嵌 PDF 渲染或调用系统 PDF 渲染能力
-- 图片（PNG / JPG）：使用图片查看器，支持缩放
-- DWG / DXF：转换为 PDF 或 PNG 预览（后端在审批通过后自动转换并存储预览版本）
-- 预览区支持**双指缩放**和**单指平移**
-- 顶部显示图纸编号、名称和当前版本号
-
-#### 3.4 版本号说明区域
-
-底部版本信息栏显示：
-- 当前版本号（如 V3）
-- 最后更新时间
-- 如已确认，显示"✓ You confirmed on {date}"（绿色提示文字，替换按钮）
-
-#### 3.5 Confirm Reading 按钮
-
-| 状态 | 显示 | 说明 |
-|------|------|------|
-| 未确认 | `Confirm Reading`（蓝色主按钮） | 点击触发确认逻辑 |
-| 已确认 | `✓ Confirmed on {date}`（绿色文字，不可点击） | 显示确认时间 |
-
-**确认交互流程**：
-1. 用户点击 [Confirm Reading]
-2. 弹出轻量确认提示（Toast 或 Popup）：
-   ```
-   Confirm that you have read this drawing?
-   [Cancel]  [Confirm]
-   ```
-3. 点击 [Confirm] 后调用 `/drawing/confirm` API
-4. 按钮状态切换为 `✓ Confirmed on {today's date}`
-5. 返回列表时，该图纸卡片右侧状态更新为 `✓ Read`
-
----
-
-### 4. 审批 Todo（APP 端）
-
-#### 4.1 入口
+### 3.1 F-001：Todo 入口
 
 - APP 首页 **Todo** 列表模块，与其他 Todo 类型合并展示
-- 未处理的图纸审批 Todo 会在 Todo 图标上显示红色数字角标
+- 有未处理的图纸审批 Todo 时，Todo 图标上显示红色数字角标
 
-#### 4.2 待审批图纸 Todo 卡片
+### 3.2 F-002：待审批图纸 Todo 卡片
+
+**卡片布局**：
 
 ```
 ┌─────────────────────────────┐
@@ -201,14 +85,35 @@ Site Engineer 长期在施工现场作业，主要通过手机使用系统。APP
 └─────────────────────────────┘
 ```
 
-#### 4.3 审批操作
+**卡片字段**：
 
-**通过（Approve）**：
-- 点击 [Approve] 弹出确认弹窗，确认后调用审批 API
+| 字段 | 说明 |
+|------|------|
+| 类型标识 | `📋 Drawing Approval`，固定文案 |
+| 图纸信息 | Drawing Code、Drawing Name、版本号 |
+| 上传人 | `Uploaded by {name}` |
+| 上传时间 | `YYYY-MM-DD HH:mm` |
+| 操作按钮 | [View]、[Approve]、[Reject] |
+
+---
+
+### 3.3 F-003：审批操作
+
+#### 通过（Approve）
+
+- 点击 **[Approve]** → 弹出确认弹窗：
+  ```
+  Approve this drawing?
+  ARCH-001 首层平面图 V2
+  [Cancel]  [Confirm]
+  ```
+- 点击 [Confirm] 后调用审批 API
 - 成功后 Todo 卡片消失，显示 Toast "Drawing approved successfully"
+- 失败时 Toast 提示错误，卡片保留
 
-**驳回（Reject）**：
-- 点击 [Reject] 弹出底部弹出框（Bottom Sheet）输入驳回意见：
+#### 驳回（Reject）
+
+- 点击 **[Reject]** → 弹出底部弹出框（Bottom Sheet）输入驳回意见：
   ```
   ┌──────────────────────────┐
   │ Reject Drawing           │
@@ -223,78 +128,112 @@ Site Engineer 长期在施工现场作业，主要通过手机使用系统。APP
   └──────────────────────────┘
   ```
 - Comment 为必填，空白时 [Confirm] 按钮禁用
+- 点击 [Confirm] 后调用驳回 API，传入 comment
 - 成功后 Todo 卡片消失，显示 Toast "Drawing rejected"
+- 失败时 Toast 提示错误，Bottom Sheet 保留
 
-**查看图纸（View）**：
-- 点击 [View] 进入该版本的在线查看页（与图纸列表查看入口相同）
-- 待审批版本的查看页**不显示** [Confirm Reading] 按钮（审批人查看不需要确认）
+#### 查看图纸（View）
+
+- 点击 **[View]** → 进入该版本的在线查看页
+- 待审批版本的查看页**不显示** [Confirm Reading] 按钮（审批人查看不需要确认阅读）
+- 在线预览能力复用 REQ-005-app §7.2 的预览规范（PDF.js / uni.previewImage）
 
 ---
 
-### 5. App Push 通知
+## 4. 业务流程
 
-#### 5.1 触发时机
+1. Admin 在 PC 端提交新版图纸，状态流转为 `PENDING_APPROVAL`
+2. 系统在 Approver 的 APP Todo 列表中生成一条 Drawing Approval 任务
+3. Approver 在 APP 端看到红色角标，进入 Todo 列表
+4. Approver 点击 [View] 在线预览图纸，确认内容后点击 [Approve] 或 [Reject]
+5. 通过：图纸状态变为 `ACTIVE`，系统触发 SE App Push（见 REQ-005-app §F-005）
+6. 驳回：图纸状态变为 `REJECTED`，上传人收到驳回通知
 
-图纸审批通过时，系统仅向**已被分配该图纸**且拥有 `drawing:view` 权限的 Site Engineer 发送 App Push 通知。未被分配该图纸的 Site Engineer 不收到通知，也不会在图纸列表中看到该图纸。
+---
 
-#### 5.2 通知内容
+## 5. 验收标准
 
-| 字段 | 内容 |
+### AC-003B-APP-001：Todo 角标
+
+```
+Given  有 N 条未处理的图纸审批 Todo
+When   Approver 进入 APP 首页
+Then   Todo 图标显示红色数字角标 N
+```
+
+### AC-003B-APP-002：通过操作
+
+```
+Given  Approver 在 Todo 列表看到一条待审批图纸卡片
+When   点击 [Approve] 并在弹窗中确认
+Then   调用审批 API；Todo 卡片消失；显示 Toast "Drawing approved successfully"
+```
+
+### AC-003B-APP-003：驳回操作 — Comment 必填
+
+```
+Given  Approver 点击 [Reject]，Bottom Sheet 已弹出
+When   Comment 输入框为空
+Then   [Confirm] 按钮处于禁用状态，无法提交
+```
+
+### AC-003B-APP-004：驳回操作 — 成功
+
+```
+Given  Approver 在 Bottom Sheet 中输入了 Comment 并点击 [Confirm]
+When   API 调用成功
+Then   Todo 卡片消失；显示 Toast "Drawing rejected"
+```
+
+### AC-003B-APP-005：查看图纸不显示 Confirm Reading
+
+```
+Given  Approver 点击 [View] 进入图纸在线查看页
+When   页面加载完成
+Then   底部不显示 [Confirm Reading] 按钮
+```
+
+### AC-003B-APP-006：幂等保护
+
+```
+Given  Approver 快速重复点击 [Approve] 或 [Confirm]
+When   第一次请求已发出
+Then   后续点击被忽略（按钮 loading 状态），不重复调用 API
+```
+
+---
+
+## 6. 非功能需求
+
+| 指标 | 目标值 |
+|-----|-------|
+| 审批操作响应 | < 500ms |
+| 图纸预览加载（< 10MB PDF） | < 5s（正常网络） |
+| 兼容性 | iOS 13+，Android 7+，UNIAPP 最新稳定版 |
+
+---
+
+## 7. 依赖与外部系统
+
+| 依赖 | 用途 | Owner |
+|------|------|-------|
+| REQ-003-shared API | 审批通过 / 驳回接口 | 后端团队 |
+| REQ-005-app 在线预览 | 复用图纸文件预览能力 | 前端团队 |
+
+---
+
+## 8. 变更历史
+
+| 版本 | 日期 | 修改人 | 变更摘要 |
+|-----|------|-------|---------|
+| 0.1.0 | 2026-05-28 | | 独立成文（原为 REQ-003-app §4、§5 Approver 部分，现以 REQ-003-app 命名） |
+
+---
+
+## 9. 相关文档
+
+| 文档 | 说明 |
 |------|------|
-| 标题 | Drawing Updated |
-| 正文 | {drawingCode} {drawingName} has been updated to V{n}. Please confirm reading. |
-| 角标 | 应用图标右上角 +1 |
-
-#### 5.3 通知跳转
-
-- 用户点击通知 → 进入 APP 图纸列表页，自动定位/高亮该图纸
-- 若 APP 未启动，冷启动后跳转至图纸列表页
-
-#### 5.4 通知权限说明
-
-- 首次安装时引导用户开启通知权限
-- 若用户关闭通知权限，不影响 APP 内正常使用；图纸列表仍可手动刷新查看最新状态
-
----
-
-## 验收标准
-
-### 图纸列表
-- [ ] 仅显示 `status = ACTIVE` 且**已被分配给当前 Site Engineer** 的图纸（后端强制双重过滤）
-- [ ] 未被分配任何图纸时，显示空状态提示 "No drawings assigned to you yet."
-- [ ] 每张图纸卡片显示编号、名称、分类、当前版本号、最后更新时间
-- [ ] 已确认查阅的图纸显示 `✓ Read`，未确认的显示 `Confirm →`
-- [ ] 下拉刷新和上拉加载正常工作
-- [ ] Keyword 和 Category 筛选正确过滤结果
-
-### 在线查看
-- [ ] PDF 文件可在 APP 内在线预览，无需下载
-- [ ] 图片文件支持双指缩放和单指平移
-- [ ] 顶部正确显示图纸编号、名称和当前版本号
-
-### 查阅确认
-- [ ] 未确认时显示 [Confirm Reading] 主按钮
-- [ ] 点击后弹出确认弹窗，确认后调用 API
-- [ ] 确认成功后按钮变为 `✓ Confirmed on {date}`，且不可再次点击
-- [ ] 返回列表后，该图纸卡片状态更新为 `✓ Read`
-- [ ] 重复点击确认幂等处理，不报错
-
-### 审批 Todo
-- [ ] 有待审批任务时，Todo 入口显示红色角标
-- [ ] [Approve] 点击后弹出确认，通过后 Todo 消失
-- [ ] [Reject] 点击后弹出 Comment 输入框，Comment 为空时 [Confirm] 禁用
-- [ ] [View] 可在线预览待审批的图纸，查看页不显示 [Confirm Reading] 按钮
-
-### App Push 通知
-- [ ] 图纸审批通过后，**已被分配该图纸**的 Site Engineer 收到 App Push 通知
-- [ ] 未被分配该图纸的 Site Engineer 不收到推送
-- [ ] 通知内容包含图纸编号、名称和新版本号
-- [ ] 点击通知跳转至图纸列表页，定位到对应图纸
-- [ ] 冷启动场景下通知跳转正常
-
----
-
-## 相关需求
-
-- [REQ-003-shared.md](../shared/REQ-003-shared.md) — 跨端共享业务规则与 API
-- [REQ-003-pc.md](../pc/REQ-003-pc.md) — PC 端图纸上传、审批与管理
+| [REQ-003-shared.md](../shared/REQ-003-shared.md) | 审批流程共享规则与 API |
+| [REQ-003-pc.md](../pc/REQ-003-pc.md) | PC 端图纸上传与审批管理 |
+| [REQ-005-app.md](./REQ-005-app.md) | APP 端 SE 图纸查阅与 Markups（含审批通过后 SE 侧 Push 通知） |
