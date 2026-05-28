@@ -17,6 +17,7 @@ related_to:
   - REQ-003A-pc
   - REQ-003C-pc
   - REQ-003-shared
+  - REQ-003G-pc
 blocks: []
 
 generate:
@@ -399,6 +400,8 @@ Then   对应面板显示 "No Data" 空状态提示
 | OQ-001 | 移除已分配 SE 后，该 SE 在 APP 端是否立即不可见？还是当前会话仍可见？ | F-003 副作用 | PM | — |
 | OQ-002 | 是否需要支持批量分配（一次给多张图纸分配同一组 SE）？ | F-001 扩展 | PM | — |
 | OQ-003 | Available 列表是否只显示本项目的 SE，还是系统全部 SE？ | F-002 数据范围 | PM | — |
+
+> ⚠️ **增量增强**：REQ-003G-pc 在本需求 F-002（Assign SE 弹框）的基础上新增了"按区域批量选 SE"功能，不修改本文档原有逻辑，下游前端/UI/QA 文档需同步参考 REQ-003G-pc。
 
 ---
 
