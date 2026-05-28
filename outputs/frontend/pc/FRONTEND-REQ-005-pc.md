@@ -1,85 +1,88 @@
-# 前端开发说明文档 — PC 管理端 Site Engineer 图纸查阅与局部更新查看
+---
+doc_type: frontend_spec
+runtime: Vue 2 + Element UI 2.x + Vue Router + Vuex
+source_req: REQ-005-pc (v0.3.5)
+ui_doc: UI-REQ-005-pc.md (v0.3.5)
+generated_at: 2026-05-28
+---
 
-> RUNTIME LIBRARY: 项目实现基于 Element UI（运行时）——所有实现必须使用 Element 组件或等价适配层。
+# 前端说明文档：PC 端 Site Engineer 图纸查阅与局部更新查看
 
-> **来源需求**: [REQ-005-pc.md](../../../requirements/pc/REQ-005-pc.md) + [REQ-005-shared.md](../../../requirements/shared/REQ-005-shared.md)
-> **UI 设计参考**: [UI-REQ-005-pc.md](../../ui/pc/UI-REQ-005-pc.md)
-> **产品**: SMART SITE SYSTEM
-> **平台**: PC 管理端（Vue 2 + Element UI，桌面浏览器，1280px+）
-> **生成日期**: 2026-04-08
+> 本文档依据 [REQ-005-pc.md v0.3.5](../../../requirements/pc/REQ-005-pc.md) 与 [UI-REQ-005-pc.md v0.3.5](../../ui/pc/UI-REQ-005-pc.md) 生成，描述 Vue 2 / Element UI 实现细节。
 
 ---
 
 ## 1. 功能概述
 
-本模块实现 Site Engineer 在 PC 端的图纸查阅能力，涵盖：
-
-| 功能模块 | 说明 |
-|---------|------|
-| Site Engineer 图纸列表 | 仅展示分配给当前 SE 且 ACTIVE 的图纸，可搜索/筛选 Category |
-| 图纸在线查看页 | PDF/PNG/JPG 在线预览，支持缩放、平移、全屏 |
-| Confirm Reading | SE 在 PC 端完成图纸查阅确认，跨端同步 |
-| Markups Tab | 查看图纸 ACTIVE 局部更新列表，支持 Mark as Read |
-| PC 站内通知 | 铃铛角标 + 通知下拉面板，点击跳转至图纸 Markups Tab |
+| 功能 | 说明 |
+|------|------|
+| SE 图纸列表 | 仅展示 ACTIVE + 已分配给当前用户的 DrawingVersion 列表 |
+| RFA 信息列 | 列表新增 RFA No. 与 Subject of RFA 列 |
+| Markups 列 | 格式 `●{unread} / {total}`，点击进入 Markups Tab |
+| 图纸在线查看 | PDF / PNG / JPG 在线预览，支持缩放与平移 |
+| Confirm Reading | **位于 Header 右侧**，弹窗确认，写入 DrawingConfirmation（deviceInfo="PC"） |
+| Markups Tab | 列表卡片显示 `{日期}·{创建人}` 元信息行 + `Based on {submissionNo}·Page {n}` 报审行；无 Affected Area |
+| 站内通知 | 铃铛角标 + 下拉面板，点击跳转并激活 Markups Tab |
 
 ---
 
 ## 2. 技术栈与约定
 
-| 项目 | 规范 |
+| 项目 | 说明 |
 |------|------|
-| 框架 | Vue 2 + Vue Router + Vuex |
-| UI 组件库 | Element UI 2.x |
-| HTTP | Axios，统一封装 `request.js` |
-| 文件预览 | PDF 使用 `pdf.js`（或 `<iframe>` 内嵌），PNG/JPG 直接 `<img>` |
-| 路由 | `/drawings`（SE 图纸列表），`/drawings/:drawingId`（图纸查看页） |
-| 权限 | 路由守卫控制 Site Engineer 角色才可访问 `/drawings` |
-| 国际化 | Vue I18n |
+| UI 框架 | Element UI 2.x（`el-table`、`el-tabs`、`el-button`、`el-dialog`、`el-popover` 等） |
+| 路由 | Vue Router，路由守卫校验 `roles: ['SITE_ENGINEER']` |
+| 状态 | Vuex（通知未读数）；页面级数据用组件内 data |
+| 请求 | Axios 封装，路径前缀 `/api` |
+| 国际化 | Vue I18n，中英双语 |
+| 日期格式 | dayjs；列表日期 `YYYY-MM-DD`，卡片 / 确认文案 `MMM D, YYYY` |
 
 ---
 
-## 3. 文件与目录结构
+## 3. 文件目录结构
 
 ```
 src/
-├── views/
-│   └── se-drawings/
-│       ├── index.vue                         # Site Engineer 图纸列表页
-│       ├── detail.vue                        # 图纸在线查看页
-│       └── components/
-│           ├── SeDrawingTable.vue            # SE 图纸表格
-│           ├── DrawingPreview.vue            # 图纸在线预览组件
-│           └── MarkupTabPanel.vue            # Markups Tab 面板
-├── layout/
-│   └── components/
-│       └── NotificationBell.vue              # 铃铛（扩展，支持通知列表）
-│       └── NotificationPanel.vue            # 通知下拉面板（新增）
-├── api/
-│   ├── se-drawing.js                         # SE 图纸相关 API
-│   └── notification.js                       # 站内通知 API
-└── utils/
-    └── drawing-helper.js                     # 扩展：SE 确认状态映射
+  views/
+    se-drawings/
+      index.vue              # SE 图纸列表页（/drawings）
+      detail.vue             # 图纸在线查看页（/drawings/:drawingVersionId）
+      components/
+        SeDrawingTable.vue   # 图纸列表表格
+        DrawingMeta.vue      # Header 信息条（含 Confirm Reading 按钮）
+        DrawingPreview.vue   # 图纸在线预览区
+        MarkupTabPanel.vue   # Markups Tab 面板
+        MarkupCard.vue       # 单条 Markup 卡片
+  layout/
+    components/
+      NotificationBell.vue   # 铃铛入口
+      NotificationPanel.vue  # 通知下拉面板
+  api/
+    se-drawing.js            # SE 图纸相关接口
+    notification.js          # 站内通知接口
 ```
 
 ---
 
-## 4. Site Engineer 图纸列表页 `index.vue`
+## 4. 图纸列表页 `index.vue`
 
 ### 4.1 数据状态
 
-| 变量 | 类型 | 说明 |
-|------|------|------|
-| `searchKeyword` | String | Code / Name 搜索关键词，防抖 300ms |
-| `categoryFilter` | String | Category 下拉筛选 |
-| `tableData` | Array | 图纸列表数据 |
-| `total` | Number | 总记录数 |
-| `pageNo` | Number | 当前页，默认 1 |
-| `pageSize` | Number | 每页 20 |
-| `loading` | Boolean | 表格 loading |
+```javascript
+data() {
+  return {
+    tableData: [],       // DrawingVersion 列表
+    total: 0,
+    loading: false,
+    searchKeyword: '',   // Description 模糊搜索
+    categoryFilter: '',  // Category 下拉筛选
+    pageNo: 1,
+    pageSize: 20
+  }
+}
+```
 
 ### 4.2 数据加载
-
-调用 API：`GET /drawing/se/page`（SE 专用接口，后端自动过滤：status=ACTIVE + 已分配给当前用户）。
 
 ```javascript
 methods: {
@@ -119,36 +122,71 @@ methods: {
 
 | 列名 | 字段 | 宽度 | 说明 |
 |------|------|------|------|
-| Drawing Code / Name | `drawingCode` + `drawingName` | 200px | Code 加粗，Name 作为次级文字 |
-| Category | `category` | 100px | 彩色 Tag |
-| Version | `currentVersionNo` | 80px | 如 "V3" |
-| Status | `confirmStatus` | 120px | 见下方说明 |
-| Markups | `unreadMarkupCount` | 90px | `●{n}` 橙色（n>0）；`—`（n=0） |
+| Description | `description` | min-width 200px | 批次描述，14px 加粗 |
+| Category | `category` | 120px | 分类文字 |
+| RFA No. | `rfaNo` | 100px | 外部报审编号；`—` 若为 null |
+| Subject of RFA | `subjectOfRfa` | min-width 160px | 报审主题；`—` 若为 null |
+| Status | `confirmed`（Boolean） | 110px | 见下方说明 |
+| Markups | `markupsUnread` + `markupsTotal` | 100px | 见 §5.2 |
 | Confirmed | `confirmedAt` | 100px | 格式 "Apr 8"，未确认显示 `—` |
 | Last Updated | `updatedAt` | 120px | 格式 "YYYY-MM-DD" |
 
+> **不包含的列**：`versionNo`（系统版本号）、`drawingCode`、`drawingName` 均不在 SE 列表中展示。
+
 **Status 列渲染**：
+
 ```javascript
-// 已确认
-if (row.confirmed) {
-  return '<span class="status-read">✓ Read</span>'
+renderStatus(h, { row }) {
+  if (row.confirmed) {
+    return h('span', { class: 'status-read' }, '✓ Read')
+  }
+  return h('a', {
+    class: 'status-confirm',
+    on: { click: () => this.goToPreview(row) }
+  }, 'Confirm →')
 }
-// 未确认
-return '<a class="status-confirm" @click="goToDetail(row)">Confirm →</a>'
 ```
 
-### 5.2 行点击
-
-整行点击 → `$router.push({ name: 'SeDrawingDetail', params: { drawingId: row.id } })`
-
-### 5.3 Markups 列点击
+### 5.2 Markups 列渲染
 
 ```javascript
-handleMarkupsClick(row) {
-  // 进入图纸查看页并自动激活 Markups Tab
+renderMarkups(h, { row }) {
+  const { markupsTotal, markupsUnread } = row
+  // 无 Markup
+  if (!markupsTotal || markupsTotal === 0) {
+    return h('span', { style: { color: '#909399' } }, '—')
+  }
+  // 有未读
+  if (markupsUnread > 0) {
+    return h('a', {
+      class: 'markups-link',
+      on: { click: () => this.goToMarkups(row) }
+    }, [
+      h('span', { style: { color: '#F57F17' } }, `●${markupsUnread}`),
+      h('span', { style: { color: '#909399' } }, ` / ${markupsTotal}`)
+    ])
+  }
+  // 全部已读
+  return h('span', { style: { color: '#909399' } }, `0 / ${markupsTotal}`)
+}
+```
+
+### 5.3 行点击
+
+```javascript
+handleRowClick(row, column) {
+  // Status 列和 Markups 列有自己的点击处理，不触发行跳转
+  const ignoredColumns = ['status', 'markups']
+  if (ignoredColumns.includes(column.property)) return
+  this.goToPreview(row)
+},
+goToPreview(row) {
+  this.$router.push({ name: 'SeDrawingDetail', params: { drawingVersionId: row.id } })
+},
+goToMarkups(row) {
   this.$router.push({
     name: 'SeDrawingDetail',
-    params: { drawingId: row.id },
+    params: { drawingVersionId: row.id },
     query: { tab: 'markups' }
   })
 }
@@ -162,28 +200,32 @@ handleMarkupsClick(row) {
 
 | 参数 | 来源 | 说明 |
 |------|------|------|
-| `drawingId` | `$route.params.drawingId` | 图纸 ID |
+| `drawingVersionId` | `$route.params.drawingVersionId` | DrawingVersion ID |
 | `tab` | `$route.query.tab` | 初始激活 Tab：`'preview'`（默认）/ `'markups'` |
 
 ### 6.2 数据状态
 
-| 变量 | 类型 | 说明 |
-|------|------|------|
-| `drawing` | Object | 图纸详情 |
-| `activeTab` | String | `'preview'` / `'markups'`，初始值来自 query |
-| `confirmLoading` | Boolean | Confirm Reading 按钮 loading |
+```javascript
+data() {
+  return {
+    drawingVersion: null,  // DrawingVersion 详情
+    activeTab: 'preview',
+    confirmLoading: false
+  }
+}
+```
 
 ### 6.3 数据加载
 
 ```javascript
 created() {
   this.activeTab = this.$route.query.tab || 'preview'
-  this.fetchDrawingDetail()
+  this.fetchDetail()
 },
 methods: {
-  fetchDrawingDetail() {
-    getSeDrawingDetail(this.$route.params.drawingId)
-      .then(res => { this.drawing = res })
+  fetchDetail() {
+    getSeDrawingDetail(this.$route.params.drawingVersionId)
+      .then(res => { this.drawingVersion = res })
   }
 }
 ```
@@ -194,22 +236,43 @@ methods: {
 <template>
   <div class="drawing-detail">
     <!-- 面包屑 -->
-    <el-breadcrumb>
+    <el-breadcrumb separator="/">
       <el-breadcrumb-item :to="{ name: 'SeDrawings' }">Drawings</el-breadcrumb-item>
-      <el-breadcrumb-item>{{ drawing.drawingCode }} {{ drawing.drawingName }}</el-breadcrumb-item>
+      <el-breadcrumb-item>{{ drawingVersion && drawingVersion.description }}</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <!-- 图纸元信息 -->
-    <DrawingMeta :drawing="drawing" />
+    <!-- Header 信息条（含 Confirm Reading 按钮） -->
+    <DrawingMeta
+      v-if="drawingVersion"
+      :drawing-version="drawingVersion"
+      :confirm-loading="confirmLoading"
+      @confirm="handleConfirm"
+    />
 
     <!-- Tab -->
-    <el-tabs v-model="activeTab">
+    <el-tabs v-model="activeTab" type="card">
       <el-tab-pane label="Drawing Preview" name="preview">
-        <DrawingPreview :fileUrl="drawing.currentVersionFileUrl" />
-        <ConfirmReadingBar :drawing="drawing" @confirmed="onConfirmed" />
+        <DrawingPreview
+          v-if="drawingVersion"
+          :file-url="drawingVersion.fileUrl"
+        />
       </el-tab-pane>
-      <el-tab-pane :label="`Markups (${drawing.activeMarkupCount})`" name="markups">
-        <MarkupTabPanel :drawing-id="drawing.id" />
+      <el-tab-pane name="markups">
+        <!-- Tab 标签含未读气泡 -->
+        <span slot="label">
+          Markups
+          <el-badge
+            v-if="drawingVersion && drawingVersion.markupsUnread > 0"
+            :value="drawingVersion.markupsUnread"
+            :max="99"
+            type="warning"
+          />
+        </span>
+        <MarkupTabPanel
+          v-if="drawingVersion"
+          :drawing-version-id="drawingVersion.id"
+          @markup-read="onMarkupRead"
+        />
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -218,15 +281,101 @@ methods: {
 
 ---
 
-## 7. 图纸预览组件 `DrawingPreview.vue`
+## 7. Header 信息条组件 `DrawingMeta.vue`
 
 ### 7.1 Props
 
 | Prop | 类型 | 说明 |
 |------|------|------|
+| `drawingVersion` | Object | DrawingVersion 详情对象 |
+| `confirmLoading` | Boolean | 确认按钮 loading 状态 |
+
+### 7.2 模板结构
+
+```vue
+<template>
+  <div class="drawing-meta-header">
+    <!-- 左侧标题区 -->
+    <div class="meta-left">
+      <h2 class="meta-title">{{ drawingVersion.description }}</h2>
+      <p class="meta-sub">
+        {{ drawingVersion.category }} · Updated {{ formatDate(drawingVersion.updatedAt) }}
+      </p>
+    </div>
+    <!-- 右侧按钮区 -->
+    <div class="meta-right">
+      <!-- 未确认 -->
+      <el-button
+        v-if="!drawingVersion.confirmed"
+        type="primary"
+        :loading="confirmLoading"
+        @click="$emit('confirm')"
+      >
+        ✓ Confirm Reading
+      </el-button>
+      <!-- 已确认 -->
+      <span v-else class="confirmed-text">
+        ✓ Confirmed on {{ formatDate(drawingVersion.confirmedAt) }}
+      </span>
+    </div>
+  </div>
+</template>
+```
+
+> **说明**：系统版本号（`versionNo`）不在 Header 中渲染。
+
+---
+
+## 8. Confirm Reading 操作（`detail.vue`）
+
+### 8.1 确认流程
+
+```javascript
+async handleConfirm() {
+  try {
+    await this.$confirm(
+      'Confirm that you have read this drawing?',
+      'Confirm Reading',
+      {
+        type: 'info',
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        message: `${this.drawingVersion.description} · ${this.drawingVersion.category}`
+      }
+    )
+  } catch {
+    return  // 用户取消
+  }
+  this.confirmLoading = true
+  try {
+    await confirmDrawingRead({
+      drawingVersionId: this.drawingVersion.id,
+      deviceInfo: 'PC'
+    })
+    this.drawingVersion.confirmed = true
+    this.drawingVersion.confirmedAt = new Date().toISOString()
+    this.$message.success('Reading confirmed successfully')
+  } catch {
+    this.$message.error('Confirm failed, please try again')
+  } finally {
+    this.confirmLoading = false
+  }
+}
+```
+
+> `deviceInfo` 固定传 `'PC'`。跨端幂等：同一用户对同一 DrawingVersion 唯一，已在 APP 确认则 PC 显示已确认。
+
+---
+
+## 9. 图纸预览组件 `DrawingPreview.vue`
+
+### 9.1 Props
+
+| Prop | 类型 | 说明 |
+|------|------|------|
 | `fileUrl` | String | 图纸文件 OSS URL |
 
-### 7.2 预览策略
+### 9.2 预览策略
 
 | 文件类型 | 预览方式 |
 |---------|---------|
@@ -234,130 +383,89 @@ methods: {
 | `.png` / `.jpg` / `.jpeg` | `<img :src="fileUrl" />` |
 | `.dwg`（转换后 PDF） | 同 PDF |
 
-### 7.3 缩放 & 平移
-
-- PDF：依赖 pdf.js 内置 zoom 控件
-- 图片：使用 `wheel` 事件监听 + CSS `transform: scale()` + 鼠标拖拽平移
-- 提供 [全屏查看] 按钮，调用 `element.requestFullscreen()`
+### 9.3 缩放 & 平移
 
 ```javascript
 handleWheel(e) {
   e.preventDefault()
   const delta = e.deltaY > 0 ? 0.9 : 1.1
-  this.scale = Math.min(Math.max(this.scale * delta, 0.1), 10)
+  this.scale = Math.min(Math.max(this.scale * delta, 0.25), 5)
+},
+handleFullscreen() {
+  this.$el.requestFullscreen()
 }
 ```
 
 ---
 
-## 8. Confirm Reading 操作
+## 10. Markups Tab 面板 `MarkupTabPanel.vue`
 
-### 8.1 显示逻辑
-
-```vue
-<!-- 未确认 -->
-<el-button
-  v-if="!drawing.confirmed"
-  type="primary"
-  :loading="confirmLoading"
-  @click="handleConfirm"
->
-  Confirm Reading
-</el-button>
-
-<!-- 已确认 -->
-<div v-else class="confirmed-text">
-  ✓ Confirmed on {{ formatDate(drawing.confirmedAt) }}
-</div>
-```
-
-### 8.2 确认流程
-
-```javascript
-async handleConfirm() {
-  await this.$confirm(
-    'Confirm that you have read and understood this drawing?',
-    'Confirm Reading',
-    { type: 'info', confirmButtonText: 'Confirm' }
-  )
-  this.confirmLoading = true
-  try {
-    await confirmDrawingRead({
-      drawingVersionId: this.drawing.currentVersionId,
-      deviceInfo: 'PC'
-    })
-    // 更新本地状态
-    this.drawing.confirmed = true
-    this.drawing.confirmedAt = new Date().toISOString()
-    // 更新列表页中的 Status 列
-    this.$message.success('Reading confirmed successfully')
-  } finally {
-    this.confirmLoading = false
-  }
-}
-```
-
-> `deviceInfo` 固定传 `'PC'`，后端用于记录确认来源。跨端幂等：同一用户对同一图纸版本唯一，已在 APP 确认则 PC 显示"已确认"。
-
----
-
-## 9. Markups Tab 面板 `MarkupTabPanel.vue`
-
-### 9.1 Props
+### 10.1 Props
 
 | Prop | 类型 | 说明 |
 |------|------|------|
-| `drawingId` | Number | 图纸 ID |
+| `drawingVersionId` | Number | DrawingVersion ID |
 
-### 9.2 数据加载
+### 10.2 数据加载
 
 ```javascript
 created() { this.fetchMarkups() },
 methods: {
   fetchMarkups() {
-    // 仅加载 ACTIVE 状态
-    getMarkupList({ drawingId: this.drawingId, status: 'ACTIVE' })
+    // 仅加载 ACTIVE 状态，按 publishTime 降序
+    getSeMarkupList({ drawingVersionId: this.drawingVersionId, status: 'ACTIVE' })
       .then(res => { this.markups = res.list })
   }
 }
 ```
 
-### 9.3 Markup 卡片（SE 视角）
+> 接口参数为 `drawingVersionId`（非 `drawingId`），对应 DrawingMarkup 的 FK。
 
-与 REQ-004 的 `MarkupCard` 不同，SE 视图**无勾选/删除**操作，仅显示 `[Mark as Read]` / `✓ Read`：
+### 10.3 Markup 卡片组件 `MarkupCard.vue`
 
-| 元素 | 显示 |
-|------|------|
-| `[New]` 标签 | 橙色，当前用户未确认时显示 |
-| 内容区 | 标题、发布人、日期、影响区域、说明文字（最多 3 行）、附件 |
-| `[Mark as Read]` | 当前用户未确认时显示 |
-| `✓ Read` | 已确认时显示（绿色，不可点击） |
+Props:
 
-### 9.4 Mark as Read 操作
+| Prop | 类型 | 说明 |
+|------|------|------|
+| `markup` | Object | DrawingMarkup 数据 |
+
+卡片显示字段：
+
+| 元素 | 字段 | 说明 |
+|------|------|------|
+| [New] 标签 | `markup.confirmed === false` | 橙色胶囊；已读后隐藏 |
+| 标题 | `markup.description` | 14px 加粗 |
+| 元信息行 | `markup.publishTime` + `markup.creatorName` | `{日期} · {创建人}`，12px，#909399 |
+| 报审号+页码行 | `markup.submissionNo` + `markup.appliedPageNo` | `Based on {submissionNo}`；若 `appliedPageNo` 不为 null 追加 ` · Page {n}`；12px，#909399 |
+| 说明文字 | `markup.content` | 最多 3 行，"…Show more" 展开 |
+| 附件列表 | `markup.attachments[]` | 📎 文件名，点击新 Tab 打开 |
+| 操作区 | `markup.confirmed` | 未读 → `[Mark as Read]`；已读 → `✓ Read` |
+
+> **不渲染的字段**：`affectedArea`（影响区域）在 SE 视图卡片中不显示。
+
+### 10.4 Mark as Read 操作
 
 ```javascript
 async handleMarkAsRead(markup) {
-  markup.confirmLoading = true
+  this.$set(markup, 'confirmLoading', true)
   try {
     await confirmMarkupRead({ markupId: markup.id, deviceInfo: 'PC' })
     markup.confirmed = true
-    // 更新图纸列表中的 unreadMarkupCount
+    // 通知父组件更新列表页 Markups 列计数
     this.$emit('markup-read')
+  } catch {
+    this.$message.error('Failed to mark as read, please try again')
   } finally {
-    markup.confirmLoading = false
+    this.$set(markup, 'confirmLoading', false)
   }
 }
 ```
 
-### 9.5 附件查看
-
-点击附件文件名 → `window.open(url, '_blank')` 在新 Tab 打开。
-
 ---
 
-## 10. PC 站内通知
+## 11. PC 站内通知
 
-### 10.1 NotificationPanel.vue 结构
+### 11.1 NotificationPanel.vue 结构
 
 ```vue
 <template>
@@ -367,123 +475,112 @@ async handleMarkAsRead(markup) {
         <i class="el-icon-bell notification-bell" />
       </el-badge>
     </template>
-
     <div class="notification-panel">
       <div class="panel-header">
-        <span>Notifications</span>
-        <a @click="markAllRead">Mark all as read</a>
+        <span>Notifications <template v-if="unreadCount">({{ unreadCount }} unread)</template></span>
+        <el-button size="mini" type="text" :disabled="unreadCount === 0" @click="markAllRead">
+          Mark all as read
+        </el-button>
       </div>
-      <div class="notification-list">
-        <NotificationItem
-          v-for="item in notifications"
-          :key="item.id"
-          :notification="item"
-          @click="handleNotificationClick(item)"
-        />
-      </div>
+      <NotificationItem
+        v-for="item in notifications"
+        :key="item.id"
+        :notification="item"
+        @click.native="handleNotificationClick(item)"
+      />
     </div>
   </el-popover>
 </template>
 ```
 
-### 10.2 未读数量轮询
+### 11.2 未读数量轮询（Vuex user module）
 
 ```javascript
-// 在 Vuex user module 中
 actions: {
-  startNotificationPolling({ commit, dispatch }) {
+  startNotificationPolling({ dispatch }) {
     dispatch('fetchUnreadCount')
     setInterval(() => dispatch('fetchUnreadCount'), 30000) // 30s 轮询
   },
   async fetchUnreadCount({ commit }) {
-    const res = await getNotificationList({ pageSize: 1 })
-    commit('SET_TODO_COUNT', res.unreadCount)
+    const res = await getNotificationUnreadCount()
+    commit('SET_NOTIFICATION_UNREAD', res.count)
   }
 }
 ```
 
-### 10.3 通知点击跳转
+### 11.3 通知点击跳转
 
 ```javascript
 handleNotificationClick(notification) {
-  // 标记已读
   markNotificationRead(notification.id).then(() => {
     this.$store.dispatch('user/fetchUnreadCount')
   })
-  // 跳转
   if (notification.targetRoute) {
     this.$router.push(notification.targetRoute)
     // targetRoute 示例: "/drawings/101?tab=markups"
   }
-  // 关闭 Popover
   this.popoverVisible = false
-}
-```
-
-### 10.4 Mark All as Read
-
-```javascript
-markAllRead() {
-  markAllNotificationsRead().then(() => {
-    this.notifications.forEach(n => { n.isRead = true })
-    this.$store.commit('user/SET_TODO_COUNT', 0)
-  })
 }
 ```
 
 ---
 
-## 11. API 封装
+## 12. API 封装
 
 ### `api/se-drawing.js`
 
 ```javascript
-// SE 专用图纸列表（自动过滤：ACTIVE + 已分配给当前用户）
+// SE 专用图纸列表（后端自动过滤 ACTIVE + 已分配给当前用户）
 export const getSeDrawingList = (params) =>
   request.get('/drawing/se/page', { params })
+// 响应字段包含: id, description, category, rfaNo, subjectOfRfa,
+//               confirmed, confirmedAt, markupsTotal, markupsUnread, updatedAt
 
-// SE 图纸详情
-export const getSeDrawingDetail = (drawingId) =>
-  request.get('/drawing/se/get', { params: { drawingId } })
+// SE DrawingVersion 详情
+export const getSeDrawingDetail = (drawingVersionId) =>
+  request.get('/drawing/se/get', { params: { drawingVersionId } })
+// 响应字段包含: id, description, category, fileUrl, confirmed, confirmedAt,
+//               markupsUnread, markupsTotal, updatedAt
 
 // 确认图纸已读
 export const confirmDrawingRead = (data) =>
   request.post('/drawing/confirm', data)
-  // data: { drawingVersionId, deviceInfo: 'PC' }
+// data: { drawingVersionId, deviceInfo: 'PC' }
 
-// SE 获取图纸的 Markup 列表（仅 ACTIVE）
+// SE 获取 DrawingVersion 的 Markup 列表（仅 ACTIVE）
 export const getSeMarkupList = (params) =>
   request.get('/drawing/markup/list', { params })
-  // params: { drawingId, status: 'ACTIVE' }
+// params: { drawingVersionId, status: 'ACTIVE' }
+// 响应字段: id, description, publishTime, creatorName, submissionNo,
+//           appliedPageNo, content, attachments[], confirmed
 
 // 确认 Markup 已读（Mark as Read）
 export const confirmMarkupRead = (data) =>
   request.post('/drawing/markup/confirm', data)
-  // data: { markupId, deviceInfo: 'PC' }
+// data: { markupId, deviceInfo: 'PC' }
 ```
 
 ### `api/notification.js`
 
 ```javascript
-// 获取通知列表
 export const getNotificationList = (params) =>
   request.get('/notification/list', { params })
 
-// 标记单条已读
+export const getNotificationUnreadCount = () =>
+  request.get('/notification/unread-count')
+
 export const markNotificationRead = (id) =>
   request.patch(`/notification/${id}/read`)
 
-// 全部标记已读
 export const markAllNotificationsRead = () =>
   request.patch('/notification/read-all')
 ```
 
 ---
 
-## 12. 路由配置
+## 13. 路由配置
 
 ```javascript
-// 在管理后台框架路由 children 中添加
 {
   path: 'drawings',
   name: 'SeDrawings',
@@ -491,7 +588,7 @@ export const markAllNotificationsRead = () =>
   meta: { title: 'Drawings', roles: ['SITE_ENGINEER'] }
 },
 {
-  path: 'drawings/:drawingId',
+  path: 'drawings/:drawingVersionId',
   name: 'SeDrawingDetail',
   component: () => import('@/views/se-drawings/detail.vue'),
   meta: { title: 'Drawing Detail', roles: ['SITE_ENGINEER'] }
@@ -502,65 +599,65 @@ export const markAllNotificationsRead = () =>
 
 ---
 
-## 13. 国际化（i18n）
+## 14. 国际化（i18n）
 
 ```
-seDrawing.title              → "Drawings"
-seDrawing.status.read        → "✓ Read"
-seDrawing.status.confirm     → "Confirm →"
-seDrawing.col.category       → "Category"
-seDrawing.col.version        → "Version"
-seDrawing.col.status         → "Status"
-seDrawing.col.markups        → "Markups"
-seDrawing.col.confirmed      → "Confirmed"
-seDrawing.col.lastUpdated    → "Last Updated"
-seDrawing.empty              → "No drawings assigned to you yet."
-seDrawing.btn.confirmReading → "Confirm Reading"
-seDrawing.confirmedText      → "✓ Confirmed on {date}"
-seDrawing.tab.preview        → "Drawing Preview"
-seDrawing.tab.markups        → "Markups ({count})"
-markup.btn.markAsRead        → "Mark as Read"
-markup.status.read           → "✓ Read"
-markup.badge.new             → "New"
-notification.markAllRead     → "Mark all as read"
+seDrawing.title                  → "Drawings" / "我的图纸"
+seDrawing.col.description        → "Description" / "批次描述"
+seDrawing.col.category           → "Category" / "分类"
+seDrawing.col.rfaNo              → "RFA No." / "报审编号"
+seDrawing.col.subjectOfRfa       → "Subject of RFA" / "报审主题"
+seDrawing.col.status             → "Status" / "状态"
+seDrawing.col.markups            → "Markups" / "局部更新"
+seDrawing.col.confirmed          → "Confirmed" / "确认时间"
+seDrawing.col.lastUpdated        → "Last Updated" / "最后更新"
+seDrawing.status.read            → "✓ Read" / "✓ 已读"
+seDrawing.status.confirm         → "Confirm →" / "待确认 →"
+seDrawing.empty                  → "No drawings assigned to you yet."
+seDrawing.btn.confirmReading     → "✓ Confirm Reading" / "✓ 确认查阅"
+seDrawing.confirmedText          → "✓ Confirmed on {date}" / "✓ 已于 {date} 确认"
+seDrawing.tab.preview            → "Drawing Preview" / "图纸预览"
+seDrawing.tab.markups            → "Markups" / "局部更新"
+markup.btn.markAsRead            → "✓ Mark as Read" / "✓ 标记已读"
+markup.status.read               → "✓ Read" / "✓ 已读"
+markup.badge.new                 → "New" / "新"
+markup.basedOn                   → "Based on {submissionNo}"
+markup.page                      → "· Page {n}"
+notification.markAllRead         → "Mark all as read" / "全部标为已读"
 ```
 
 ---
 
-## 14. 验收标准
+## 15. 验收标准
 
 ### Site Engineer 图纸列表
-- [ ] 只显示 `status = ACTIVE` 且已分配给当前 SE 的图纸
-- [ ] 搜索（Code / Name）和 Category 筛选正常生效
-- [ ] Status 列已确认显示 `✓ Read`，未确认显示 `Confirm →`（蓝色可点击）
-- [ ] Markups 列：有 ACTIVE 未读时显示 `●{n}` 橙色；无未读时显示 `—`
-- [ ] 无分配图纸时显示空状态文案
 
-### 图纸在线查看
-- [ ] 点击行 / `Confirm →` 链接进入图纸查看页
-- [ ] 图纸文件正常加载（PDF 内嵌 / 图片显示）
-- [ ] 支持鼠标滚轮缩放和拖拽平移
-- [ ] [全屏查看] 按钮正常工作
+- [ ] 只显示 `status = ACTIVE` 且已分配给当前 SE 的 DrawingVersion
+- [ ] 列表包含：Description、Category、RFA No.、Subject of RFA、Status、Markups、Confirmed、Last Updated
+- [ ] **不显示** 系统版本号（versionNo）、Drawing Code、Drawing Name
+- [ ] Description 模糊搜索和 Category 筛选正常生效
+- [ ] RFA No. / Subject of RFA：有值时显示具体值，无值时显示 `—`
+- [ ] Status 列已确认显示 `✓ Read`（绿），未确认显示 `Confirm →`（蓝色可点击）
+- [ ] Markups 列：`unread>0` → `●{unread}/{total}` 橙色可点击；全部已读 → `0/{total}` 灰色；无 Markup → `—`
 
-### Confirm Reading
-- [ ] 未确认时显示 [Confirm Reading] 按钮
-- [ ] 点击弹出确认对话框，确认后调用 API（携带 `deviceInfo: 'PC'`）
-- [ ] 确认成功后按钮替换为 `✓ Confirmed on {date}`
+### Confirm Reading（Header 位置）
+
+- [ ] [Confirm Reading] 按钮在 Header 右侧，无需滚动可见
+- [ ] 点击弹出确认对话框，副文字含 description 和 category
+- [ ] 确认后 `deviceInfo: 'PC'`，Header 替换为已确认文字
 - [ ] 在 APP 端确认后，PC 端刷新显示"已确认"（跨端同步）
-- [ ] 返回列表页，Status 列更新为 `✓ Read`
 
-### Markups Tab
-- [ ] Markups Tab 仅显示 ACTIVE 状态的局部更新
-- [ ] 按发布时间降序排列
-- [ ] 未读条目显示 `[New]` 标签和 `[Mark as Read]` 按钮
-- [ ] 点击 `[Mark as Read]` 成功后替换为 `✓ Read`
-- [ ] 已在 APP 确认的条目，PC 端刷新后显示 `✓ Read`（跨端同步）
-- [ ] 点击 Markups 列 `●{n}` 角标 → 进入图纸查看页并激活 Markups Tab
+### Markups Tab 卡片
 
-### PC 站内通知
-- [ ] 有未读通知时铃铛显示红色角标（最多 "99+"）
-- [ ] 点击铃铛打开通知面板，显示最近通知列表
-- [ ] 点击通知条目跳转到对应图纸页并激活 Markups Tab，通知标记已读
-- [ ] 角标数量在标记已读后正确减少
-- [ ] "Mark all as read" 功能将所有通知标为已读，角标清零
-- [ ] 未被分配该图纸的用户不收到该图纸的通知
+- [ ] 卡片显示 `{日期} · {创建人}` 元信息行
+- [ ] 卡片显示 `Based on {submissionNo}` 报审行；`appliedPageNo` 不为 null 时追加 ` · Page {n}`
+- [ ] 卡片**不显示** Affected Area 字段
+- [ ] 未读条目显示 [New] 标签和 [Mark as Read] 按钮
+- [ ] Mark as Read 成功后替换为 `✓ Read`；列表 Markups 列角标减一
+
+### 站内通知
+
+- [ ] Markup 发布后，铃铛角标 +1（30s 内轮询更新）
+- [ ] 点击通知跳转到图纸详情页并激活 Markups Tab
+- [ ] 未被分配图纸的 SE 不收到通知
+- [ ] Mark all as read 功能将所有通知置为已读，角标清零
