@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-003A-pc
 req_title: "PC 端 — 图纸管理列表页"
-version: 0.4.6
+version: 0.5.0
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
 owner: ""
 created_at: 2026-05-04
-updated_at: 2026-05-26
+updated_at: 2026-05-27
 
 depends_on:
   - REQ-007-shared
@@ -91,12 +91,25 @@ PC 管理端图纸列表页是所有图纸管理操作的入口枢纽：设计�
 
 ---
 
+#### US-003A-LIST-002：导出图纸信息至 Excel
+
+```
+作为 图纸管理员（项目管理员）
+我想要 在图纸列表页点击导出按钮，将当前列表数据导出为 Excel 文件
+以便 离线查阅所有图纸的关联关系与审批状态
+```
+
+**优先级**：P1
+
+---
+
 ## 3. 角色与权限矩阵
 
 | 操作 | 设计人员 | 内部审批人 | 项目管理员 | Site Engineer |
 |-----|:-------:|:---------:|:---------:|:-------------:|
 | 查看图纸列表 | ✅ | ✅ | ✅ | — |
 | 使用 Filter Search | ✅ | ✅ | ✅ | — |
+| [Export]：导出图纸信息至 Excel | ❌ | ❌ | ✅ | — |
 | [View]：查看最新版本图纸 | ✅ | ✅ | ✅ | — |
 | [History]：查看提交历史 | ✅ | ✅ | ✅ | — |
 | [Confirms]：查看 SE 确认历史 | ✅ | ✅ | ✅ | — |
@@ -187,7 +200,12 @@ PC 管理端图纸列表页是所有图纸管理操作的入口枢纽：设计�
 
 **顶部操作区**：
 - 左侧：[Filter Search] 按钮（见下方 Popover 规则）
-- 右侧：[+ Upload Drawing]（点击触发新建图纸弹窗，详见 REQ-003E-pc）
+- 右侧（从左到右）：[Export]（仅项目管理员可见）、[+ Upload Drawing]（点击触发新建图纸弹窗，详见 REQ-003E-pc）
+
+**[Export] 按钮规则**：
+- 仅对**项目管理员**角色显示，其他角色不展示此按钮
+- 点击后触发 Excel 文件下载，导出**当前筛选条件下**的全部图纸数据
+- 导出过程中按钮显示 loading 状态，完成后恢复可点击；若导出失败，以 Toast 提示"Export failed, please try again"
 
 **Actions 列按钮规则**（从左到右排列）：
 
@@ -309,11 +327,29 @@ Then   按钮显示 "Filter Search (2)"；清空所有条件后按钮恢复为 "
 ```
 
 ### AC-003A-015：点击 Popover 外部不触发查询
-
 ```
 Given  用户在 Filter Search Popover 中填写了条件但未点击 [Search]
 When   点击 Popover 外部区域关闭 Popover
 Then   Popover 关闭，填写的条件保留在表单内，列表数据不刷新
+```
+
+### AC-003A-017：[Export] 按钮仅对项目管理员可见
+
+```
+Given  用户登录系统并进入图纸管理列表页
+When   用户角色为设计人员或内部审批人
+Then   顶部操作区不显示 [Export] 按钮；
+       当用户角色为项目管理员时，[Export] 按钮显示在 [+ Upload Drawing] 左侧
+```
+
+### AC-003A-018：[Export] 按钮触发文件下载
+
+```
+Given  项目管理员在图纸管理列表页（可含筛选条件）
+When   点击 [Export] 按钮
+Then   系统触发 Excel 文件下载，文件内容为当前筛选结果下的全部记录；
+       导出过程中按钮显示 loading 状态；
+       若导出失败，页面顶部显示 Toast 提示"Export failed, please try again"
 ```
 
 ### AC-003A-016：上传 PDF 后列表出现对应提交记录
@@ -400,6 +436,7 @@ Then   列表新增 1 行，对应该 PDF 的提交记录（DrawingVersion V0）
 | 0.4.2 | 2026-05-25 | agent | 修正列表行含义：每行代表一次**提交记录**（DrawingVersion），而非一个独立 Drawing 实体；同一张图纸的多个版本各占独立一行；更新 §1.1、§4.1 实体清单（突出 DrawingVersion 为列表主体）、§5.1 列表行含义说明、US-003A-LIST-001 背景、AC-003A-011、AC-003A-016 | Frontend、QA |
 | 0.4.3 | 2026-05-25 | agent | 修正列表行与图纸页的关系：每行（DrawingVersion）= 一个 PDF 文件；Drawing No / Drawing Name 为 PDF 页级属性，不在列表列中展示；移除表格列 Drawing Code、Drawing Name；Filter Search 字段由 5 项缩减为 3 项（Description、Category、Status）；更新 §1.1、§4.1、§5.1 表格列与行含义说明、US-003A-LIST-001 背景、AC-003A-011、AC-003A-012、AC-003A-014、AC-003A-016 | Frontend、QA |
 | 0.4.4 | 2026-05-25 | agent | 明确 Actions 列 6 个按钮的排列顺序与点击行为：从左到右为 View / History / Confirms / Assign / Part Print / Upload New Version；扩展权限矩阵（§3）、重写 §5.1 Actions 列按钮规则为表格形式；AC-003A-005 拆分为 AC-003A-005（按钮排列与行为）+ AC-003A-005B（置灰规则） | Frontend、QA |
+| 0.5.0 | 2026-05-27 | agent | 新增导出功能：顶部操作区在 [+ Upload Drawing] 左侧新增 [Export] 按钮（仅项目管理员可见），支持将当前筛选结果导出为 Excel；新增 US-003A-LIST-002；§3 权限矩阵新增导出行；§5.1 顶部操作区补充 [Export] 按钮规则；新增 AC-003A-017、AC-003A-018 | Frontend、QA |
 | 0.4.6 | 2026-05-26 | agent | 补充外部审批结果代码附加显示规则：Status 列在 ACTIVE / EXTERNAL_REJECTED 时以灰色小字附加 (A)–(E) 结果代码；§4.2 新增结果代码映射表与设计说明；新增 AC-003A-011C（结果代码展示）、AC-003A-011D（Status B 时设计人员感知跟进动作） | Frontend、QA |
 | 0.4.5 | 2026-05-25 | agent | 关联 REQ-004-pc：[Part Print] 按钮对应 REQ-004-pc 局部更新需求（[+ Markup] 发布局部更新弹窗入口）；新增 related_to REQ-004-pc；更新 §3 权限矩阵（Part Print 仅状态 ACTIVE 时可见）、§5.1 Actions 表（Part Print 行补充引用与状态限制）、AC-003A-005 行为说明 | Frontend、QA |
 
