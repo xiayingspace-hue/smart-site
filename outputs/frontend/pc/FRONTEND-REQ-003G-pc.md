@@ -3,7 +3,7 @@ doc_type: frontend_spec
 req_id: REQ-003G-pc
 version: 0.1.0
 status: draft
-generated_from: REQ-003G-pc@0.2.0
+generated_from: REQ-003G-pc@0.3.0
 data_contract_ref: data-contract-003G-pc.md@0.1.0
 ui_spec_ref: ui-spec-003G-pc.md@0.1.0
 generated_at: 2026-05-28
@@ -204,7 +204,7 @@ interface ManageSEsDialogProps {
 
 #### `<SelectByAreaButton>` + `<SelectByAreaDropdown>`
 
-**关联 AC**：AC-003G-006、AC-003G-007、AC-003G-008、AC-003G-009
+**关联 AC**：AC-003G-006、AC-003G-007、AC-003G-008、AC-003G-009、AC-003G-011、AC-003G-012、AC-003G-013
 
 **Props**（`SelectByAreaButton`）：
 ```ts
@@ -217,9 +217,14 @@ interface SelectByAreaButtonProps {
 ```
 
 **职责**（下拉面板）：
-- 拉取本项目区域列表（含每区域 SE 数量）。
-- 支持全选 Checkbox 联动各行 Checkbox。
-- 点击 [Add Selected Areas]：向父组件 `<AssignSEDialog>` 发出已选区域 ID 列表，由父组件从接口获取区域内 SE 并执行去重合并（幂等）。
+- 拉取本项目区域列表（含每区域 SE 及其详情），渲染**树形 Checkbox 列表**：
+  - 区域节点：支持三态 Checkbox（全选 / indeterminate / 未选）；点击展开/折叠子 SE 列表
+  - SE 子节点：独立 Checkbox，可单独勾选/取消
+  - 区域 Checkbox 联动规则：区域下所有 SE 已选 → 全选态；部分已选 → indeterminate；全未选 → 未选
+- 顶部搜索框：同时过滤区域名和 SE 姓名，过滤时保持树形层级
+- 顶部 `Select All` Checkbox：选中/取消所有区域的所有 SE
+- 底部 [Add Selected] 按钮：显示当前已勾选 SE 总数（去重），如 `Add Selected (5)`；[Clear] 链接清空所有勾选
+- 点击 [Add Selected]：收集所有已勾选 SE 的并集（无论来自整区域勾选还是单 SE 勾选），向父组件 `<AssignSEDialog>` 发出 SE ID 列表，由父组件执行与已 Assigned 列表的去重合并（幂等）
 
 ---
 
@@ -275,7 +280,7 @@ export const drawingAreaKeys = {
 | API-003G-05 | 获取区域 SE 列表（In Area） | `<ManageSEsDialog>` | 打开弹框时拉取 |
 | API-003G-06 | 获取项目全部 SE 列表（Available） | `<ManageSEsDialog>` | 打开弹框时拉取（可复用项目成员缓存） |
 | API-003G-07 | 保存区域 SE 绑定（批量 diff） | `<ManageSEsDialog>` | 操作后失效 seList 缓存 |
-| API-003G-08 | 按区域 ID 批量获取 SE 列表（[Select by Area] 使用） | `<AssignSEDialog>` | 打开下拉时按需拉取 |
+| API-003G-08 | 按区域获取 SE 列表（树形面板数据，含每区域 SE 详情） | `<SelectByAreaDropdown>` | 打开下拉时按需拉取 |
 
 ### 6.3 错误处理
 
@@ -374,9 +379,12 @@ drawing.manageSE.savedSuccess = "Area SE configuration saved."
 drawing.manageSE.inAreaEmpty = "No SEs in this area."
 drawing.manageSE.availableEmpty = "All SEs have been added to this area."
 drawing.assign.selectByArea = "Select by Area"
-drawing.assign.addSelectedAreas = "Add Selected Areas"
+drawing.assign.addSelected = "Add Selected ({n})"
+drawing.assign.clearSelection = "Clear"
+drawing.assign.selectAll = "Select All"
 drawing.assign.noAreaDisabledTooltip = "No areas configured. Go to Area Config to set up."
 drawing.assign.noAreas = "No areas configured."
+drawing.assign.noResults = "No results found."
 ```
 
 ---
@@ -403,11 +411,14 @@ drawing.assign.noAreas = "No areas configured."
 | AC-003G-004 | `<DeleteAreaDialog>` | 单元 + 集成 | TODO |
 | AC-003G-005 | `<ManageSEsDialog>` | 单元 + 集成 | TODO |
 | AC-003G-006 | `<SelectByAreaButton disabled>` + Tooltip | 单元 | TODO |
-| AC-003G-007 | `<AssignSEDialog>` 批量 Add 合并逻辑 | 单元 | TODO |
+| AC-003G-007 | `<AssignSEDialog>` 整区域勾选批量合并逻辑 | 单元 | TODO |
 | AC-003G-008 | `<AssignSEDialog>` 幂等去重逻辑 | 单元 | TODO |
 | AC-003G-009 | `<AssignSEDialog>` 单选与批量混合 | 单元 + E2E | TODO |
 | AC-003G-010a | `<AssignSEDialog>` 混合操作端到端 | E2E | TODO |
 | AC-003G-010b | `<AreaConfigPage>` 空状态渲染 | 单元 | TODO |
+| AC-003G-011 | `<SelectByAreaDropdown>` 单独勾选 SE 子节点 | 单元 | TODO |
+| AC-003G-012 | `<SelectByAreaDropdown>` 整区域与单 SE 混合勾选 | 单元 + E2E | TODO |
+| AC-003G-013 | `<SelectByAreaDropdown>` 区域行 indeterminate 态联动 | 单元 | TODO |
 
 ---
 
@@ -443,3 +454,4 @@ drawing.assign.noAreas = "No areas configured."
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
 | 0.1.0 | 2026-05-28 | agent | 初稿，覆盖 F-001～F-006 全部功能 |
+| 0.2.0 | 2026-05-28 | agent | 同步 REQ-003G-pc v0.3.0：[Select by Area] 下拉面板升级为树形结构，支持整区域勾选与单 SE 勾选；新增 AC-003G-011/012/013 覆盖；更新 i18n Key；更新组件职责描述 |

@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-003G-pc
 req_title: "PC 端 — 图纸管理区域配置与双模式 SE 分配（单选 + 按区域批量）"
-version: 0.1.0
+version: 0.3.0
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -200,10 +200,16 @@ REQ-003D-pc 定义了项目管理员通过 [Assign] 弹框将图纸逐一分配�
 
 1. 管理员在图纸列表点击某 ACTIVE 图纸的 **[Assign]** 按钮，打开 Assign Site Engineers 弹框（沿用 REQ-003D-pc F-002）
 2. 弹框右侧 Available 面板顶部新增 **[Select by Area]** 下拉按钮
-3. 点击 [Select by Area]：展开下拉列表，列出本项目所有区域（格式：`{区域名} ({该区域 SE 数量})`）
-4. 管理员勾选一个或多个区域后，点击 **[Add Selected Areas]**：将所选区域内**尚未在 Assigned 列表中**的 SE 全部批量加入 Assigned 列表
-5. 已在 Assigned 列表的 SE 不重复添加（幂等）
-6. 后续流程与 REQ-003D-pc 一致：管理员可继续手动 Add/Remove 单个 SE，最终点击 [Save] 统一保存
+3. 点击 [Select by Area]：展开下拉面板，以**树形结构**展示本项目所有区域及其下属 SE：
+   - 每个区域行：Checkbox + 区域名称 + `({该区域 SE 数量})`
+   - 区域行下缩进展示该区域内每名 SE 的 Checkbox + 姓名
+4. 管理员可灵活选择：
+   - **勾选区域行**：自动全选该区域下所有 SE（区域 Checkbox 为选中态）
+   - **单独勾选/取消 SE 行**：仅选中特定 SE；若区域内 SE 被部分选中，区域 Checkbox 显示**半选（indeterminate）**态
+   - 两种选择方式可**混合使用**：在同一次下拉操作中既可整区域选，也可逐条选单个 SE
+5. 点击 **[Add Selected]**：将所有已勾选的 SE（去重后的并集）中**尚未在 Assigned 列表中**的 SE 批量加入 Assigned 列表
+6. 已在 Assigned 列表的 SE 不重复添加（幂等）
+7. 后续流程与 REQ-003D-pc 一致：管理员可继续手动 Add/Remove 单个 SE，最终点击 [Save] 统一保存
 
 ### 6.4 流程图（Mermaid）
 
@@ -351,17 +357,22 @@ flowchart TD
 
 #### Select by Area 下拉面板
 
+面板采用**树形结构**，支持区域级选择与 SE 级选择并存：
+
 | 元素 | 说明 |
 |-----|------|
-| 区域列表 | 每行：Checkbox + 区域名称 + `({SE 数量})` |
-| 全选 | 列表顶部 `Select All` Checkbox |
-| 底部操作 | [Add Selected Areas]（主色按钮）、[Cancel]（链接式） |
-| 空状态 | 无区域时显示 "No areas configured." |
+| 顶部全选 | `Select All` Checkbox，勾选后选中所有区域的所有 SE |
+| 区域行 | Checkbox（三态：全选 / 半选 / 未选）+ 区域名称 + `({SE 数量})`；点击展开/收起子级 SE 列表 |
+| SE 行（缩进） | Checkbox + SE 姓名 + 角色标签；默认展开，可折叠 |
+| 区域 Checkbox 联动规则 | 勾选区域行 → 全选该区域所有 SE；取消区域行 → 取消该区域所有 SE；部分 SE 被选中 → 区域行显示 **indeterminate**（半选）态 |
+| 底部操作栏 | [Add Selected]（主色按钮，显示已选 SE 总数，如 `Add Selected (5)`）、[Clear]（链接式，清空所有勾选）|
+| 搜索框 | 面板顶部搜索框，支持按区域名或 SE 姓名过滤，过滤结果保持树形层级 |
+| 空状态 | 无区域时显示 "No areas configured."；搜索无结果时显示 "No results found." |
 
 #### 批量 Add 规则
 
-- 点击 [Add Selected Areas] 后：
-  1. 获取所有勾选区域内 SE 的并集
+- 点击 [Add Selected] 后：
+  1. 收集所有已勾选 SE 的并集（无论来自整区域勾选还是单个 SE 勾选）
   2. 过滤掉已在 Assigned 列表中的 SE（幂等，不重复添加）
   3. 将剩余 SE 批量加入 Assigned 列表，Assigned 计数增加，Available 计数减少
   4. 下拉面板关闭，弹框恢复正常状态
@@ -425,8 +436,36 @@ Then   Available 面板的 [Select by Area] 按钮呈置灰状态，hover 显示
 ```
 Given  项目有 "Zone A"（含 SE1、SE2、SE3）和 "Zone B"（含 SE3、SE4）
        当前 Assigned 列表为空
-When   管理员在 [Assign] 弹框中勾选 Zone A 和 Zone B，点击 [Add Selected Areas]
+When   管理员在 [Assign] 弹框中勾选 Zone A 区域行和 Zone B 区域行，点击 [Add Selected]
 Then   SE1、SE2、SE3、SE4 全部进入 Assigned 列表（SE3 不重复），Assigned 计数为 4
+```
+
+### AC-003G-011：在下拉面板中单独勾选特定 SE
+
+```
+Given  项目有 "Zone A"（含 SE1、SE2、SE3）
+       当前 Assigned 列表为空
+When   管理员打开 [Select by Area] 下拉面板，仅勾选 Zone A 下的 SE1 和 SE3（不勾选 SE2），
+       点击 [Add Selected]
+Then   仅 SE1、SE3 进入 Assigned 列表，SE2 不被添加，Assigned 计数为 2
+```
+
+### AC-003G-012：混合选择 — 整区域 + 单个 SE
+
+```
+Given  项目有 "Zone A"（含 SE1、SE2）和 "Zone B"（含 SE3、SE4）
+       当前 Assigned 列表为空
+When   管理员在下拉面板中勾选 Zone A 区域行（整区域），并单独勾选 Zone B 下的 SE3（不勾选 SE4），
+       点击 [Add Selected]
+Then   SE1、SE2、SE3 进入 Assigned 列表，SE4 不被添加，Assigned 计数为 3
+```
+
+### AC-003G-013：区域 Checkbox 半选（indeterminate）态
+
+```
+Given  "Zone A" 含 SE1、SE2、SE3
+When   管理员在下拉面板中仅勾选 Zone A 下的 SE1（未勾选 SE2、SE3）
+Then   Zone A 区域行的 Checkbox 显示 indeterminate（半选）态，而非全选或未选
 ```
 
 ### AC-003G-008：按区域批量 Add SE — 幂等性
@@ -597,6 +636,7 @@ Then   显示空状态插图与提示文字，[+ Add Area] 按钮可用
 |-----|------|-------|---------|------------|
 | 0.1.0 | 2026-05-28 | agent | 新建，覆盖区域配置 CRUD（US-003G-001）、区域 SE 绑定（US-003G-002）、按区域批量分配 SE（US-003G-003） | 全部下游待生成 |
 | 0.2.0 | 2026-05-28 | agent | 明确双模式设计（单选 Individual + 按区域批量 By Area）；新增 US-003G-004（混合使用）；F-006 增加双模式对比表；新增 AC-003G-010a（混合使用端到端验收）；新增 OQ-006 | 全部下游待生成 |
+| 0.3.0 | 2026-05-28 | agent | 增强 6.3 流程三与 F-006：[Select by Area] 下拉面板升级为树形结构，支持整区域勾选与单个 SE 勾选并存；区域行新增 indeterminate 半选态；底部按钮改为 [Add Selected]（含已选计数）+ [Clear]；新增 AC-003G-011（单独选 SE）、AC-003G-012（混合选择）、AC-003G-013（半选态） | FRONTEND-REQ-003G-pc、QA-REQ-003G-pc 需同步更新 |
 
 ---
 

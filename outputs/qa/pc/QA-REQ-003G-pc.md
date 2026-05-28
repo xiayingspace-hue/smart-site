@@ -3,7 +3,7 @@ doc_type: qa_spec
 req_id: REQ-003G-pc
 version: 0.1.0
 status: draft
-generated_from: REQ-003G-pc@0.2.0
+generated_from: REQ-003G-pc@0.3.0
 data_contract_ref: data-contract-003G-pc.md@0.1.0
 generated_at: 2026-05-28
 owner: ""
@@ -27,7 +27,7 @@ owner: ""
 | 来源需求 | REQ-003G-pc @ v0.2.0 |
 | 数据契约 | data-contract-003G-pc.md @ v0.1.0 |
 | 覆盖 Story | US-003G-001、US-003G-002、US-003G-003、US-003G-004 |
-| 覆盖 AC | AC-003G-001 ～ AC-003G-010b |
+| 覆盖 AC | AC-003G-001 ～ AC-003G-013 |
 | 测试环境 | dev / staging |
 
 ---
@@ -80,7 +80,9 @@ owner: ""
 | SC-003 | 管理员删除区域（含二次确认） | US-003G-001 | P0 |
 | SC-004 | 管理员为区域添加 SE，保存 | US-003G-002 | P0 |
 | SC-005 | 管理员从区域移除 SE，保存 | US-003G-002 | P1 |
-| SC-006 | 管理员在 [Assign] 弹框按区域批量 Add SE | US-003G-003 | P0 |
+| SC-006 | 管理员在 [Assign] 弹框勾选整区域批量 Add SE | US-003G-003 | P0 |
+| SC-009 | 管理员在下拉面板单独勾选特定 SE（不选整区域） | US-003G-003 | P0 |
+| SC-010 | 管理员在下拉面板混合选择（整区域 + 单个 SE） | US-003G-003 | P0 |
 | SC-007 | 管理员先按区域批量 Add，再手动单独 Remove 和 Add | US-003G-004 | P0 |
 | SC-008 | 区域配置页空状态显示 | US-003G-001 | P1 |
 
@@ -93,6 +95,7 @@ owner: ""
 | SC-E03 | 新建区域名称超 50 字符 | AC-003G-002（边界） |
 | SC-E04 | 删除有 SE 绑定的区域，SE 绑定同步失效 | AC-003G-004 |
 | SC-E05 | 无区域时 [Select by Area] 按钮置灰 | AC-003G-006 |
+| SC-E08 | 下拉面板搜索无结果时显示空态 | AC-003G-011（边界） |
 | SC-E06 | 批量 Add 时所选区域 SE 与已 Assigned 列表重复（幂等） | AC-003G-008 |
 | SC-E07 | 管理员未点 [Save] 直接关闭弹框，变更不提交 | 通用 |
 
@@ -451,6 +454,91 @@ cleanup:
 
 ---
 
+### TC-003G-011-01
+
+```yaml
+tc_id: TC-003G-011-01
+covers_ac: [AC-003G-011]
+scenario: SC-009
+priority: P0
+test_level: e2e
+preconditions:
+  - 项目有 "Zone A"（含 SE1、SE2、SE3）
+  - 当前 Assigned 列表为空
+
+steps:
+  given: 管理员打开图纸 [Assign] 弹框
+  when: |
+    1. 点击 [Select by Area ▾]，下拉面板打开
+    2. 展开 Zone A，仅勾选 SE1 和 SE3（不勾选 SE2，不勾选区域行）
+    3. 点击 [Add Selected (2)]
+  then:
+    - SE1、SE3 进入 Assigned 列表，计数为 2
+    - SE2 不在 Assigned 列表
+    - 下拉面板关闭
+
+cleanup:
+  - 取消弹框，不保存
+```
+
+---
+
+### TC-003G-012-01
+
+```yaml
+tc_id: TC-003G-012-01
+covers_ac: [AC-003G-012]
+scenario: SC-010
+priority: P0
+test_level: e2e
+preconditions:
+  - 项目有 "Zone A"（含 SE1、SE2）和 "Zone B"（含 SE3、SE4）
+  - 当前 Assigned 列表为空
+
+steps:
+  given: 管理员打开图纸 [Assign] 弹框
+  when: |
+    1. 点击 [Select by Area ▾]，下拉面板打开
+    2. 勾选 Zone A 区域行（整区域，SE1 + SE2 全选）
+    3. 展开 Zone B，仅勾选 SE3（不勾选 SE4）
+    4. 点击 [Add Selected (3)]
+  then:
+    - SE1、SE2、SE3 进入 Assigned 列表，计数为 3
+    - SE4 不在 Assigned 列表
+    - 下拉面板关闭
+
+cleanup:
+  - 取消弹框，不保存
+```
+
+---
+
+### TC-003G-013-01
+
+```yaml
+tc_id: TC-003G-013-01
+covers_ac: [AC-003G-013]
+scenario: SC-010
+priority: P1
+test_level: unit
+preconditions:
+  - "Zone A" 含 SE1、SE2、SE3
+
+steps:
+  given: 下拉面板已展开，Zone A 下所有 SE 均未选中
+  when: |
+    1. 仅勾选 Zone A 下的 SE1
+  then:
+    - Zone A 区域行 Checkbox 显示 indeterminate（半选）态
+    - SE2、SE3 的 Checkbox 保持未选状态
+    - 底部 [Add Selected (1)] 计数显示 1
+
+cleanup:
+  - 无
+```
+
+---
+
 ### TC-003G-E-001
 
 ```yaml
@@ -718,11 +806,14 @@ fixtures/
 | AC-003G-004 | 删除区域同步解绑 SE | TC-003G-004-01 | TODO |
 | AC-003G-005 | 为区域添加 SE | TC-003G-005-01、TC-003G-E-003 | TODO |
 | AC-003G-006 | 无区域时 [Select by Area] 置灰 | TC-003G-006-01 | TODO |
-| AC-003G-007 | 按区域批量 Add SE 正常路径 | TC-003G-007-01 | TODO |
+| AC-003G-007 | 整区域批量 Add SE 正常路径 | TC-003G-007-01 | TODO |
 | AC-003G-008 | 按区域批量 Add SE 幂等性 | TC-003G-008-01 | TODO |
 | AC-003G-009 | 按区域 Add 后仍可手动调整 | TC-003G-009-01 | TODO |
 | AC-003G-010a | 双模式混合使用端到端 | TC-003G-010a-01 | TODO |
 | AC-003G-010b | 区域配置页空状态 | TC-003G-002-02 | TODO |
+| AC-003G-011 | 下拉面板单独勾选特定 SE | TC-003G-011-01 | TODO |
+| AC-003G-012 | 下拉面板整区域 + 单 SE 混合选择 | TC-003G-012-01 | TODO |
+| AC-003G-013 | 区域行 indeterminate 半选态 | TC-003G-013-01 | TODO |
 
 ---
 
@@ -774,3 +865,4 @@ QA 测试完成的判定：
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
 | 0.1.0 | 2026-05-28 | agent | 初稿，覆盖 AC-003G-001 ～ AC-003G-010b 全部测试用例 |
+| 0.2.0 | 2026-05-28 | agent | 同步 REQ-003G-pc v0.3.0：新增 TC-003G-011-01（单独选 SE）、TC-003G-012-01（混合选择）、TC-003G-013-01（indeterminate 态）；更新 AC-003G-007 描述；AC 覆盖矩阵补全至 AC-003G-013 |
