@@ -158,8 +158,8 @@ agent **允许**以下推导,但必须**显式标注来源**:
 | 状态机 | `data-contract.md` §3 | 引用状态机名 |
 | 验收标准 | `requirement.md` §8 | 引用 AC ID |
 | 业务术语 | `glossary.md` | 直接使用术语,不重新定义 |
-| 角色定义 | `requirement.md` §2.1 | 引用 ROLE ID |
-| 用户故事 | `user-stories.md` 或 `requirement.md` §2.2 | 引用 US ID |
+| 角色定义 | `requirement.md` §4.1 | 引用 ROLE ID |
+| 用户故事 | `user-stories.md` 或 `requirement.md` §4.2 | 引用 US ID |
 
 **违反 SSoT 的典型错误**:
 - ❌ 在 `frontend-spec.md` 写"上传接口字段:file, hash, size..."(应引用 API-XXX)

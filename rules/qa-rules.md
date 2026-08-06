@@ -24,12 +24,14 @@
 
 | 来源 | 章节 | 用途 |
 |-----|------|------|
-| `requirement.md` | §3 权限矩阵 | §3.3 权限场景 |
-| `requirement.md` | §6 业务流程(主+异常) | §3.1/3.2 主/异常场景 |
-| `requirement.md` | §7 功能需求 | TC 派生 |
+| `requirement.md` | §5 权限矩阵 | §3.3 权限场景 |
+| `requirement.md` | §2 业务流程(主+异常) | §3.1/3.2 主/异常场景 |
+| `requirement.md` | §3 功能需求 | TC 派生 |
 | `requirement.md` | §8 AC | §11 覆盖矩阵(核心) |
-| `requirement.md` | §9 非功能 | §7/8/9 性能/安全/兼容 |
+| `requirement.md` | §9 非功能 | §7/8 性能/安全 |
+| `background/tech-stack.md` | 各端规范 | §9 兼容性测试（兼容性已从需求模板移除,统一以本文件为准） |
 | `requirement.md` | §10 数据量级 | 极端场景测试 |
+| `requirement.md` | §11 外部系统依赖 | §12 回归测试范围 |
 | `data-contract.md` | §1 实体 | 测试数据 |
 | `data-contract.md` | §3 状态机 | §3.4 状态转换场景 |
 | `data-contract.md` | §4 API + 错误码 | §6 接口测试 |
@@ -55,11 +57,11 @@
 | §2 测试策略 | 团队默认 + 需求规模 | 见 §4.1 |
 | §3 测试场景总览 | 多源 | 见 §4.2(核心) |
 | §4 测试用例(TC)详述 | requirement §8 + data-contract | 见 §4.3(核心) |
-| §5 边界值与等价类 | data-contract §7 + requirement §7 | 见 §4.4 |
+| §5 边界值与等价类 | data-contract §7 + requirement §3 | 见 §4.4 |
 | §6 接口测试 | data-contract §4 | 见 §4.5 |
 | §7 性能测试 | requirement §9.1 | 见 §4.6 |
 | §8 安全测试 | requirement §9.2 + 业务敏感 | 见 §4.7 |
-| §9 兼容性测试 | requirement §9.4 | 直接抄录 |
+| §9 兼容性测试 | background/tech-stack.md 对应端 | 按需求所在目录（pc/app/h5）取对应端规范 |
 | §10 测试数据 | data-contract §1 + 边界值 | 见 §4.8 |
 | §11 AC 覆盖矩阵 | requirement §8 | 见 §4.9(核心) |
 | §12 回归测试范围 | 需求依赖关系 | 见 §4.10 |
@@ -92,7 +94,7 @@
 
 #### §3.1 主流程场景
 
-**输入**: requirement §6.1 主流程
+**输入**: requirement §2.1 主流程
 
 **规则**:
 - 每条主流程 → 1 个 SC-XXX
@@ -101,7 +103,7 @@
 
 #### §3.2 异常场景
 
-**输入**: requirement §6.2 异常流程
+**输入**: requirement §2.3 异常流程
 
 **规则**:
 - 每个异常 → 1 个 SC-EXX
@@ -109,7 +111,7 @@
 
 #### §3.3 权限场景
 
-**输入**: requirement §3 权限矩阵
+**输入**: requirement §5 权限矩阵
 
 **规则**:
 - 矩阵中每个 ❌ 单元格 → 派生 1 个越权测试 SC-PXX
@@ -347,7 +349,7 @@ fixtures/
 **判定**: 哪些存量功能受本次需求影响?
 
 **输入**:
-- requirement §11 依赖与外部系统
+- requirement §11 外部系统依赖
 - requirement.md `depends_on` / `blocks` front matter
 
 **派生规则**:

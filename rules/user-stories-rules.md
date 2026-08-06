@@ -24,18 +24,18 @@
 
 | 来源 | 章节 | 用途 |
 |-----|------|------|
-| `requirement.md` | §2.2 用户故事(若 PM 已写) | 作为基础 |
-| `requirement.md` | §6 业务流程 | 拆分依据(每个流程节点是潜在 Story) |
-| `requirement.md` | §7 功能需求 | Story 内容来源 |
+| `requirement.md` | §4.2 用户故事(若 PM 已写) | 作为基础 |
+| `requirement.md` | §2 业务流程 | 拆分依据(每个流程节点是潜在 Story) |
+| `requirement.md` | §3 功能需求 | Story 内容来源 |
 | `requirement.md` | §8 验收标准 | Story 与 AC 关联 |
-| `requirement.md` | §3 权限矩阵 | 推导角色相关 Story |
+| `requirement.md` | §5 权限矩阵 | 推导角色相关 Story |
 | `glossary.md` | 全文 | 术语对齐 |
 
 ### 2.2 输入校验
 
 通用校验外,本 agent 必须检查:
 
-- [ ] requirement.md §6 业务流程已写明步骤(否则无从拆分)
+- [ ] requirement.md §2 业务流程已写明步骤(否则无从拆分)
 - [ ] requirement.md §8 至少有 3 条 AC
 - [ ] 若 §2.2 已有 US 列表,以 PM 写的为基础**再拆分**,**不覆盖**
 
