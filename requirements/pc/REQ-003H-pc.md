@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-003H-pc
 req_title: "PC 端 — 免审批上传（已完成审批的图纸直接生效）"
-version: 0.1.2
+version: 0.1.3
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -832,6 +832,7 @@ Then   后端实时校验拦截，返回 1003003020
 | 0.1.0 | 2026-08-06 | agent | 初稿：新增免审批上传路径（Pre-Approved），仅限新建图纸首版；新增 `drawing:upload-approved` 权限与 `approvalRoute` 属性；定义状态机新增转换、4 阶段视图跳过态、列表 Pre-approved 标识；新增错误码 1003003020 / 1003003021；AC-003H-001~013 | 全部 |
 | 0.1.1 | 2026-08-06 | agent | 按新版需求模板重构（业务规则零变更）：章节调整为业务流程/功能需求前置的 19 节结构；新增 §8 页面简图（上传弹窗 Approval Route 区域、版本历史免审批展开态、列表 Status 列）；删除 Figma 节与兼容性节（后者统一由 background/tech-stack.md 定义）；§10.3 可访问性收窄为基线外增量；§12 改为只列外部系统，需求间依赖回归 front matter | 无 |
 | 0.1.2 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 | 全部 |
+| 0.1.3 | 2026-08-08 | XIA YING | §19.2 移除指向已删除的 CHANGELOG.md 的行，其登记职责并入 VERSIONS.md 需求依赖关系总览 | 无 |
 
 ---
 
@@ -856,8 +857,7 @@ PM 于 2026-08-06 明确本期**只传文件，不录入审批凭证 / 日期 / 
 | [REQ-003E-pc](REQ-003E-pc.md) | §1.3 非目标、§7.1 弹窗 | 非目标中"审批流程本身的变更"需注明本需求为例外；弹窗字段表新增 Approval Route 区域 |
 | [REQ-007C-pc](REQ-007C-pc.md) | §7.3、§7.4 | 新增 `approvalRoute = PRE_APPROVED` 的卡片渲染规则与步骤条 ⊘ 跳过态 |
 | [REQ-003A-pc](REQ-003A-pc.md) | §4.2 状态枚举 | Status 列新增 `Pre-approved` 附加标识规则，说明其与 (A)/(B)/(D) 代码互斥 |
-| [CHANGELOG.md](../../CHANGELOG.md) | 顶部 | 新增 REQ-003H 条目 |
-| [VERSIONS.md](../../VERSIONS.md) | REQ 状态总表 | 新增 REQ-003H 行（注：该表当前已严重过期，建议一并整理） |
+| [VERSIONS.md](../../VERSIONS.md) | REQ 状态总表 · 需求依赖关系总览 | 新增 REQ-003H 行；依赖树中挂于 REQ-003E 之下（注：状态总表当前已严重过期，建议一并整理） |
 
 ### 19.3 与其他需求的边界
 
