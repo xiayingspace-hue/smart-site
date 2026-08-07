@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-004-pc
 req_title: "PC 端 — 图纸局部更新（Part Print）发布与查阅"
-version: 0.5.0
+version: 0.5.1
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -60,7 +60,7 @@ generate:
 | 角色 ID | 角色名 | 描述 | 典型场景 |
 |--------|-------|------|---------|
 | ROLE-001 | 设计人员 | 图纸上传人，拥有发布/删除 Part Print 权限 | 发布局部更新、查阅历史记录 |
-| ROLE-002 | 管理员 / Drawing 团队 | 可查看 Part Print 列表，无发布/删除权限 | 查看局部更新进展 |
+| ROLE-002 | 图纸管理员 / 其他设计人员 | 可查看 Part Print 列表，无发布/删除权限 | 查看局部更新进展 |
 | ROLE-003 | DC / 内部审批人 | 可查看 Part Print 列表 | 了解改动情况 |
 | ROLE-004 | Site Engineer | 不访问 PC 管理端 | 通过 APP 接收通知 |
 
@@ -80,7 +80,7 @@ generate:
 #### US-004pc-002：查阅局部更新历史
 
 ```
-作为 图纸设计人员 / 管理员 / DC
+作为 图纸设计人员 / 图纸管理员 / DC
 我想要 在 PC 端查看某图纸的所有局部更新记录
 以便 随时掌握该图纸的局部改动情况与历史轨迹
 ```
@@ -92,7 +92,7 @@ generate:
 
 ## 3. 角色与权限矩阵
 
-| 操作 | 设计人员（本图纸上传人） | 管理员 / Drawing 团队 | DC / 内部审批人 | Site Engineer |
+| 操作 | 设计人员（本图纸上传人） | 图纸管理员 / 其他设计人员 | DC / 内部审批人 | Site Engineer |
 |-----|:-------------------:|:-------------------:|:-----------:|:------------:|
 | 查看 Part Print 历史抽屉（[Part Print]）— **任意图纸状态** | ✅ | ✅ | ✅ | ❌ |
 | 发布 Part Print（[+ Part Print]）— **仅版本外部审批通过后（`APPROVED_EXTERNAL`）** | ✅ | ❌ | ❌ | ❌ |
@@ -705,6 +705,7 @@ Then   Part Print 历史抽屉正常打开，展示该图纸所有局部更新�
 | 0.3.0 | 2026-05-25 | agent | F-002 发布弹窗重构：AI 识别 Title Block 流程；ENT-001 新增 8 个 Title Block 字段 + aiRecognized；新增 AC-004pc-018~021 | UI、前端、QA |
 | 0.2.0 | 2026-05-25 | agent | 按新模板重构：新增 YAML Front Matter、§1 背景目标、§2 用户故事、§3 权限矩阵、§4 实体与生命周期、§5 状态机、§6 业务流程（含 Mermaid）、§8 AC 编号化（AC-004pc-001~016）、§9~18 非功能/上线/灰度/OQ 章节 | UI、前端、QA |
 | 0.1.0 | 2026-05-05 | agent | 初稿（旧格式） | 全部 |
+| 0.5.1 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 | 全部 |
 
 ---
 

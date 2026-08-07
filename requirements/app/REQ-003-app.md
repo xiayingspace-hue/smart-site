@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-003-app
 req_title: "APP 端图纸审批 Todo"
-version: 0.1.0
+version: 0.1.1
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -59,7 +59,7 @@ generate:
 
 | 角色 ID | 角色名 | 典型场景 |
 |--------|-------|---------|
-| ROLE-003 | Approver（审批人员） | 不在 PC 端时，通过 APP 处理待审批图纸 |
+| ROLE-003 | 内部审批人 | 不在 PC 端时，通过 APP 处理待审批图纸 |
 
 ---
 
@@ -135,7 +135,7 @@ generate:
 #### 查看图纸（View）
 
 - 点击 **[View]** → 进入该版本的在线查看页
-- 待审批版本的查看页**不显示** [Confirm Reading] 按钮（审批人查看不需要确认阅读）
+- 待审批版本的查看页**不显示** [Confirm Reading] 按钮（内部审批人查看不需要确认阅读）
 - 在线预览能力复用 REQ-005-app §7.2 的预览规范（PDF.js / uni.previewImage）
 
 ---
@@ -227,6 +227,7 @@ Then   后续点击被忽略（按钮 loading 状态），不重复调用 API
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
 | 0.1.0 | 2026-05-28 | | 独立成文（原为 REQ-003-app §4、§5 Approver 部分，现以 REQ-003-app 命名） |
+| 0.1.1 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 |
 
 ---
 

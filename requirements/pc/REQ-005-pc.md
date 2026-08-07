@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-005-pc
 req_title: "PC 端 Site Engineer 图纸查阅与局部更新查看"
-version: 0.3.5
+version: 0.3.6
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -70,7 +70,7 @@ Site Engineer 目前通过 APP 接收图纸通知并完成查阅确认，但在�
 | 角色 ID | 角色名 | 描述 | 典型场景 |
 |--------|-------|------|---------|
 | ROLE-001 | Site Engineer | 施工现场工程师，负责查阅图纸、确认已读并跟进局部更新 | 在办公室 PC 上查阅最新图纸及局部更新 |
-| ROLE-002 | Admin | 项目管理员，负责上传图纸、分配图纸、发布局部更新 | 向 Site Engineer 分配图纸；发布局部更新并触发通知 |
+| ROLE-002 | 图纸管理员 | 负责上传图纸、分配图纸、发布局部更新 | 向 Site Engineer 分配图纸；发布局部更新并触发通知 |
 
 ### 2.2 用户故事（User Stories）
 
@@ -118,7 +118,7 @@ Site Engineer 目前通过 APP 接收图纸通知并完成查阅确认，但在�
 
 ## 3. 角色与权限矩阵
 
-| 操作 | Site Engineer | Admin |
+| 操作 | Site Engineer | 图纸管理员 |
 |-----|--------------|-------|
 | 查看个人分配图纸列表 | ✅ | ❌ |
 | 在线查看图纸文件 | ✅ | ✅ |
@@ -160,7 +160,7 @@ Site Engineer 目前通过 APP 接收图纸通知并完成查阅确认，但在�
 本需求不创建新实体，生命周期遵循 REQ-003-shared 与 REQ-004-shared 的定义。
 
 **InAppNotification 生命周期**：
-1. 创建：Admin 发布 DrawingMarkup 时，系统为所有已分配该图纸的 Site Engineer 批量创建通知记录
+1. 创建：图纸管理员发布 DrawingMarkup 时，系统为所有已分配该图纸的 Site Engineer 批量创建通知记录
 2. 流转：用户点击通知 → `isRead = true`；"Mark all as read" → 批量更新
 3. 归档：通知保留最近 90 天，超期自动归档，不再显示于面板
 
@@ -246,7 +246,7 @@ flowchart TD
 
 ### 6.4 主流程三：PC 端站内通知
 
-1. Admin 发布 DrawingMarkup → 系统向已分配该图纸的 Site Engineer 批量创建 InAppNotification
+1. 图纸管理员发布 DrawingMarkup → 系统向已分配该图纸的 Site Engineer 批量创建 InAppNotification
 2. Site Engineer 在 PC 顶部铃铛处看到未读数量角标
 3. 点击铃铛 → 打开通知下拉面板，显示最近 20 条通知
 4. 点击某条通知 → 跳转到对应图纸查看页，自动激活 **Markups Tab**；通知标记为已读
@@ -258,7 +258,7 @@ flowchart TD
 | 图纸文件加载失败 | 文件 URL 不可访问或超时 | 展示错误插图 + "Failed to load drawing" + Retry 按钮 | 看到错误提示，可重试 |
 | Confirm Reading API 失败 | 网络错误或服务端 5xx | Toast 提示 "Confirm failed, please try again"；状态不变 | 感知操作失败，可重试 |
 | Mark as Read API 失败 | 网络错误或服务端 5xx | Toast 提示错误；卡片按钮恢复为 [Mark as Read] | 感知操作失败，可重试 |
-| 图纸已被取消分配 | 在用户查看期间管理员取消了分配 | 返回列表时不再显示该图纸；刷新后无权访问 | 刷新后跳回列表，提示无权访问 |
+| 图纸已被取消分配 | 在用户查看期间图纸管理员取消了分配 | 返回列表时不再显示该图纸；刷新后无权访问 | 刷新后跳回列表，提示无权访问 |
 
 ---
 
@@ -270,8 +270,8 @@ flowchart TD
 **所属流程节点**: 主流程一第 1~2 步
 
 **处理逻辑**:
-1. Site Engineer 登录后侧边栏显示 **Drawings** 菜单项（与管理员的 Drawing Management 菜单不同，分属不同菜单项）
-2. 若用户同时具有管理员角色，则 Drawings 与 Drawing Management 均显示
+1. Site Engineer 登录后侧边栏显示 **Drawings** 菜单项（与图纸管理员的 Drawing Management 菜单不同，分属不同菜单项）
+2. 若用户同时具有图纸管理员角色，则 Drawings 与 Drawing Management 均显示
 3. 后端接口按 `DrawingAssignment` 双重过滤（`status = ACTIVE` + 已分配给当前用户），前端无法绕过
 
 **输入**: 当前登录用户 ID（从 JWT token 解析）
@@ -427,7 +427,7 @@ flowchart TD
 **关联用户故事**: US-005-004
 **所属流程节点**: 主流程三第 1~4 步
 
-**通知来源**: Admin 发布 DrawingMarkup 时，系统同步向已分配该图纸的所有 Site Engineer 发送站内通知
+**通知来源**: 图纸管理员发布 DrawingMarkup 时，系统同步向已分配该图纸的所有 Site Engineer 发送站内通知
 
 **通知中心入口**:
 - PC 顶部导航栏右侧显示 🔔 铃铛图标
@@ -457,7 +457,7 @@ flowchart TD
 **关联用户故事**: US-005-001
 
 ```
-Given  Site Engineer 已登录，管理员已将提交记录 A（DrawingVersion）分配给该用户，提交记录 B 未分配
+Given  Site Engineer 已登录，图纸管理员已将提交记录 A（DrawingVersion）分配给该用户，提交记录 B 未分配
 When   用户进入 Drawings 页面
 Then   列表每行代表一次提交记录（DrawingVersion）；
        仅显示已分配的提交记录 A，不显示提交记录 B；
@@ -553,8 +553,8 @@ Then   该条 Markup 显示 "✓ Read"，不显示 [Mark as Read] 按钮
 **关联用户故事**: US-005-004
 
 ```
-Given  管理员发布了 Drawing A 的一条 Markup，Site Engineer 已被分配 Drawing A
-When   管理员点击发布
+Given  图纸管理员发布了 Drawing A 的一条 Markup，Site Engineer 已被分配 Drawing A
+When   图纸管理员点击发布
 Then   该 Site Engineer 的 PC 端铃铛角标数量加一，通知面板中出现对应通知条目
 ```
 
@@ -563,8 +563,8 @@ Then   该 Site Engineer 的 PC 端铃铛角标数量加一，通知面板中出
 **关联用户故事**: US-005-004
 
 ```
-Given  管理员发布了 Drawing A 的一条 Markup，Site Engineer B 未被分配 Drawing A
-When   管理员点击发布
+Given  图纸管理员发布了 Drawing A 的一条 Markup，Site Engineer B 未被分配 Drawing A
+When   图纸管理员点击发布
 Then   Site Engineer B 的 PC 端不收到该通知
 ```
 
@@ -705,6 +705,7 @@ Then   跳转到对应图纸查看页，Markups Tab 自动激活；该通知标�
 | 0.3.3 | 2026-05-28 | | 将列名 "Unread Markups" 改回 "Markups"，列值格式改为 `●{unread} / {total}`，同时展示未读数（橙色高亮）与当前 DrawingVersion 的 ACTIVE Markup 总数；全部已读时显示 `0 / {total}`，无 Markup 时显示 `—`；更新 §7.2 ASCII 布局与列定义、§6.3、§7.4 触发方式、AC-005-001、AC-005-008 | Frontend、QA |
 | 0.3.4 | 2026-05-28 | | F-003 图纸查看页将 [Confirm Reading] 按钮从底部移至 Header 右侧，用户无需滚动即可确认；已确认时同位置显示 `✓ Confirmed on {date}`；更新 §7.3 ASCII 布局与 Confirm Reading 交互表（新增显示位置列） | Frontend、QA |
 | 0.3.5 | 2026-05-28 | | F-004 Markups Tab 卡片规格对齐 REQ-004-pc §7.3：移除 Affected Area 字段，新增元信息行（`{日期} · {创建人}`）与报审号+页码行（`Based on {submissionNo} · Page {n}`）；卡片规格改为表格形式；新增列表规则（排序与空态文案）；更新 §7.4 ASCII 布局与卡片规格 | Frontend、QA |
+| 0.3.6 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 | 全部 |
 
 ---
 
@@ -717,8 +718,8 @@ Then   跳转到对应图纸查看页，Markups Tab 自动激活；该通知标�
 | 文档 | 说明 |
 |------|------|
 | [REQ-003-shared.md](../shared/REQ-003-shared.md) | 图纸共享业务规则与 API |
-| [REQ-003-pc.md](./REQ-003-pc.md) | 管理员 PC 端图纸管理（图纸列表基础页） |
+| [REQ-003-pc.md](./REQ-003-pc.md) | 图纸管理员 PC 端图纸管理（图纸列表基础页） |
 | [REQ-003-app.md](../app/REQ-003-app.md) | APP 端图纸查阅（对等功能参考） |
 | [REQ-004-shared.md](../shared/REQ-004-shared.md) | 局部更新共享业务规则与 API |
-| [REQ-004-pc.md](./REQ-004-pc.md) | 管理员 PC 端发布/汇总局部更新 |
+| [REQ-004-pc.md](./REQ-004-pc.md) | 图纸管理员 PC 端发布/汇总局部更新 |
 | [REQ-004-app.md](../app/REQ-004-app.md) | APP 端局部更新查阅（对等功能参考） |

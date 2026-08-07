@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-003A-pc
 req_title: "PC 端 — 图纸管理列表页"
-version: 0.5.0
+version: 0.5.1
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -44,7 +44,7 @@ generate:
 
 ### 1.1 业务背景
 
-PC 管理端图纸列表页是所有图纸管理操作的入口枢纽：设计人员、管理员、审批人在此查看项目图纸全貌，通过状态标签了解每张图纸所处的审批阶段，并从 Actions 列触达各操作入口（查看图纸、历史记录、SE 确认历史、分配 SE、局部更新、上传新版本）。
+PC 管理端图纸列表页是所有图纸管理操作的入口枢纽：设计人员、图纸管理员、内部审批人在此查看项目图纸全貌，通过状态标签了解每张图纸所处的审批阶段，并从 Actions 列触达各操作入口（查看图纸、历史记录、SE 确认历史、分配 SE、局部更新、上传新版本）。
 
 > **业务模型说明（REQ-003E v0.3.0+ 更新后）**：图纸列表中**每一行代表一次提交记录**（DrawingVersion），对应设计人员上传的**一个 PDF 文件**。一个 PDF 文件包含多页图纸，每一页图纸拥有独立的 Drawing No 和 Drawing Name——这些是**页级（图纸页）**属性，不在列表行中直接展示。提交记录本身以 Description、Category 等批次公共字段为主要标识，版本号体现该图纸包的迭代次数。
 
@@ -73,14 +73,14 @@ PC 管理端图纸列表页是所有图纸管理操作的入口枢纽：设计�
 |--------|-------|------|---------|
 | ROLE-001 | 设计人员（Designer） | 图纸责任人 | 查看自己上传图纸的审批进度 |
 | ROLE-002 | 内部审批人 | 设计经理/总工程师等技术人员 | 查看待审批图纸 |
-| ROLE-003 | 项目管理员 | 负责 SE 分配等管理操作 | 监控整体审批进度，发起 SE 分配 |
+| ROLE-003 | 图纸管理员 | 负责 SE 分配等管理操作 | 监控整体审批进度，发起 SE 分配 |
 
 ### 2.2 用户故事（User Stories）
 
 #### US-003A-LIST-001：查看图纸列表与筛选
 
 ```
-作为 项目参与者（设计人员 / 审批人 / 管理员）
+作为 项目参与者（设计人员 / 内部审批人 / 图纸管理员）
 我想要 在图纸管理列表页通过图纸编号、分类、状态等条件筛选图纸
 以便 快速定位目标图纸，了解其审批进度并进入对应操作入口
 ```
@@ -94,7 +94,7 @@ PC 管理端图纸列表页是所有图纸管理操作的入口枢纽：设计�
 #### US-003A-LIST-002：导出图纸信息至 Excel
 
 ```
-作为 图纸管理员（项目管理员）
+作为 图纸管理员
 我想要 在图纸列表页点击导出按钮，将当前列表数据导出为 Excel 文件
 以便 离线查阅所有图纸的关联关系与审批状态
 ```
@@ -105,7 +105,7 @@ PC 管理端图纸列表页是所有图纸管理操作的入口枢纽：设计�
 
 ## 3. 角色与权限矩阵
 
-| 操作 | 设计人员 | 内部审批人 | 项目管理员 | Site Engineer |
+| 操作 | 设计人员 | 内部审批人 | 图纸管理员 | Site Engineer |
 |-----|:-------:|:---------:|:---------:|:-------------:|
 | 查看图纸列表 | ✅ | ✅ | ✅ | — |
 | 使用 Filter Search | ✅ | ✅ | ✅ | — |
@@ -200,10 +200,10 @@ PC 管理端图纸列表页是所有图纸管理操作的入口枢纽：设计�
 
 **顶部操作区**：
 - 左侧：[Filter Search] 按钮（见下方 Popover 规则）
-- 右侧（从左到右）：[Export]（仅项目管理员可见）、[+ Upload Drawing]（点击触发新建图纸弹窗，详见 REQ-003E-pc）
+- 右侧（从左到右）：[Export]（仅图纸管理员可见）、[+ Upload Drawing]（点击触发新建图纸弹窗，详见 REQ-003E-pc）
 
 **[Export] 按钮规则**：
-- 仅对**项目管理员**角色显示，其他角色不展示此按钮
+- 仅对**图纸管理员**角色显示，其他角色不展示此按钮
 - 点击后触发 Excel 文件下载，导出**当前筛选条件下**的全部图纸数据
 - 导出过程中按钮显示 loading 状态，完成后恢复可点击；若导出失败，以 Toast 提示"Export failed, please try again"
 
@@ -214,7 +214,7 @@ PC 管理端图纸列表页是所有图纸管理操作的入口枢纽：设计�
 | 1 | [View] | 查看该提交记录最新版本的图纸（PDF 预览） | 所有角色 | 始终可点 |
 | 2 | [History] | 显示提交历史弹框（见 REQ-003C-pc） | 所有角色 | 始终可点 |
 | 3 | [Confirms] | 显示 SE 确认历史弹框（见 REQ-003C-pc） | 所有角色 | 始终可点 |
-| 4 | [Assign] | 显示分配 SE 的弹框（见 REQ-003D-pc） | 仅项目管理员 | 始终可点 |
+| 4 | [Assign] | 显示分配 SE 的弹框（见 REQ-003D-pc） | 仅图纸管理员 | 始终可点 |
 | 5 | [Part Print] | 显示图纸局部更新弹框（详见 [REQ-004-pc](REQ-004-pc.md)）；对应 REQ-004 中的 [+ Markup] 发布局部更新弹窗入口 | 仅设计人员 | 仅当状态为 `ACTIVE` 时可点（状态非 `ACTIVE` 时隐藏） |
 | 6 | [Upload New Version] | 显示上传新版本弹框（见 REQ-003F-pc） | 仅设计人员 | 状态为 `PENDING_INTERNAL` 或 `PENDING_EXTERNAL` 时置灰，Tooltip 提示当前状态不允许上传 |
 
@@ -239,7 +239,7 @@ Then   按钮从左到右顺序为：[View] [History] [Confirms] [Assign] [Part 
        点击 [View]         → 打开该提交记录最新版本的图纸（PDF 预览）；
        点击 [History]      → 显示提交历史弹框；
        点击 [Confirms]     → 显示 SE 确认历史弹框；
-       点击 [Assign]       → 显示分配 SE 的弹框（仅项目管理员可见）；
+       点击 [Assign]       → 显示分配 SE 的弹框（仅图纸管理员可见）；
        点击 [Part Print]   → 显示图纸局部更新弹框（REQ-004-pc [+ Markup]，仅状态为 ACTIVE 时可见）；
        点击 [Upload New Version] → 显示上传新版本弹框（仅设计人员可见）
 ```
@@ -333,19 +333,19 @@ When   点击 Popover 外部区域关闭 Popover
 Then   Popover 关闭，填写的条件保留在表单内，列表数据不刷新
 ```
 
-### AC-003A-017：[Export] 按钮仅对项目管理员可见
+### AC-003A-017：[Export] 按钮仅对图纸管理员可见
 
 ```
 Given  用户登录系统并进入图纸管理列表页
 When   用户角色为设计人员或内部审批人
 Then   顶部操作区不显示 [Export] 按钮；
-       当用户角色为项目管理员时，[Export] 按钮显示在 [+ Upload Drawing] 左侧
+       当用户角色为图纸管理员时，[Export] 按钮显示在 [+ Upload Drawing] 左侧
 ```
 
 ### AC-003A-018：[Export] 按钮触发文件下载
 
 ```
-Given  项目管理员在图纸管理列表页（可含筛选条件）
+Given  图纸管理员在图纸管理列表页（可含筛选条件）
 When   点击 [Export] 按钮
 Then   系统触发 Excel 文件下载，文件内容为当前筛选结果下的全部记录；
        导出过程中按钮显示 loading 状态；
@@ -436,9 +436,10 @@ Then   列表新增 1 行，对应该 PDF 的提交记录（DrawingVersion V0）
 | 0.4.2 | 2026-05-25 | agent | 修正列表行含义：每行代表一次**提交记录**（DrawingVersion），而非一个独立 Drawing 实体；同一张图纸的多个版本各占独立一行；更新 §1.1、§4.1 实体清单（突出 DrawingVersion 为列表主体）、§5.1 列表行含义说明、US-003A-LIST-001 背景、AC-003A-011、AC-003A-016 | Frontend、QA |
 | 0.4.3 | 2026-05-25 | agent | 修正列表行与图纸页的关系：每行（DrawingVersion）= 一个 PDF 文件；Drawing No / Drawing Name 为 PDF 页级属性，不在列表列中展示；移除表格列 Drawing Code、Drawing Name；Filter Search 字段由 5 项缩减为 3 项（Description、Category、Status）；更新 §1.1、§4.1、§5.1 表格列与行含义说明、US-003A-LIST-001 背景、AC-003A-011、AC-003A-012、AC-003A-014、AC-003A-016 | Frontend、QA |
 | 0.4.4 | 2026-05-25 | agent | 明确 Actions 列 6 个按钮的排列顺序与点击行为：从左到右为 View / History / Confirms / Assign / Part Print / Upload New Version；扩展权限矩阵（§3）、重写 §5.1 Actions 列按钮规则为表格形式；AC-003A-005 拆分为 AC-003A-005（按钮排列与行为）+ AC-003A-005B（置灰规则） | Frontend、QA |
-| 0.5.0 | 2026-05-27 | agent | 新增导出功能：顶部操作区在 [+ Upload Drawing] 左侧新增 [Export] 按钮（仅项目管理员可见），支持将当前筛选结果导出为 Excel；新增 US-003A-LIST-002；§3 权限矩阵新增导出行；§5.1 顶部操作区补充 [Export] 按钮规则；新增 AC-003A-017、AC-003A-018 | Frontend、QA |
+| 0.5.0 | 2026-05-27 | agent | 新增导出功能：顶部操作区在 [+ Upload Drawing] 左侧新增 [Export] 按钮（仅图纸管理员可见），支持将当前筛选结果导出为 Excel；新增 US-003A-LIST-002；§3 权限矩阵新增导出行；§5.1 顶部操作区补充 [Export] 按钮规则；新增 AC-003A-017、AC-003A-018 | Frontend、QA |
 | 0.4.6 | 2026-05-26 | agent | 补充外部审批结果代码附加显示规则：Status 列在 ACTIVE / EXTERNAL_REJECTED 时以灰色小字附加 (A)–(E) 结果代码；§4.2 新增结果代码映射表与设计说明；新增 AC-003A-011C（结果代码展示）、AC-003A-011D（Status B 时设计人员感知跟进动作） | Frontend、QA |
 | 0.4.5 | 2026-05-25 | agent | 关联 REQ-004-pc：[Part Print] 按钮对应 REQ-004-pc 局部更新需求（[+ Markup] 发布局部更新弹窗入口）；新增 related_to REQ-004-pc；更新 §3 权限矩阵（Part Print 仅状态 ACTIVE 时可见）、§5.1 Actions 表（Part Print 行补充引用与状态限制）、AC-003A-005 行为说明 | Frontend、QA |
+| 0.5.1 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 | 全部 |
 
 ---
 

@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-003E-pc
 req_title: "PC 端 — 图纸上传 AI 自动识别页信息"
-version: 0.4.2
+version: 0.4.3
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -134,7 +134,7 @@ generate:
 
 ## 3. 角色与权限矩阵
 
-| 操作 | 设计人员（Designer） | 内部审批人 | 项目管理人员 | Site Engineer |
+| 操作 | 设计人员（Designer） | 内部审批人 | 图纸管理员 | Site Engineer |
 |-----|:--------------:|:-----:|:----------:|:------------:|
 | 选择 Submission Type | ✅ | ❌ | ❌ | ❌ |
 | 上传 PDF 触发 AI 识别（Shop Drawing） | ✅ | ❌ | ❌ | ❌ |
@@ -738,6 +738,7 @@ Then   Submission Type 默认选中 Shop Drawing；文件上传区自弹窗打�
 | 0.4.0 | 2026-07-16 | agent | **新增 Submission Type（Shop Drawing / Others）**：上传文件前先选提交类型。Shop Drawing 走 AI 识别（原逻辑不变）；Others 不触发 AI、不创建 AIRecognitionJob，由系统解析 PDF 记录总页数（页码不展示），Drawing Code / Name 显示为空且只读、提交时不校验；两类提交均仅支持 PDF，审批流程完全一致。ENT-001 新增 `submission_type`，ENT-002 新增 `page_count`；`drawingCode` / `drawingName` 改为条件必填。新增 US-003E-003、F-004、AC-003E-014～019、OQ-007～010。同时删除文末 §1.3–§19 的 v0.1.0 批量创建残留内容（与现行设计冲突、AC 编号重复） | 全部 |
 | 0.4.1 | 2026-07-16 | agent | **关闭 OQ-007**：Submission Type 默认选中 `Shop Drawing`。连带移除"未选择类型"相关逻辑——§7.1 边界约束、§6.3 异常流程对应行；AC-003E-019 由"未选类型不可上传"改为"默认选中 Shop Drawing"（有默认值即不存在未选态） | UI、Frontend、QA |
 | 0.4.2 | 2026-07-16 | agent | **修正操作顺序**：Submission Type 位于 Drawing Description、Category **之后**，文件上传**之前**（原 0.4.0 误设计为弹窗第一项）。同步修正 §1.2 业务目标、§6.1 步骤 4–5、§6.2 主流程图、§7.1 字段顺序表 | UI、Frontend、QA |
+| 0.4.3 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 | 全部 |
 
 ---
 

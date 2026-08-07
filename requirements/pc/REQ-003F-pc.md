@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-003F-pc
 req_title: "PC 端 — 上传新版本"
-version: 0.5.0
+version: 0.5.1
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -95,7 +95,7 @@ generate:
 
 ## 3. 角色与权限矩阵
 
-| 操作 | 设计人员 | 内部审批人 | 项目管理员 | Site Engineer |
+| 操作 | 设计人员 | 内部审批人 | 图纸管理员 | Site Engineer |
 |-----|:-------:|:---------:|:---------:|:-------------:|
 | 点击 [Upload New Version]（状态允许时） | ✅ | ❌ | ❌ | ❌ |
 | [Upload New Version] 置灰（状态不允许） | 置灰 | — | — | — |
@@ -242,7 +242,7 @@ flowchart TD
 | Drawing Code | 只读文本 | 该页图框内的图纸编号；未识别到时显示 `—`（标记 ⚠ 橙色）|
 | Drawing Name | 只读文本 | 该页图框内的图纸名称；未识别到时显示 `—`（标记 ⚠ 橙色）|
 
-> **注意**：列表为只读，不支持行内编辑。如需修改 Drawing Code / Drawing Name，请联系管理员（主记录字段不在本流程修改）。
+> **注意**：列表为只读，不支持行内编辑。如需修改 Drawing Code / Drawing Name，请联系图纸管理员（主记录字段不在本流程修改）。
 
 **列表交互规范**：
 - 列表最大显示高度固定（建议 240px），超过时纵向滚动
@@ -482,6 +482,7 @@ Then   新的"Internal Approval Required"任务立即出现，包含图纸编号
 | 0.3.0 | 2026-05-25 | agent | 修正核心逻辑：上传新版本仅创建 DrawingVersion，不涉及 Drawing 主记录的任何字段修改；Drawing Code / Name 回归只读展示区；移除 Drawing Code / Name 变更规则；权限矩阵删除修改 Code/Name 行；主流程步骤 5 移除修改主记录入口；流程图更新；异常流程删除 Code 重复行；AC-003F-001 更新成功路径描述；删除 AC-003F-006/007/009/010；新增 AC-003F-006（按钮置灰，原 008）、AC-003F-007（弹窗只读字段校验） | Frontend、Backend、QA |
 | 0.4.0 | 2026-05-25 | agent | 对齐数据模型：明确 Drawing = 原始 PDF 某一页的图纸（由 Drawing Code 唯一标识）；上传新版本 = 为该 Drawing Code 对应图纸提交更新后的图面文件（一次上传 = 一个 DrawingVersion，绑定该 Drawing Code）；补充 §1.1 数据模型说明 | — |
 | 0.5.0 | 2026-05-25 | agent | 核心流程重构：上传新版本弹窗新增 AI 识别环节（与 REQ-003E 一致）；文件类型收窄为仅 PDF；弹窗只读字段调整为 Current Version / Category / Description，Drawing Code / Name 移至副标题；新增 F-002（AI 识别结果只读列表）、F-003（AI 识别失败降级，含 Re-upload / Proceed Anyway）、F-004（上传进度，原 F-002）；§1.3 移除"不触发 AI 识别"非目标，新增"不修改主记录字段"非目标；主流程扩展为 11 步；流程图重绘；异常流程更新；AC 全量重写（AC-001 ~ AC-013）；§8 性能指标补充 AI 识别项；§8.2 安全补充 AI 服务凭证保护；§8.5 可观测性补充 AI 埋点；§10 依赖新增 AI 识别服务和 REQ-003E；OQ 重写新增 AI 相关问题 | Frontend、Backend、QA |
+| 0.5.1 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 | 全部 |
 
 ---
 

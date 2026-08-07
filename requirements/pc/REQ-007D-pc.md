@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-007D-pc
 req_title: "PC 端 — DC 配置页面"
-version: 0.1.0
+version: 0.1.1
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -48,7 +48,7 @@ generate:
 
 ### 1.2 业务目标
 
-提供项目级 DC 配置页面，业务人员一次性配置项目的 DC 人员名单。内部审批通过后，系统自动向所有已配置 DC 发送外部审批任务，无需每次手动指定。
+提供项目级 DC 配置页面，图纸管理员一次性配置项目的 DC 人员名单。内部审批通过后，系统自动向所有已配置 DC 发送外部审批任务，无需每次手动指定。
 
 ### 1.3 非目标（Out of Scope）
 
@@ -64,7 +64,7 @@ generate:
 
 | 角色 ID | 角色名 | 描述 | 典型场景 |
 |--------|-------|------|---------|
-| ROLE-001 | 业务人员 / 项目管理员 | 具备 `drawing:dc-config` 权限，负责配置项目 DC | 添加/移除 DC 人员 |
+| ROLE-001 | 图纸管理员 | 具备 `drawing:dc-config` 权限，负责配置项目 DC | 添加/移除 DC 人员 |
 | ROLE-002 | Document Controller（DC） | 被配置后接收外部审批任务 | 被添加/移除后影响其 Todo 任务接收 |
 
 ### 2.2 用户故事（User Stories）
@@ -72,7 +72,7 @@ generate:
 #### US-007D-001：配置项目 DC 人员
 
 ```
-作为 业务人员
+作为 图纸管理员
 我想要 在配置页面设置项目的 DC 人员
 以便 内部审批通过后系统自动通知 DC，无需每次手动指定，DC 人员变动时只需修改一处配置
 ```
@@ -84,7 +84,7 @@ generate:
 
 ## 3. 角色与权限矩阵
 
-| 操作 | 业务人员/项目管理员 | DC 自身 | 普通用户 |
+| 操作 | 图纸管理员 | DC 自身 | 普通用户 |
 |-----|:-----------------:|:-------:|:-------:|
 | 查看 DC 配置列表 | ✅ | ❌ | ❌ |
 | 添加 DC | ✅ | ❌ | ❌ |
@@ -109,9 +109,9 @@ generate:
 ### 4.3 数据生命周期
 
 **ProjectDcConfig 生命周期**：
-1. 创建：业务人员点击 [Add] 添加某用户为 DC
+1. 创建：图纸管理员点击 [Add] 添加某用户为 DC
 2. 使用：内部审批通过时，系统查询该项目所有 ProjectDcConfig，向对应用户发送外部审批 Todo
-3. 删除：业务人员点击 [Remove] 移除，该用户不再接收新的外部审批任务
+3. 删除：图纸管理员点击 [Remove] 移除，该用户不再接收新的外部审批任务
 4. 保留：已删除的 DC 历史已完成/驳回的外部审批记录不受影响
 
 ---
@@ -130,7 +130,7 @@ generate:
 
 ### 6.1 主流程（添加 DC）
 
-1. 业务人员点击侧边栏 Settings → DC Configuration，进入配置页
+1. 图纸管理员点击侧边栏 Settings → DC Configuration，进入配置页
 2. 查看当前项目已配置的 DC 列表
 3. 点击 [+ Add DC]，弹出选择弹窗
 4. 搜索/浏览可用用户（有 `drawing:external-approval` 权限且未被配置的）
@@ -139,7 +139,7 @@ generate:
 
 ### 6.2 主流程（移除 DC）
 
-1. 业务人员在 DC 列表点击某 DC 的 [Remove]
+1. 图纸管理员在 DC 列表点击某 DC 的 [Remove]
 2. 弹出二次确认对话框
 3. 确认后调用接口移除
 4. 成功：主列表中该 DC 消失；若列表为空，显示警告横幅
@@ -148,7 +148,7 @@ generate:
 
 ```mermaid
 flowchart TD
-    A([业务人员进入 DC Configuration 页]) --> B[查看当前 DC 列表]
+    A([图纸管理员进入 DC Configuration 页]) --> B[查看当前 DC 列表]
     B --> C{操作}
     C -- 添加 --> D[点击 + Add DC]
     C -- 移除 --> E[点击某 DC 的 Remove]
@@ -293,7 +293,7 @@ Then   侧边栏中 DC Configuration 菜单不可见；直接访问 URL 时跳�
 
 ```
 Given  项目已配置 2 个 DC
-When   业务人员进入 DC Configuration 页
+When   图纸管理员进入 DC Configuration 页
 Then   列表显示 2 条记录，包含姓名、配置人、配置时间、[Remove] 按钮
 ```
 
@@ -301,14 +301,14 @@ Then   列表显示 2 条记录，包含姓名、配置人、配置时间、[Rem
 
 ```
 Given  项目中用户 A 有 drawing:external-approval 权限且未配置为 DC；用户 B 无该权限；用户 C 已配置为 DC
-When   业务人员打开 Add Document Controller 弹窗
+When   图纸管理员打开 Add Document Controller 弹窗
 Then   列表仅显示用户 A；用户 B 和 C 不出现
 ```
 
 ### AC-007D-004：添加 DC — 成功路径
 
 ```
-Given  业务人员在弹窗中点击用户 A 的 [Add]
+Given  图纸管理员在弹窗中点击用户 A 的 [Add]
 When   接口调用成功
 Then   用户 A 从弹窗 Available Users 列表消失；主列表新增用户 A 的 DC 记录（含配置人、配置时间）
 ```
@@ -324,7 +324,7 @@ Then   每次添加成功后弹窗保持打开，可继续添加下一个用户
 ### AC-007D-006：移除 DC — 二次确认文案包含姓名
 
 ```
-Given  业务人员点击 DC "陈小明" 的 [Remove]
+Given  图纸管理员点击 DC "陈小明" 的 [Remove]
 When   确认对话框弹出
 Then   对话框文案包含"Remove 陈小明 from DC list?"
 ```
@@ -332,7 +332,7 @@ Then   对话框文案包含"Remove 陈小明 from DC list?"
 ### AC-007D-007：移除 DC — 成功路径
 
 ```
-Given  业务人员在确认对话框点击 [Confirm]
+Given  图纸管理员在确认对话框点击 [Confirm]
 When   接口调用成功
 Then   该 DC 从主列表消失
 ```
@@ -341,7 +341,7 @@ Then   该 DC 从主列表消失
 
 ```
 Given  项目当前只有 1 个 DC
-When   业务人员移除该 DC 成功
+When   图纸管理员移除该 DC 成功
 Then   主列表变为空状态，页面显示警告横幅"⚠️ No DC configured. Internal approvals cannot proceed to external approval."
 ```
 
@@ -418,7 +418,7 @@ Then   DC-A 和 DC-B 的 Todo 列表均出现"External Approval Required"任务
 ## 12. 数据迁移
 
 - 新增 `ProjectDcConfig` 表，无存量数据迁移需求
-- 建议在上线初期由管理员手动录入各项目的 DC 人员
+- 建议在上线初期由图纸管理员手动录入各项目的 DC 人员
 
 ---
 
@@ -426,7 +426,7 @@ Then   DC-A 和 DC-B 的 Todo 列表均出现"External Approval Required"任务
 
 ### 13.1 上线前
 
-- [ ] `drawing:dc-config` 权限已创建并绑定到业务人员/项目管理员角色
+- [ ] `drawing:dc-config` 权限已创建并绑定到图纸管理员角色
 - [ ] `drawing:external-approval` 权限已创建并绑定到 DC 角色
 - [ ] ProjectDcConfig 表已创建，索引已添加（projectId, dcUserId）
 - [ ] 各项目 DC 人员名单已收集，准备初始化数据
@@ -461,7 +461,7 @@ Then   DC-A 和 DC-B 的 Todo 列表均出现"External Approval Required"任务
 | OQ ID | 问题 | 影响 | Owner | 截止 |
 |------|------|------|-------|------|
 | OQ-001 | 是否允许为不同图纸分类（Category）配置不同 DC？当前方案为项目级统一配置。 | 配置粒度 | PM | — |
-| OQ-002 | DC 人员离职/权限被撤销时，是否需要系统自动提醒管理员重新配置？ | 运营保障 | PM | — |
+| OQ-002 | DC 人员离职/权限被撤销时，是否需要系统自动提醒图纸管理员重新配置？ | 运营保障 | PM | — |
 
 ---
 
@@ -477,6 +477,7 @@ Then   DC-A 和 DC-B 的 Todo 列表均出现"External Approval Required"任务
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
 |-----|------|-------|---------|------------|
 | 0.1.0 | 2026-05-05 | agent | 从 REQ-007-pc 按 US-007D-001 拆分初稿 | 全部 |
+| 0.1.1 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 | 全部 |
 
 ---
 

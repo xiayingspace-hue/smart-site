@@ -14,8 +14,8 @@
 | 角色 | 可见版本 | 说明 |
 |------|---------|------|
 | Site Engineer（APP） | 仅当前有效版本（`isCurrent = true`）且**已被分配**该图纸 | 保证看到的始终是最新审批版，且只看到相关图纸 |
-| Drawing 团队 / 管理员（PC） | 所有版本（含历史版本和待审批版本） | 完整版本历史管理 |
-| 审批人 | 待审批版本 + 所有版本 | |
+| 设计人员 / 图纸管理员（PC） | 所有版本（含历史版本和待审批版本） | 完整版本历史管理 |
+| 内部审批人 | 待审批版本 + 所有版本 | |
 
 ### 3.6 权限控制认ID | id | Long | 自动 | 主键，自增 |
 | 图纸版本ID | drawingVersionId | Long | 自动 | 确认的是哪个版本 |
@@ -45,7 +45,7 @@
 - **审批缺失**：图纸上传后未经审核即投入使用，存在质量风险
 
 本功能目标：
-1. 提供 PC 端图纸上传与版本管理能力，Drawing 团队可上传新版图纸并发起审批
+1. 提供 PC 端图纸上传与版本管理能力，设计人员可上传新版图纸并发起审批
 2. 审批通过后，系统自动将新版本设为当前有效版本，旧版本自动作废
 3. 审批失败时，系统通知相关设计人员在 PC 端重新更新图纸
 4. Site Engineer 通过 APP 端接收推送通知，在线查看最新图纸并点击确认查阅
@@ -66,7 +66,7 @@
 ```
 
 ```
-作为 Drawing 团队成员
+作为 设计人员
 我想要 在 PC 端上传新版图纸并发起审批
 以便 确保图纸经过正式审核后才对外发布，保障设计质量
 ```
@@ -81,9 +81,9 @@
 
 | 功能 | PC 端 | APP 端 | 说明 |
 |------|-------|--------|------|
-| 上传图纸（新版本） | ✅ | ❌ | Drawing 团队通过 PC 端上传 |
+| 上传图纸（新版本） | ✅ | ❌ | 设计人员通过 PC 端上传 |
 | 发起审批 | ✅（上传时自动发起） | ❌ | |
-| 审批操作（通过 / 驳回） | ✅ | ✅（Todo 列表） | 审批人在两端均可操作 |
+| 审批操作（通过 / 驳回） | ✅ | ✅（Todo 列表） | 内部审批人在两端均可操作 |
 | 查看图纸列表 | ✅ | ✅ | 两端均可查看 |
 | 在线查看图纸 | ✅ | ✅ | 在线预览（不下载） |
 | 查阅确认 | ❌ | ✅ | 仅 Site Engineer 在 APP 端确认 |
@@ -92,7 +92,7 @@
 | 查看确认记录 | ✅ | ❌ | |
 | 接收推送通知 | ✅（站内通知） | ✅（App Push） | 新版发布时推送**已被分配**的 Site Engineer |
 | 接收审批失败通知 | ✅（站内通知） | ❌ | 通知设计人员 |
-| 分配图纸给 Site Engineer | ✅ | ❌ | 管理员在 PC 端操作分配关系 |
+| 分配图纸给 Site Engineer | ✅ | ❌ | 图纸管理员在 PC 端操作分配关系 |
 
 ---
 
@@ -152,8 +152,8 @@
 | 审批ID | id | Long | 自动 | 主键，自增 |
 | 图纸版本ID | drawingVersionId | Long | 自动 | 关联版本记录 |
 | 图纸ID | drawingId | Long | 自动 | 冗余，便于查询 |
-| 审批人ID | approverId | Long | ✅ | 指定的审批人 |
-| 审批人姓名 | approverName | String | 自动 | 冗余字段 |
+| 内部审批人ID | approverId | Long | ✅ | 指定的内部审批人 |
+| 内部审批人姓名 | approverName | String | 自动 | 冗余字段 |
 | 审批状态 | status | String(枚举) | 自动 | PENDING / APPROVED / REJECTED |
 | 审批意见 | comment | String(500) | ❌ | 驳回时建议填写原因 |
 | 审批时间 | approvalTime | DateTime | 自动 | 完成审批的时间 |
@@ -169,7 +169,7 @@
 | 项目ID | projectId | Long | ✅ | 所属项目 |
 | 被分配用户ID | assigneeId | Long | ✅ | 被分配的 Site Engineer 用户 ID |
 | 被分配用户姓名 | assigneeName | String | 自动 | 冗余字段 |
-| 分配人ID | assignedById | Long | 自动 | 执行分配操作的管理员 ID |
+| 分配人ID | assignedById | Long | 自动 | 执行分配操作的图纸管理员 ID |
 | 分配人姓名 | assignedByName | String | 自动 | 冗余字段 |
 | 分配时间 | assignedAt | DateTime | 自动 | |
 
@@ -265,7 +265,7 @@
 
 ### 3.1 图纸上传与版本管理
 
-1. Drawing 团队在 PC 端上传图纸。**新建图纸仅支持 PDF**（Shop Drawing 与 Others 两类提交均是，见 REQ-003E-pc §1.3）；**上传新版本**沿用原格式集合：PDF、DWG、DXF、PNG、JPG（新版本上传为 REQ-003E 的 Out of Scope，本期不收窄）<!-- TODO: REQ-006-pc 假设原始文件可能非 PDF，该分支是否成为死代码，见 REQ-003E-pc OQ-010 -->
+1. 设计人员在 PC 端上传图纸。**新建图纸仅支持 PDF**（Shop Drawing 与 Others 两类提交均是，见 REQ-003E-pc §1.3）；**上传新版本**沿用原格式集合：PDF、DWG、DXF、PNG、JPG（新版本上传为 REQ-003E 的 Out of Scope，本期不收窄）<!-- TODO: REQ-006-pc 假设原始文件可能非 PDF，该分支是否成为死代码，见 REQ-003E-pc OQ-010 -->
 2. 单个文件大小上限：**50MB**
 3. 同一图纸编号每次上传自动生成新版本号（V1 → V2 → V3…），版本号不可手动修改
 4. 上传时系统自动发起审批，无需手动操作
@@ -281,8 +281,8 @@
 
 ### 3.2 审批流程
 
-1. 上传触发审批后，审批任务自动出现在指定审批人的 Todo 列表中（PC 端和 APP 端均可见）
-2. 审批人可选择**通过**或**驳回**，驳回时必须填写审批意见（comment 为必填）
+1. 上传触发审批后，审批任务自动出现在指定内部审批人的 Todo 列表中（PC 端和 APP 端均可见）
+2. 内部审批人可选择**通过**或**驳回**，驳回时必须填写审批意见（comment 为必填）
 3. **审批通过**：
    - 新版本的 `isCurrent` 设为 `true`，`approvalStatus` 设为 `APPROVED`
    - 旧版本的 `isCurrent` 设为 `false`，`isDeprecated` 设为 `true`
@@ -308,9 +308,9 @@
 ### 3.4 图纸分配规则
 
 1. 每张图纸创建后，默认**不分配**给任何 Site Engineer（即 Site Engineer 的图纸列表初始为空）
-2. 管理员（拥有 `drawing:assign` 权限）在 PC 端为图纸指定一个或多个 Site Engineer
+2. 图纸管理员（拥有 `drawing:assign` 权限）在 PC 端为图纸指定一个或多个 Site Engineer
 3. 分配关系与版本无关：只要图纸有分配关系，该 Site Engineer 始终能看到该图纸的当前有效版本
-4. 管理员可随时新增或取消某图纸与某 Site Engineer 的分配关系
+4. 图纸管理员可随时新增或取消某图纸与某 Site Engineer 的分配关系
 5. 取消分配后，该 Site Engineer 在 APP 端立即看不到该图纸，已有的查阅确认记录保留不删除
 6. 同一图纸可分配给多名 Site Engineer；同一 Site Engineer 可被分配多张图纸
 7. 审批通过后，推送通知**仅发送**给已被分配该图纸的 Site Engineer，未分配的 Site Engineer 不收到通知也看不到该图纸
@@ -320,21 +320,21 @@
 | 角色 | 可见版本 | 说明 |
 |------|---------|------|
 | Site Engineer（APP） | 仅当前有效版本（`isCurrent = true`） | 保证看到的始终是最新审批版 |
-| Drawing 团队 / 管理员（PC） | 所有版本（含历史版本和待审批版本） | 完整版本历史管理 |
-| 审批人 | 待审批版本 + 所有版本 | |
+| 设计人员 / 图纸管理员（PC） | 所有版本（含历史版本和待审批版本） | 完整版本历史管理 |
+| 内部审批人 | 待审批版本 + 所有版本 | |
 
 ### 3.6 权限控制
 
 | 操作 | 所需权限 | 角色示例 |
 |------|---------|---------|
 | 查看图纸列表（当前版本） | `drawing:view` | Site Engineer、所有项目成员 |
-| 上传图纸 / 新版本 | `drawing:upload` | Drawing 团队 |
+| 上传图纸 / 新版本 | `drawing:upload` | 设计人员 |
 | 审批图纸 | `drawing:approve` | 审批人员 |
-| 查看版本历史 | `drawing:history` | 管理员、Drawing 团队 |
-| 查看审批历史 | `drawing:approval:view` | 管理员 |
-| 查看确认记录 | `drawing:confirm:view` | 管理员 |
+| 查看版本历史 | `drawing:history` | 图纸管理员、设计人员 |
+| 查看审批历史 | `drawing:approval:view` | 图纸管理员 |
+| 查看确认记录 | `drawing:confirm:view` | 图纸管理员 |
 | 查阅确认 | `drawing:confirm` | Site Engineer |
-| 分配图纸给 Site Engineer | `drawing:assign` | 管理员 |
+| 分配图纸给 Site Engineer | `drawing:assign` | 图纸管理员 |
 
 ---
 
@@ -464,7 +464,7 @@
 | drawingCategory | String | 条件必填 | 新图纸时必填 |
 | description | String | ❌ | 图纸描述（新图纸时填写）；为通知与 Todo 的主标识，见 5.1 |
 | versionNote | String | ❌ | 本版本修改说明 |
-| approverId | Long | ✅ | 指定审批人 ID |
+| approverId | Long | ✅ | 指定内部审批人 ID |
 | aiRecognitionJobId | Long | ❌ | 来源识别任务（`SHOP_DRAWING` 且已触发识别时传）；`OTHERS` 不传 |
 
 **响应格式**: `CommonResult<DrawingVersionRespVO>`
@@ -492,8 +492,8 @@
 - ✅ `aiRecognitionJobId` 非空时：校验 job 存在且归属当前项目；`status = PENDING / PROCESSING` 时拒绝创建（`1003003017`）；`DONE` 与 `FAILED` 均允许创建并持久关联（`FAILED` 保留以溯源失败原因）
 - ✅ 写入 `DrawingVersion.pageCount`：`SHOP_DRAWING` 取 `AIRecognitionJob.totalPages`，`OTHERS` 取请求中的 `pageCount`
 - ✅ 自动生成版本号（末尾版本号 + 1）
-- ✅ 创建审批记录，关联指定审批人，状态为 `PENDING`
-- ✅ 向审批人的 Todo 列表推送审批任务
+- ✅ 创建审批记录，关联指定内部审批人，状态为 `PENDING`
+- ✅ 向内部审批人的 Todo 列表推送审批任务
 - ✅ 审计：记录操作人、时间、文件名、`submissionType`、AI 识别是否成功
 
 **错误响应码（4.1 三个接口通用）**:
@@ -504,7 +504,7 @@
 | 1003003002 | 文件格式不支持 | File format not supported |
 | 1003003003 | 文件超过大小限制 | File size exceeds 50MB limit |
 | 1003003004 | 该图纸已有版本待审批 | A version of this drawing is pending approval |
-| 1003003005 | 指定审批人不存在 | Approver not found |
+| 1003003005 | 指定内部审批人不存在 | Approver not found |
 | 1003003015 | PDF 无法解析页数（文件损坏） | Unable to read the PDF. Please check the file |
 | 1003003016 | AI 识别任务不存在 | AI recognition job not found |
 | 1003003017 | AI 识别进行中，不可提交 | AI recognition is still in progress |
@@ -535,7 +535,7 @@
 **响应格式**: `CommonResult<Boolean>`
 
 **业务逻辑（审批通过）**:
-- ✅ 校验当前用户是该审批记录的审批人
+- ✅ 校验当前用户是该审批记录的内部审批人
 - ✅ 校验审批状态为 `PENDING`（不允许重复审批）
 - ✅ 更新当前版本 `approvalStatus = APPROVED`、`isCurrent = true`、`approvedTime`
 - ✅ 将同图纸所有其他版本的 `isCurrent = false`、`isDeprecated = true`
@@ -867,7 +867,7 @@
 
 | 触发事件 | 通知类型 | 接收人 | 通知内容 |
 |---------|---------|--------|---------|
-| 上传图纸，发起审批 | Todo 任务 | 指定审批人 | "提交记录 {description} V{n} 等待您的审批" |
+| 上传图纸，发起审批 | Todo 任务 | 指定内部审批人 | "提交记录 {description} V{n} 等待您的审批" |
 | 审批通过 | App Push + 站内消息 | **已被分配该图纸**的 Site Engineer | "提交记录 {description} 已更新至 V{n}，请查阅" |
 | 审批驳回 | 站内消息 | 图纸上传人（设计人员） | "提交记录 {description} V{n} 审批未通过：{comment}" |
 
@@ -898,7 +898,7 @@
 - [ ] 单文件大小超过 50MB 时提示错误
 - [ ] 同图纸已有版本待审批时，不允许再次上传并提示
 - [ ] 上传成功后版本号自动递增（V1 → V2 → V3）
-- [ ] 上传后审批任务自动出现在审批人的 Todo 列表中
+- [ ] 上传后审批任务自动出现在内部审批人的 Todo 列表中
 - [ ] 文件上传（4.1.1）本身不创建 Drawing / DrawingVersion 记录，仅在创建接口（4.1.3）被调用后落库
 
 ### 提交类型与 AI 识别
@@ -915,7 +915,7 @@
 - [ ] 两类提交的审批流程完全一致，无差别
 
 ### 审批流程
-- [ ] 审批人在 PC 端和 APP 端 Todo 列表均可看到待审批任务
+- [ ] 内部审批人在 PC 端和 APP 端 Todo 列表均可看到待审批任务
 - [ ] 审批通过后：新版本 `isCurrent = true`，旧版本 `isDeprecated = true`
 - [ ] 审批通过后：所有 Site Engineer 收到 App Push 通知
 - [ ] 审批驳回时：comment 字段为必填，不填时无法提交
@@ -927,10 +927,10 @@
 - [ ] Site Engineer 看到的版本始终是当前有效版本（`isCurrent = true`）
 - [ ] 点击"Confirm Reading"后，确认记录写入数据库
 - [ ] 同一用户对同一版本重复点击确认，系统幂等处理
-- [ ] PC 端管理员可查看每张图纸的确认人数和未确认人员列表（仅统计被分配的人员）
+- [ ] PC 端图纸管理员可查看每张图纸的确认人数和未确认人员列表（仅统计被分配的人员）
 
 ### 图纸分配
-- [ ] 管理员可在 PC 端为图纸指定一个或多个 Site Engineer
+- [ ] 图纸管理员可在 PC 端为图纸指定一个或多个 Site Engineer
 - [ ] 分配操作使用全量覆盖：提交后以最新列表为准，自动新增/移除分配关系
 - [ ] `assigneeIds` 为空数组时，清空该图纸所有分配关系
 - [ ] 取消分配后，对应 Site Engineer 的 APP 图纸列表立即不再显示该图纸

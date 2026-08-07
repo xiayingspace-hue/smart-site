@@ -72,7 +72,7 @@ REQ-003 / REQ-004 将 Site Engineer 的图纸访问和局部更新查阅限定�
 ### 3.1 触发时机
 
 与 App Push 触发时机完全一致（REQ-004-shared §4 通知机制），即：
-- 管理员在 PC 端**发布局部更新**（POST `/drawing/markup/publish`）后
+- 图纸管理员在 PC 端**发布局部更新**（POST `/drawing/markup/publish`）后
 - 系统向所有已被分配该图纸的 Site Engineer 同时发送：
   1. App Push（原有，REQ-004-shared 定义）
   2. **PC 站内通知**（本需求新增）

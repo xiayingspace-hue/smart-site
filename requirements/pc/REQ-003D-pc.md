@@ -1,8 +1,8 @@
 ---
 doc_type: requirement
 req_id: REQ-003D-pc
-req_title: "PC 端 — 项目管理员图纸 SE 分配"
-version: 0.1.0
+req_title: "PC 端 — 图纸管理员图纸 SE 分配"
+version: 0.1.1
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -28,7 +28,7 @@ generate:
   qa_spec: true
 ---
 
-# 需求文档：PC 端 — 项目管理员图纸 SE 分配
+# 需求文档：PC 端 — 图纸管理员图纸 SE 分配
 
 > **使用说明**：本文档是整个交付链路的**单一事实源**。所有下游文档（UI/前端/后端/QA）从本文档派生。
 
@@ -38,11 +38,11 @@ generate:
 
 ### 1.1 业务背景
 
-图纸经审批通过（状态变为 ACTIVE）后，并非自动对所有 Site Engineer 可见。项目管理员需要在 PC 端图纸列表的操作区，通过 [Assign] 按钮将指定图纸手动分配给对应的 Site Engineer，被分配的 SE 才会收到通知并在 APP 端看到该图纸。
+图纸经审批通过（状态变为 ACTIVE）后，并非自动对所有 Site Engineer 可见。图纸管理员需要在 PC 端图纸列表的操作区，通过 [Assign] 按钮将指定图纸手动分配给对应的 Site Engineer，被分配的 SE 才会收到通知并在 APP 端看到该图纸。
 
 ### 1.2 业务目标
 
-让项目管理员在 PC 端能够快速、准确地将审批通过的图纸分配给对应的 Site Engineer，确保现场人员及时获得最新图纸并留下可追溯的分配记录。
+让图纸管理员在 PC 端能够快速、准确地将审批通过的图纸分配给对应的 Site Engineer，确保现场人员及时获得最新图纸并留下可追溯的分配记录。
 
 ### 1.3 非目标（Out of Scope）
 
@@ -59,14 +59,14 @@ generate:
 
 | 角色 ID | 角色名 | 描述 | 典型场景 |
 |--------|-------|------|---------|
-| ROLE-003 | 项目管理员 | 负责图纸分配，决定哪些 SE 可见该图纸 | 图纸审批通过后，在图纸列表中点击 [Assign] 打开分配弹框，选择 SE 并保存 |
+| ROLE-003 | 图纸管理员 | 负责图纸分配，决定哪些 SE 可见该图纸 | 图纸审批通过后，在图纸列表中点击 [Assign] 打开分配弹框，选择 SE 并保存 |
 
 ### 2.2 用户故事（User Stories）
 
 #### US-003D-001：将审批通过的图纸分配给 Site Engineer
 
 ```
-作为 项目管理员
+作为 图纸管理员
 我想要 在图纸列表的操作列中点击 [Assign] 按钮，通过弹框将审批通过的图纸分配给对应的 SE
 以便 指定的 SE 能在 APP 端收到通知并查看最新版图纸，保障现场施工使用正确版本
 ```
@@ -78,7 +78,7 @@ generate:
 
 ## 3. 角色与权限矩阵
 
-| 操作 | Drawing 团队成员 | 审批人 | 项目管理员 | Site Engineer |
+| 操作 | 设计人员 | 内部审批人 | 图纸管理员 | Site Engineer |
 |-----|:--------------:|:-----:|:----------:|:------------:|
 | 查看图纸列表中的 [Assign] 按钮 | ❌ | ❌ | ✅ | ❌ |
 | 打开 Assign SE 弹框 | ❌ | ❌ | ✅ | ❌ |
@@ -99,7 +99,7 @@ generate:
 ### 4.2 数据生命周期
 
 **DrawingAssignment 生命周期**：
-1. 创建：项目管理员首次保存分配结果时创建
+1. 创建：图纸管理员首次保存分配结果时创建
 2. 更新：再次打开 [Assign] 弹框修改 SE 列表并保存时，覆盖更新（以最新保存结果为准）
 3. 读取：APP 端 SE 查询"我被分配的图纸"时读取
 4. 终态：无终态，可随时变更
@@ -119,13 +119,13 @@ generate:
 
 ### 6.1 主流程（分配 SE）
 
-1. 项目管理员在图纸列表中找到状态为 ACTIVE 的图纸
+1. 图纸管理员在图纸列表中找到状态为 ACTIVE 的图纸
 2. 点击该行操作列的 **[Assign]** 按钮
 3. 弹出 **Assign Site Engineers** 弹框：
    - 标题：`Assign Site Engineers — {Drawing Name}`
    - 左侧面板 **Assigned**：展示当前已分配的 SE 列表（含数量，如 `Assigned (2)`）；含姓名搜索框；无数据时显示 "No Data"
    - 右侧面板 **Available**：展示项目内所有可分配的 SE 列表（含数量，如 `Available (6)`）；含姓名搜索框；每条记录右侧有 **[Add]** 按钮
-4. 管理员在右侧 Available 列表中点击 **[Add]**，该 SE 移入左侧 Assigned 列表，Assigned 计数 +1，Available 计数 -1
+4. 图纸管理员在右侧 Available 列表中点击 **[Add]**，该 SE 移入左侧 Assigned 列表，Assigned 计数 +1，Available 计数 -1
 5. 已在 Assigned 列表中的 SE 可点击 **[Remove]** 移回 Available 列表
 6. 点击 **[Save]**：保存分配结果，弹框关闭，Snackbar 提示 "SE assignment saved successfully."，被新增的 SE 收到站内通知
 7. 点击 **[Cancel]**：弹框关闭，本次修改不保存
@@ -134,7 +134,7 @@ generate:
 
 ```mermaid
 flowchart TD
-    A([管理员在图纸列表看到 ACTIVE 图纸]) --> B[点击 Assign 按钮]
+    A([图纸管理员在图纸列表看到 ACTIVE 图纸]) --> B[点击 Assign 按钮]
     B --> C[打开 Assign Site Engineers 弹框]
     C --> D{操作选择}
     D -- 点击 Add --> E[SE 移入 Assigned 列表]
@@ -152,8 +152,8 @@ flowchart TD
 | 异常场景 | 触发条件 | 系统响应 | 用户感知 |
 |---------|---------|---------|---------|
 | 保存接口失败 | 网络异常 / 服务端错误 | Toast 错误提示 | 弹框保留，可重试 |
-| 图纸状态不为 ACTIVE | 管理员对非 ACTIVE 图纸操作（仅理论场景，前端已做按钮置灰） | 服务端返回 400 | Toast 提示操作无效 |
-| SE 列表为空（项目内无 SE） | 项目尚未添加 SE 成员 | Available 面板显示空状态 "No Data" | 管理员知悉，无法分配 |
+| 图纸状态不为 ACTIVE | 图纸管理员对非 ACTIVE 图纸操作（仅理论场景，前端已做按钮置灰） | 服务端返回 400 | Toast 提示操作无效 |
+| SE 列表为空（项目内无 SE） | 项目尚未添加 SE 成员 | Available 面板显示空状态 "No Data" | 图纸管理员知悉，无法分配 |
 
 ---
 
@@ -226,7 +226,7 @@ flowchart TD
 
 ```
 Given  图纸列表中存在不同状态的图纸
-When   管理员查看操作列
+When   图纸管理员查看操作列
 Then   状态为 ACTIVE 的图纸行 [Assign] 按钮可点击；
        其他状态的图纸行 [Assign] 按钮置灰，hover 显示 Tooltip 说明原因
 ```
@@ -235,7 +235,7 @@ Then   状态为 ACTIVE 的图纸行 [Assign] 按钮可点击；
 
 ```
 Given  某图纸已分配了 2 名 SE，项目共有 6 名 SE
-When   管理员点击该图纸的 [Assign] 按钮
+When   图纸管理员点击该图纸的 [Assign] 按钮
 Then   弹框打开，左侧 Assigned (2) 展示已分配的 2 名 SE，
        右侧 Available (4) 展示剩余 4 名 SE
 ```
@@ -244,7 +244,7 @@ Then   弹框打开，左侧 Assigned (2) 展示已分配的 2 名 SE，
 
 ```
 Given  Assign 弹框已打开
-When   管理员点击右侧某 SE 的 [Add] 按钮
+When   图纸管理员点击右侧某 SE 的 [Add] 按钮
 Then   该 SE 从右侧 Available 列表消失，出现在左侧 Assigned 列表中；
        Assigned 计数 +1，Available 计数 -1
 ```
@@ -253,7 +253,7 @@ Then   该 SE 从右侧 Available 列表消失，出现在左侧 Assigned 列表
 
 ```
 Given  Assign 弹框已打开，左侧 Assigned 列表有 SE
-When   管理员点击左侧某 SE 的 [Remove] 按钮
+When   图纸管理员点击左侧某 SE 的 [Remove] 按钮
 Then   该 SE 从左侧 Assigned 列表消失，出现在右侧 Available 列表中；
        Assigned 计数 -1，Available 计数 +1
 ```
@@ -262,14 +262,14 @@ Then   该 SE 从左侧 Assigned 列表消失，出现在右侧 Available 列表
 
 ```
 Given  Assign 弹框已打开
-When   管理员在右侧搜索框输入部分姓名
+When   图纸管理员在右侧搜索框输入部分姓名
 Then   右侧列表实时过滤，仅显示姓名匹配的 SE；左侧列表不受影响
 ```
 
 ### AC-003D-006：保存分配 — 成功路径
 
 ```
-Given  管理员在弹框中完成 SE 选择
+Given  图纸管理员在弹框中完成 SE 选择
 When   点击 [Save]
 Then   弹框关闭，Snackbar 提示 "SE assignment saved successfully."；
        本次新增的 SE 收到站内通知；图纸分配记录更新为最新 Assigned 列表
@@ -278,15 +278,15 @@ Then   弹框关闭，Snackbar 提示 "SE assignment saved successfully."；
 ### AC-003D-007：保存分配 — 接口失败
 
 ```
-Given  管理员点击 [Save]，服务端返回错误
+Given  图纸管理员点击 [Save]，服务端返回错误
 When   接口调用失败
-Then   弹框保留，Toast 提示错误信息，管理员可重试
+Then   弹框保留，Toast 提示错误信息，图纸管理员可重试
 ```
 
 ### AC-003D-008：点击 [Cancel] 不保存
 
 ```
-Given  管理员在弹框中对 SE 列表做了修改
+Given  图纸管理员在弹框中对 SE 列表做了修改
 When   点击 [Cancel] 或右上角关闭图标
 Then   弹框关闭，分配结果不变，修改丢弃
 ```
@@ -313,7 +313,7 @@ Then   对应面板显示 "No Data" 空状态提示
 ### 9.2 安全
 
 - 鉴权方式：JWT
-- 服务端校验操作人是否具备项目管理员权限
+- 服务端校验操作人是否具备图纸管理员权限
 - 服务端校验图纸状态是否为 ACTIVE，防止绕过前端限制
 
 ### 9.3 可访问性
@@ -364,7 +364,7 @@ Then   对应面板显示 "No Data" 空状态提示
 
 ### 13.1 上线前
 
-- [ ] 确认项目管理员角色权限配置
+- [ ] 确认图纸管理员角色权限配置
 - [ ] 确认 SE 用户列表接口（按项目过滤）联调完成
 - [ ] 站内通知模板（SE 分配通知）确认
 
@@ -416,6 +416,7 @@ Then   对应面板显示 "No Data" 空状态提示
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
 |-----|------|-------|---------|------------|
 | 0.1.0 | 2026-05-05 | agent | 新建，覆盖 US-003D-001 图纸 SE 分配全流程 | 全部 |
+| 0.1.1 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 | 全部 |
 
 ---
 

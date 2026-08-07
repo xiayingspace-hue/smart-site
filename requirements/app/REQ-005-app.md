@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-005-app
 req_title: "APP 端 Site Engineer 图纸查阅与局部更新查看"
-version: 0.1.0
+version: 0.1.1
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -66,13 +66,13 @@ Site Engineer 主要在施工现场通过手机使用系统。本需求基于 RE
 | 角色 ID | 角色名 | 典型场景 |
 |--------|-------|---------|
 | ROLE-001 | Site Engineer | 在施工现场手机查阅最新图纸及局部更新 |
-| ROLE-002 | Admin | 上传图纸、分配图纸、发布局部更新 |
+| ROLE-002 | 图纸管理员 | 上传图纸、分配图纸、发布局部更新 |
 
 ---
 
 ## 3. 角色与权限矩阵
 
-| 操作 | Site Engineer | Admin |
+| 操作 | Site Engineer | 图纸管理员 |
 |-----|--------------|-------|
 | 查看个人分配图纸列表 | ✅ | ❌ |
 | 在线查看图纸文件 | ✅ | ✅ |
@@ -134,7 +134,7 @@ Site Engineer 主要在施工现场通过手机使用系统。本需求基于 RE
 
 ### 6.3 主流程三：App Push 通知
 
-1. Admin 发布 DrawingMarkup → 系统向已分配该图纸的 SE 推送 App Push 通知
+1. 图纸管理员发布 DrawingMarkup → 系统向已分配该图纸的 SE 推送 App Push 通知
 2. SE 点击通知 → 进入对应图纸查看页，自动激活 Markups Tab
 
 ---
@@ -308,7 +308,7 @@ Site Engineer 主要在施工现场通过手机使用系统。本需求基于 RE
 
 ### 7.4 F-004：App Push 通知 — Markup 发布
 
-**触发时机**: Admin 发布 DrawingMarkup 时，系统向已分配该图纸的所有 SE 发送 App Push 通知
+**触发时机**: 图纸管理员发布 DrawingMarkup 时，系统向已分配该图纸的所有 SE 发送 App Push 通知
 
 **通知格式**:
 
@@ -353,7 +353,7 @@ Site Engineer 主要在施工现场通过手机使用系统。本需求基于 RE
 ### AC-005-APP-001：图纸列表仅显示已分配的提交记录
 
 ```
-Given  SE 已登录，管理员已将 DrawingVersion A 分配给该用户，DrawingVersion B 未分配
+Given  SE 已登录，图纸管理员已将 DrawingVersion A 分配给该用户，DrawingVersion B 未分配
 When   用户进入 Drawings 页面
 Then   列表每行代表一次 DrawingVersion；
        仅显示已分配的 A，不显示 B；
@@ -441,8 +441,8 @@ Then   该条 Markup 显示 "✓ Read"，不显示 [Mark as Read] 按钮
 ### AC-005-APP-011：App Push 通知接收
 
 ```
-Given  管理员发布了 DrawingVersion A 的一条 Markup，SE 已被分配 A
-When   管理员点击发布
+Given  图纸管理员发布了 DrawingVersion A 的一条 Markup，SE 已被分配 A
+When   图纸管理员点击发布
 Then   SE 的 APP 图标角标 +1，通知栏出现对应通知
 ```
 
@@ -503,6 +503,7 @@ Then   跳转到图纸列表页，并自动定位/高亮对应 DrawingVersion；
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
 | 0.1.0 | 2026-05-28 | | 初稿；对齐 REQ-005-pc v0.3.5 数据模型：DrawingVersion 为列表主体，卡片展示 Description/RFA No./Subject of RFA，Markups 角标仅显示 unread，Markups 卡片对齐 REQ-004-pc §7.3（元信息行+报审行，无 Affected Area） |
+| 0.1.1 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 |
 
 ---
 

@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-007
 req_title: "图纸两级审批流程（内部审批 + 外部审批）"
-version: 0.3.0
+version: 0.3.1
 status: reviewed
 priority: P1
 product: "Smart Site System"
@@ -38,7 +38,7 @@ generate:
 
 ### 1.1 业务背景
 
-当前 REQ-003 定义的图纸审批为单级审批（一个审批人通过即生效）。实际业务中，图纸需要经过**内部技术审核**和**外部方审批**两个阶段：
+当前 REQ-003 定义的图纸审批为单级审批（一个内部审批人通过即生效）。实际业务中，图纸需要经过**内部技术审核**和**外部方审批**两个阶段：
 
 - **内部审批**：由能看懂图纸的技术人员（设计经理、总工程师等）审核图纸的技术内容和质量
 - **外部审批**：由业主代表、监理、设计院等外部方在 **Bentley 平台**上审批，审批通过后产出带外部签字的正式图纸
@@ -46,9 +46,9 @@ generate:
 当前痛点：
 
 - 单级审批无法区分内部质量把关和外部合规审批
-- Document Controller (DC) 需要在 Smart Site 和 Bentley 之间手动流转，缺乏系统化追踪
+- Document Controller（DC） 需要在 Smart Site 和 Bentley 之间手动流转，缺乏系统化追踪
 - Site Engineer 看到的应该是**外部签字版图纸**，而非原始上传版本
-- 图纸的责任追溯不清晰（上传人 vs 审批人 vs 流转人）
+- 图纸的责任追溯不清晰（上传人 vs 内部审批人 vs 流转人）
 
 ### 1.2 业务目标
 
@@ -57,7 +57,7 @@ generate:
 3. DC 将外部审批通过的签字版图纸回传到 Smart Site，作为最终流通版本
 4. Site Engineer 看到的始终是**带外部签字的正式图纸**
 5. 版本正式生效时同步生成 QR 码并叠加到签字版 PDF，确保流通的图纸从一开始就带有 QR
-6. 新增项目级 DC 配置页面，减少业务人员重复操作
+6. 新增项目级 DC 配置页面，减少图纸管理员重复操作
 7. 所有图纸均需经过外部审批，无"仅内部审批"选项
 
 ### 1.3 非目标（Out of Scope）
@@ -76,9 +76,9 @@ generate:
 |--------|-------|------|---------|
 | ROLE-001 | 设计人员（Designer） | 图纸责任人，负责上传图纸并指定内部审批人 | 上传新版图纸；收到驳回通知后修改重传 |
 | ROLE-002 | 内部审批人 | 拥有 `drawing:approve` 权限的技术人员（设计经理、总工程师等） | 审核图纸技术内容，通过或驳回 |
-| ROLE-003 | Document Controller (DC) | 负责外部审批流转的专职人员，由管理员在配置页指定 | 下载原始图纸提交 Bentley；回传签字版并标记结果 |
-| ROLE-004 | Site Engineer (SE) | 现场工程师，查看和使用最终审批通过的签字版图纸 | 收到通知后查看最新版图纸，扫码核验 |
-| ROLE-005 | 项目管理员 / 业务人员 | 拥有 `drawing:dc-config` 权限，负责配置项目 DC 人员 | 在 Settings > DC Configuration 页面增删 DC |
+| ROLE-003 | Document Controller（DC） | 负责外部审批流转的专职人员，由图纸管理员在配置页指定 | 下载原始图纸提交 Bentley；回传签字版并标记结果 |
+| ROLE-004 | Site Engineer（SE） | 现场工程师，查看和使用最终审批通过的签字版图纸 | 收到通知后查看最新版图纸，扫码核验 |
+| ROLE-005 | 图纸管理员 | 拥有 `drawing:dc-config` 权限，负责配置项目 DC 人员 | 在 Settings > DC Configuration 页面增删 DC |
 
 ### 2.2 用户故事（User Stories）
 
@@ -111,7 +111,7 @@ generate:
 #### US-003：DC 接收通知并下载原始图纸
 
 ```
-作为 ROLE-003 Document Controller (DC)
+作为 ROLE-003 Document Controller（DC）
 我想要 收到内部审批通过的通知后，从 Todo 列表下载原始图纸提交到 Bentley
 以便 高效完成外部审批流转，不需要在系统间来回查找文件
 ```
@@ -123,7 +123,7 @@ generate:
 #### US-004：DC 标记外部审批结果
 
 ```
-作为 ROLE-003 Document Controller (DC)
+作为 ROLE-003 Document Controller（DC）
 我想要 外部审批通过后，在 Smart Site 上传签字版图纸和审批凭证，一次性完成标记
 以便 版本立即生效并自动推送给已分配的 Site Engineer，无需重复操作
 ```
@@ -144,10 +144,10 @@ generate:
 
 ---
 
-#### US-006：业务人员配置项目 DC
+#### US-006：图纸管理员配置项目 DC
 
 ```
-作为 ROLE-005 项目管理员 / 业务人员
+作为 ROLE-005 图纸管理员
 我想要 在配置页面设置项目的 DC 人员，而不是每次上传都指定
 以便 减少重复操作，DC 人员变动时只需修改一处配置
 ```
@@ -160,7 +160,7 @@ generate:
 
 > 下游 UI agent 据此生成「显示/隐藏/禁用」逻辑，后端 agent 据此生成权限校验。
 
-| 操作 | 设计人员 | 内部审批人 | DC | Site Engineer | 管理员 / 业务人员 |
+| 操作 | 设计人员 | 内部审批人 | DC | Site Engineer | 图纸管理员 |
 |------|---------|-----------|-----|--------------|----------------|
 | 上传图纸 / 新版本（`drawing:upload`） | ✅ | ❌ | ❌ | ❌ | ❌ |
 | 内部审批（通过 / 驳回）（`drawing:approve`） | ❌ | ✅ | ❌ | ❌ | ❌ |
@@ -182,7 +182,7 @@ generate:
 | 实体 ID | 实体名 | 描述 | 关键属性（业务语义） |
 |--------|-------|------|------------------|
 | ENT-001 | DrawingVersion | 图纸版本记录 | 版本号、审批状态（5 态）、原始文件 URL、签字版文件 URL、QR URL、isCurrent |
-| ENT-002 | DrawingApproval | 单次审批记录 | phase（INTERNAL / EXTERNAL）、status（APPROVED / REJECTED）、审批人、审批意见、审批时间 |
+| ENT-002 | DrawingApproval | 单次审批记录 | phase（INTERNAL / EXTERNAL）、status（APPROVED / REJECTED）、内部审批人、审批意见、审批时间 |
 | ENT-003 | ProjectDcConfig | 项目 DC 配置 | projectId、dcUserId，联合唯一约束，同一用户同一项目只能配置一次 |
 | ENT-004 | Drawing | 图纸主记录 | Drawing Code、当前版本号、当前状态（5 态） |
 
@@ -204,9 +204,9 @@ generate:
 
 **ProjectDcConfig 生命周期**：
 
-1. **创建 / 更新**：管理员在 DC 配置页全量覆盖写入
+1. **创建 / 更新**：图纸管理员在 DC 配置页全量覆盖写入
 2. **使用**：内部审批通过时系统读取配置，向所有已配置 DC 发送通知
-3. **删除**：管理员更新配置时移除旧记录，不影响历史审批记录
+3. **删除**：图纸管理员更新配置时移除旧记录，不影响历史审批记录
 
 ---
 
@@ -329,7 +329,7 @@ flowchart TD
 
 | 错误码 | 英文提示 | 中文提示 |
 |--------|---------|---------|
-| 1003007012 | No DC configured for this project. Please add a DC before approving. | 项目未配置 DC，请先让管理员添加 DC 再进行审批 |
+| 1003007012 | No DC configured for this project. Please add a DC before approving. | 项目未配置 DC，请先让图纸管理员添加 DC 再进行审批 |
 
 ---
 
@@ -434,10 +434,10 @@ flowchart TD
 | 设计人员上传，发起内部审批 | Todo 任务 | 指定的内部审批人 | "图纸 {drawingCode} {drawingName} V{n} 等待您的内部审批" |
 | 内部审批通过 | Todo 任务 + 站内通知 | 项目所有已配置 DC | "图纸 {drawingCode} {drawingName} V{n} 内部审批已通过，请提交外部审批" |
 | 内部审批驳回 | 站内消息 | 设计人员（上传人） | "图纸 {drawingCode} V{n} 内部审批未通过：{comment}" |
-| 外部审批通过（DC 标记后） | App Push + 站内消息 | **已分配的 SE**（由管理员 [Assign] 分配） | "图纸 {drawingCode} {drawingName} 已更新至 V{n}，请查阅" |
+| 外部审批通过（DC 标记后） | App Push + 站内消息 | **已分配的 SE**（由图纸管理员 [Assign] 分配） | "图纸 {drawingCode} {drawingName} 已更新至 V{n}，请查阅" |
 | 外部审批驳回（DC 标记后） | 站内消息 | 设计人员（上传人） | "图纸 {drawingCode} V{n} 外部审批未通过：{comment}" |
 
-> ⚠️ **重要业务规则**：外部审批通过后**不自动推送全部 SE**；必须由项目管理员在图纸列表点击 [Assign] 完成 SE 分配后，被分配的 SE 才能收到 App Push + 站内消息。详见 [REQ-003D-pc](../pc/REQ-003D-pc.md)。
+> ⚠️ **重要业务规则**：外部审批通过后**不自动推送全部 SE**；必须由图纸管理员在图纸列表点击 [Assign] 完成 SE 分配后，被分配的 SE 才能收到 App Push + 站内消息。详见 [REQ-003D-pc](../pc/REQ-003D-pc.md)。
 
 ---
 
@@ -449,7 +449,7 @@ flowchart TD
 | DC 下载提交 Bentley | `fileUrl`（原始文件） | 从 Todo 列表下载 |
 | Site Engineer 查看 | `signedFileUrl`（签字版） | 最终流通版 |
 | Site Engineer 下载 | `pdfWithQrUrl` > `signedFileUrl` | 优先带 QR 的签字版 |
-| 管理员 / Drawing 团队 | 原始文件 + 签字版 | 版本详情中区分展示 |
+| 图纸管理员 / 设计人员 | 原始文件 + 签字版 | 版本详情中区分展示 |
 | QR 叠加（REQ-006） | `signedFileUrl` | 叠加到签字版上 |
 | Markup 标注（REQ-004） | `signedFileUrl` | 基于签字版 |
 | 审计追溯 | `fileUrl` + `signedFileUrl` | 原始文件始终保留 |
@@ -591,7 +591,7 @@ Then   显示的文件为签字版（signedFileUrl）
 **关联用户故事**: US-006
 
 ```
-Given  管理员在 DC 配置页面尝试清空所有 DC
+Given  图纸管理员在 DC 配置页面尝试清空所有 DC
 When   提交空列表
 Then   系统拒绝操作，返回错误码 1003007010
        且提示 "At least one DC is required"
@@ -704,7 +704,7 @@ Then   API 返回 403；UI 对应入口不显示或置灰
 
 - QR 生成失败率 > 1% 触发告警，通知后端 TL
 - 同一项目待外部审批版本堆积 > 20 条触发告警，通知 PM
-- 项目 DC 配置为空时（内部审批通过后无法流转）触发告警，通知管理员
+- 项目 DC 配置为空时（内部审批通过后无法流转）触发告警，通知图纸管理员
 
 ---
 
@@ -723,8 +723,8 @@ Then   API 返回 403；UI 对应入口不显示或置灰
 
 | OQ ID | 问题 | 影响 | Owner | 截止 |
 |------|------|------|-------|------|
-| OQ-001 | 若项目未配置任何 DC，内部审批通过后系统如何处理？当前设计为状态停留在 INTERNAL_APPROVED 并向管理员发送告警，是否合理？ | §6.3 异常流程、§14 监控与告警 | PM | 2026-05-20 |
-| OQ-002 | 外部审批通过后，SE 收到通知的触发时机——是外部审批通过即推送（无需等 [Assign]），还是必须等管理员 [Assign] 后才推送？当前文档采用后者（依赖 REQ-003D-pc），需 PM 最终确认 | §7.6 F-006 通知机制 | PM | 2026-05-13 |
+| OQ-001 | 若项目未配置任何 DC，内部审批通过后系统如何处理？当前设计为状态停留在 INTERNAL_APPROVED 并向图纸管理员发送告警，是否合理？ | §6.3 异常流程、§14 监控与告警 | PM | 2026-05-20 |
+| OQ-002 | 外部审批通过后，SE 收到通知的触发时机——是外部审批通过即推送（无需等 [Assign]），还是必须等图纸管理员 [Assign] 后才推送？当前文档采用后者（依赖 REQ-003D-pc），需 PM 最终确认 | §7.6 F-006 通知机制 | PM | 2026-05-13 |
 
 ---
 
@@ -748,6 +748,7 @@ Then   API 返回 403；UI 对应入口不显示或置灰
 | 0.1.0 | 2026-03-01 | - | 初稿：定义两级审批流程、角色、数据模型、API、通知机制 | 全部 |
 | 0.2.0 | 2026-05-06 | - | 按最新需求文档模版重构：新增 YAML front matter；重组为 §1–§19 标准节结构；用户故事增加 US-ID（US-001~006）；AC 格式化为 Given/When/Then（AC-007-001~013）；新增 §14 监控与告警；新增 OQ-002（SE 通知触发时机待 PM 确认） | 全部 |
 | 0.3.0 | 2026-05-07 | agent | 补充"项目无 DC 时阻断内部审批通过"策略：§5.2 状态转换守卫条件新增"项目已配置至少一个 DC"；§6.3 异常流程"项目未配置 DC"行拆分为前端预检与后端兜底两种场景；§7.2 F-002 新增错误码 1003007012 | Backend、Frontend、QA |
+| 0.3.1 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 | 全部 |
 
 ---
 

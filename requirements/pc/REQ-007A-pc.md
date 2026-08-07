@@ -2,7 +2,7 @@
 doc_type: requirement
 req_id: REQ-007A-pc
 req_title: "PC 端 — 内部审批 Todo、详情查看与原文件下载"
-version: 0.5.0
+version: 0.5.1
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
@@ -39,7 +39,7 @@ generate:
 
 ### 1.1 业务背景
 
-REQ-003B-pc 定义了单级审批的 Todo 交互（审批人通过即版本生效）。随着 REQ-007 将审批流程升级为**两级串行**（内部审批 → 外部审批），内部审批 Todo 的行为发生了根本变化：**通过后版本不立即生效，而是进入外部审批阶段**，由 DC 负责后续流转。
+REQ-003B-pc 定义了单级审批的 Todo 交互（内部审批人通过即版本生效）。随着 REQ-007 将审批流程升级为**两级串行**（内部审批 → 外部审批），内部审批 Todo 的行为发生了根本变化：**通过后版本不立即生效，而是进入外部审批阶段**，由 DC 负责后续流转。
 
 此外，内部审批人在作出审批决策前需要获取**完整的图纸上传信息**（与设计人员上传时填写的信息完全一致），包括图纸分类（Category）、图纸描述（Description）及可下载的原始文件，以便进行技术评审。原 Todo 卡片仅支持在线预览，缺乏专用详情面板与**原文件下载**能力。
 
@@ -48,7 +48,7 @@ REQ-003B-pc 定义了单级审批的 Todo 交互（审批人通过即版本生�
 1. 在 PC 端 Todo 列表中，让内部审批人能清晰识别"内部审批"任务（区别于旧单级审批任务），并在通过后知晓下一步将由 DC 完成外部审批，而非版本直接生效
 2. 内部审批人在 Todo 列表中仅看到**指定给自己**的图纸待审批记录，列表清晰无干扰
 3. 点击任意待办记录可打开**详情侧滑弹框（Detail Drawer）**，其中展示与设计人员上传时完全一致的所有信息
-4. 详情侧滑弹框中提供**下载原图纸文件**按钮，审批人可将原始文件下载到本地进行离线审阅
+4. 详情侧滑弹框中提供**下载原图纸文件**按钮，内部审批人可将原始文件下载到本地进行离线审阅
 
 ### 1.3 非目标（Out of Scope）
 
@@ -183,7 +183,7 @@ REQ-003B-pc 定义了单级审批的 Todo 交互（审批人通过即版本生�
 
 | 状态 ID | 状态名 | 描述 | 是否终态 |
 |--------|-------|------|---------|
-| S-001 | PENDING | 待审批人处理 | 否 |
+| S-001 | PENDING | 待内部审批人处理 | 否 |
 | S-002 | APPROVED | 内部审批已通过 | 是 |
 | S-003 | REJECTED | 内部审批已驳回 | 是 |
 
@@ -192,8 +192,8 @@ REQ-003B-pc 定义了单级审批的 Todo 交互（审批人通过即版本生�
 | From | To | 触发动作 | 守卫条件 | 副作用 |
 |------|-----|---------|---------|-------|
 | — | S-001 | 设计人员上传图纸成功 | — | Todo 出现在内部审批人列表 |
-| S-001 | S-002 | 审批人确认通过 | — | DrawingVersion 状态 → `INTERNAL_APPROVED`；向所有配置 DC 发通知 + 创建外部审批 Todo |
-| S-001 | S-003 | 审批人确认驳回 | Comment 必填 | DrawingVersion 状态 → `INTERNAL_REJECTED`；站内消息通知设计人员 |
+| S-001 | S-002 | 内部审批人确认通过 | — | DrawingVersion 状态 → `INTERNAL_APPROVED`；向所有配置 DC 发通知 + 创建外部审批 Todo |
+| S-001 | S-003 | 内部审批人确认驳回 | Comment 必填 | DrawingVersion 状态 → `INTERNAL_REJECTED`；站内消息通知设计人员 |
 
 ### 5.3 非法转换
 
@@ -209,8 +209,8 @@ REQ-003B-pc 定义了单级审批的 Todo 交互（审批人通过即版本生�
 1. 内部审批人进入 PC 端 Todo 列表（右上角通知图标），列表中**仅显示**类型为 `Internal Approval Required`、指派给当前登录用户的待办记录
 2. 看到"Internal Approval Required"任务卡片，点击右侧 **[Detail]** 按钮
 3. 右侧弹出**详情侧滑弹框（Detail Drawer）**，加载并展示图纸完整信息（见 §7.3）
-4. 审批人阅读详情；如需离线审阅，点击底部 **[Download Original File]** 按钮，浏览器触发文件下载，文件命名规则：`{drawingCode}-V{versionNo}-original.{ext}`
-5. 审批人在弹框底部点击 **[Approve]**
+4. 内部审批人阅读详情；如需离线审阅，点击底部 **[Download Original File]** 按钮，浏览器触发文件下载，文件命名规则：`{drawingCode}-V{versionNo}-original.{ext}`
+5. 内部审批人在弹框底部点击 **[Approve]**
 6. **前端预检查**：调用 DC 配置查询接口，确认项目是否已配置 DC
    - 若**无 DC 配置**：弹出无 DC 警告弹窗（F-007），流程终止，不进入确认对话框
    - 若**有 DC 配置**：弹出 Approve 确认对话框（F-005），文案说明"通过后进入外部审批阶段"
@@ -220,7 +220,7 @@ REQ-003B-pc 定义了单级审批的 Todo 交互（审批人通过即版本生�
 ### 6.2 主流程（查看详情 → 审批驳回）
 
 1. 步骤 1–4 同上
-2. 审批人在弹框底部点击 **[Reject]**，弹出驳回对话框（F-006），填写 Comment（必填）
+2. 内部审批人在弹框底部点击 **[Reject]**，弹出驳回对话框（F-006），填写 Comment（必填）
 3. 点击 [Confirm]，后端执行驳回逻辑
 4. 成功：对话框关闭 → 详情弹框关闭 → Todo 卡片消失，设计人员收到站内通知（含驳回原因）
 
@@ -233,7 +233,7 @@ flowchart TD
     C -- 否 --> D[空状态：No pending tasks]
     C -- 是 --> E[点击 Detail 按钮]
     E --> F[打开详情侧滑弹框，展示全量图纸信息]
-    F --> G{审批人操作}
+    F --> G{内部审批人操作}
     G -- 仅查看 / 关闭 --> H([关闭弹框])
     G -- 点击文件名链接 --> I1[新标签页 inline 打开文件]
     I1 --> G
@@ -241,7 +241,7 @@ flowchart TD
     I2 --> G
     G -- 点击 Approve --> J{前端预检查：项目是否有 DC 配置?}
     J -- 无 DC --> K[弹出无 DC 警告弹窗 F-007]
-    K --> L([流程终止，等待管理员配置 DC])
+    K --> L([流程终止，等待图纸管理员配置 DC])
     J -- 有 DC --> M[弹出 Approve 确认对话框 F-005]
     M --> N[点击 Confirm]
     N --> O{操作结果}
@@ -261,7 +261,7 @@ flowchart TD
 | 详情弹框加载失败 | 网络异常或接口超时 | 侧滑弹框内显示错误提示 + [Retry] 按钮 | "Failed to load drawing details. [Retry]" |
 | 文件名链接打开失败 | 预签名 URL 已过期或 CDN 不可达 | 新标签页显示浏览器错误页 | 用户可回到详情弹框重新点击；若持续失败可改用下载按钮 |
 | 文件下载失败 | `fileUrl` 过期 / CDN 不可达 / 权限失效 | Toast 错误提示，下载按钮恢复可点击 | Toast: "Download failed. Please try again." |
-| 项目无 DC 配置（前端预检） | 点击 [Approve] 时 DC 配置查询接口返回空列表 | 阻止打开确认对话框，弹出无 DC 警告弹窗（F-007） | 弹窗说明"当前项目无 DC，请联系管理员配置后再审批"，提供 [Got it] 关闭 |
+| 项目无 DC 配置（前端预检） | 点击 [Approve] 时 DC 配置查询接口返回空列表 | 阻止打开确认对话框，弹出无 DC 警告弹窗（F-007） | 弹窗说明"当前项目无 DC，请联系图纸管理员配置后再审批"，提供 [Got it] 关闭 |
 | 项目无 DC 配置（后端兜底） | 前端检查被绕过，POST /drawing/approve 时后端校验无 DC | 接口返回错误码 `1003007012`，loading 恢复，保留对话框 | Toast 提示"No DC configured. Please ask admin to add a DC first."，可重试 |
 | 驳回未填 Comment | Reject Comment 为空 | 前端校验阻止提交 | 字段标红，提示必填 |
 | 待办已被处理（并发） | 打开详情时任务已被处理（防御） | 弹框内提示任务已关闭，操作按钮隐藏 | "This task has already been completed." |
@@ -312,7 +312,7 @@ flowchart TD
 **规则**：
 - 内部审批人进入 Todo 列表，类型为 `Internal Approval Required` 的任务，**后端仅返回 `assigneeId` 等于当前登录用户 ID 的记录**
 - 前端不需要额外过滤控件；"仅我名下"是默认且唯一的展示逻辑
-- 若当前用户在某项目中不是任何图纸版本的指定审批人，对应项目的图纸 Todo 对其不可见
+- 若当前用户在某项目中不是任何图纸版本的指定内部审批人，对应项目的图纸 Todo 对其不可见
 
 ---
 
@@ -344,7 +344,7 @@ flowchart TD
 | Version Note | DrawingVersion.versionNote | Version Note（选填） | 无内容时显示 `—` |
 | Uploaded by | DrawingVersion.uploaderName | 上传人（系统取当前登录用户姓名） | 显示姓名 + 角色标签，例：张三（Designer） |
 | Upload Time | DrawingVersion.uploadTime | 上传时间（系统自动记录） | 格式：YYYY-MM-DD HH:mm，Tooltip 显示完整时间戳 |
-| Internal Approver | DrawingVersion.approverName | Internal Approver（上传时指定） | 显示被指派审批人姓名；应与当前登录用户一致 |
+| Internal Approver | DrawingVersion.approverName | Internal Approver（上传时指定） | 显示被指派内部审批人姓名；应与当前登录用户一致 |
 | Original File | DrawingVersion.fileUrl | 上传的图纸文件 | 显示文件名 + 文件类型图标；文件名为**可点击链接**，点击后在浏览器新标签页中以 inline 方式打开；文件名下方展示辅助提示文案引导用户通过底部按钮下载 |
 
 **布局示意**：
@@ -495,7 +495,7 @@ Response: 302 Redirect 至预签名 URL（Content-Disposition: attachment; filen
 **关联用户故事**：US-007A-005
 **所属流程节点**：详情侧滑弹框底部 [Approve] 按钮点击后（F-005 前置检查）
 
-**触发时机**：审批人点击 [Approve] 后，前端调用 DC 配置查询接口（`GET /project/dc-config`），返回空列表时弹出本弹窗，**不进入** F-005 确认对话框。
+**触发时机**：内部审批人点击 [Approve] 后，前端调用 DC 配置查询接口（`GET /project/dc-config`），返回空列表时弹出本弹窗，**不进入** F-005 确认对话框。
 
 **弹窗布局**：
 
@@ -534,7 +534,7 @@ Then   出现带 🔍 图标、标题为 "Internal Approval Required" 的卡片�
 
 ```
 Given  内部审批人 A 登录 PC 端，项目中存在指派给 A 的图纸待审批 TaskA，
-       以及指派给审批人 B 的 TaskB
+       以及指派给内部审批人 B 的 TaskB
 When   A 打开 Todo 列表，查看 Internal Approval Required 类型的待办
 Then   列表中仅显示 TaskA，不显示 TaskB
 ```
@@ -607,11 +607,11 @@ Then   Original File 行文件名显示为 "—"（无链接样式，不可点�
        鼠标悬停时显示 Tooltip "Original file unavailable."
 ```
 
-### AC-007A-010：非指派审批人无法通过接口下载文件
+### AC-007A-010：非指派内部审批人无法通过接口下载文件
 
 ```
 Given  内部审批人 B 尝试直接调用 view 或 download 接口，
-       但该 DrawingVersion 的 assigneeId 为审批人 A
+       但该 DrawingVersion 的 assigneeId 为内部审批人 A
 When   B 分别发送 GET /drawing/version/{versionId}/view 和
        GET /drawing/version/{versionId}/download 请求
 Then   两个接口均返回 403，文件不打开，不下载
@@ -769,7 +769,7 @@ Then   旧版本仍保持 ACTIVE 状态，图纸主记录 status 不变
 ### 9.5 可观测性
 
 - 关键埋点：
-  - `todo_detail_opened`：审批人打开详情弹框（含 drawingVersionId）
+  - `todo_detail_opened`：内部审批人打开详情弹框（含 drawingVersionId）
   - `drawing_original_download_triggered`：点击下载按钮（含 drawingVersionId、文件类型）
   - `drawing_original_download_failed`：下载失败（含失败原因）
   - `internal_approval_approved`：内部审批通过
@@ -784,7 +784,7 @@ Then   旧版本仍保持 ACTIVE 状态，图纸主记录 status 不变
 | 维度 | 当前预期 | 1 年后 | 3 年后 |
 |-----|---------|-------|-------|
 | 单项目每月内部审批任务数 | ≤ 100 条 | ≤ 500 条 | — |
-| 每个审批人同时待处理的图纸待办数 | ≤ 50 条 | ≤ 200 条 | ≤ 500 条 |
+| 每个内部审批人同时待处理的图纸待办数 | ≤ 50 条 | ≤ 200 条 | ≤ 500 条 |
 | 单个图纸文件大小 | ≤ 50MB | ≤ 50MB | ≤ 100MB |
 
 ---
@@ -850,7 +850,7 @@ Then   旧版本仍保持 ACTIVE 状态，图纸主记录 status 不变
 | 内部审批完成率（7 天内） | — | ≥ 90% | 每周 |
 | 审批操作成功率 | — | ≥ 99% | 每周 |
 | 图纸原文件下载成功率 | 无基线 | ≥ 99% | 每日 |
-| 审批人反馈"信息不完整"导致二次沟通的工单数 | <!-- TODO: 需运营提供历史数据 --> | 较上线前下降 80% | 每月 |
+| 内部审批人反馈"信息不完整"导致二次沟通的工单数 | <!-- TODO: 需运营提供历史数据 --> | 较上线前下降 80% | 每月 |
 
 ---
 
@@ -880,6 +880,7 @@ Then   旧版本仍保持 ACTIVE 状态，图纸主记录 status 不变
 | 0.3.0 | 2026-05-25 | agent | F-001 卡片操作区调整：移除 [View Drawing]、[Approve]、[Reject] 按钮，新增 [Detail] 按钮 | UI、前端、QA |
 | 0.2.0 | 2026-05-07 | agent | 补充无 DC 配置场景：新增 F-004（无 DC 警告弹窗）、前端预检查流程 | UI、前端、QA |
 | 0.1.0 | 2026-05-05 | agent | 从 REQ-007-pc 按 US-007A-001 拆分初稿 | 全部 |
+| 0.5.1 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 | 全部 |
 
 ---
 
