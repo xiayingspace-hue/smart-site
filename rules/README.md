@@ -72,7 +72,7 @@
 3. ui / frontend / backend / qa 四者基本并行
    (frontend 强依赖 ui-spec 和 data-contract;
     qa 强依赖 data-contract,可滞后 1 拍以拿到 ui/frontend/backend spec)
-4. 校验:scripts/validate.py 跑追溯报告
+4. 校验:各 agent 按 global-rules.md §10 自检,PM 复核追溯链完整性
 ```
 
 ---
@@ -176,13 +176,9 @@ your-project/
 │       ├── backend-spec.md
 │       ├── qa-spec.md
 │       └── .trace-report.md      # 校验脚本输出
-├── templates/                    # 文档模板(8 份)
+├── templates/                    # 文档模板(7 份)
 ├── rules/                        # 本目录(9 份规则)
-├── schemas/                      # OpenAPI / JSON Schema(可选)
-└── scripts/
-    ├── validate.py               # 校验文档结构 + AC 追溯
-    ├── trace.py                  # 输出 AC 覆盖率报告
-    └── generate.py               # 调用各 agent 生成下游文档(可选)
+└── schemas/                      # OpenAPI / JSON Schema(可选)
 ```
 
 ---
@@ -215,14 +211,13 @@ your-project/
 - §5 信息缺失处理(知道 agent 会标 TODO 而不是编造)
 - §10 通用校验清单(知道 agent 会自检什么)
 
-### 对校验脚本
+### 对复核者(PM / TL)
 
-`scripts/validate.py` 应:
-1. 加载所有文档
-2. 按 traceability-rules.md 校验追溯链
-3. 按 global-rules.md §10 校验文档结构
-4. 输出 ERROR/WARNING 报告
-5. 在 CI 中作为质量门禁
+下游文档生成完成后,按以下顺序人工复核:
+1. 按 `global-rules.md` §10 检查文档结构(front matter、溯源块、章节完整)
+2. 按 `traceability-rules.md` 检查追溯链(每个 AC 至少 1 条 TC,无破链引用)
+3. 确认所有 `<!-- TODO -->` / `<!-- MISSING -->` 标记指向真实的上游缺口
+4. 在 `VERSIONS.md` 中更新该 REQ 的 `output_ver` 与状态
 
 ---
 
@@ -255,10 +250,10 @@ your-project/
 
 **v0.3:**
 - 把规则中可形式化的部分(如字段命名、ID 格式)抽成 JSON Schema
-- 引入校验脚本(scripts/validate.py)
+- 沉淀标准生成提示词,让任何人都能触发一次一致的生成
 
 **v1.0:**
-- 规则稳定,有黄金标准示例,有 CI 校验
+- 规则稳定,有黄金标准示例,复核清单固化
 - 团队所有需求都按这套流程执行
 
 ---
@@ -276,7 +271,7 @@ A: 优先级从高到低:
 1. 先用 `requirement.md` 模板的 AC 编号系统(§9)
 2. 让 QA 在每个 TC 中标 covers_ac
 3. 加 data-contract,让前后端有共同的字段定义
-4. 最后加追溯校验脚本
+4. 最后固化追溯复核清单,纳入评审流程
 
 **Q: agent 执行时如果某条规则做不到怎么办?**
 A: 在生成的文档底部加一节"规则偏离记录",显式说明哪条规则跳过了、理由、风险。**不要静默违反**。

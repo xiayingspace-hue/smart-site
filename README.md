@@ -6,15 +6,14 @@
 
 ## 🗺️ 新人快速导览
 
-**不知道从哪里读起？按顺序看这 5 个文件：**
+**不知道从哪里读起？按顺序看这 4 个文件：**
 
 | 步骤 | 文件 | 读完你会知道 |
 |------|------|------------|
 | 1 | `background/project-overview.md` | 这是什么产品、三端分别是什么 |
 | 2 | `MULTI-PLATFORM.md` | 三端（PC / APP / H5）如何分文件夹管理 |
 | 3 | `rules/README.md` | 整套 agent 规则体系如何运作 |
-| 4 | `scripts/GENERATE.md` | PM 如何触发一次完整的文档生成 |
-| 5 | `VERSIONS.md` | 当前有哪些 REQ，各自处于什么状态 |
+| 4 | `VERSIONS.md` | 当前有哪些 REQ，各自处于什么状态 |
 
 ---
 
@@ -72,16 +71,12 @@ smart-site/
 │   ├── backend-spec.md          # 后端说明模板
 │   ├── qa-spec.md               # QA 测试用例模板
 │   ├── data-contract.md         # 数据契约模板
-│   ├── glossary.md              # 术语表模板
 │   └── user-stories.md          # 用户故事模板
-│
-├── scripts/                     # PM 操作指令
-│   ├── GENERATE.md              # ⭐ 生成一个 REQ 全套下游文档的完整指令
-│   └── IMPACT-ANALYSIS.md       # ⭐ 需求变更时分析影响范围的指令
 │
 ├── releases/                    # 发布快照归档（每次版本发布时存入）
 │
 ├── README.md                    # 本文件
+├── glossary.md                  # ⭐ 全项目术语表（单例，无模板，直接维护本文件）
 ├── VERSIONS.md                  # ⭐ REQ 状态总表 + 版本规划
 ├── CHANGELOG.md                 # 各 REQ 的功能变更日志
 └── MULTI-PLATFORM.md            # 多端管理规范
@@ -94,14 +89,14 @@ smart-site/
 ```
 PM 写需求                触发生成                  下游文档
 ─────────────────       ──────────────────        ──────────────────────
-requirements/           scripts/GENERATE.md  →    outputs/shared/       (数据契约)
-  REQ-XXX-pc.md    →    粘贴给 AI agent      →    outputs/ui/pc/        (UI 说明)
-                                             →    outputs/frontend/pc/  (前端说明)
-                                             →    outputs/backend/      (后端说明)
-                                             →    outputs/qa/pc/        (测试用例)
+requirements/           PM 手动提示 AI agent  →    outputs/shared/       (数据契约)
+  REQ-XXX-pc.md    →    （agent 遵循           →    outputs/ui/pc/        (UI 说明)
+                          rules/ 下的规则）     →    outputs/frontend/pc/  (前端说明)
+                                              →    outputs/backend/      (后端说明)
+                                              →    outputs/qa/pc/        (测试用例)
 ```
 
-**需求变更时**：使用 `scripts/IMPACT-ANALYSIS.md` 分析哪些下游文档需要重新生成。
+**需求变更时**：由 PM 判断哪些下游文档受影响并重新生成，在 `VERSIONS.md` 中更新对应 REQ 的状态。
 
 ---
 
@@ -124,7 +119,6 @@ requirements/           scripts/GENERATE.md  →    outputs/shared/       (数�
 | `rules/global-rules.md §14` | 项目所有技术约定的集中地（技术栈/枚举/错误码/API规范） |
 | `background/key-decisions.md` | 解释"为什么这样设计"，防止新人推翻已有决策 |
 | `outputs/ui/shared/UI-COMPONENT-REGISTRY.md` | 已有 UI 组件注册表，生成新文档前必查 |
-| `scripts/IMPACT-ANALYSIS.md §二` | 跨 REQ 依赖关系图 |
 
 ---
 

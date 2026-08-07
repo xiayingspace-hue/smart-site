@@ -89,13 +89,13 @@
 ### 新增 REQ 时
 1. 在"REQ 文档版本状态总表"新增一行，状态设为 `🟡 草稿`
 2. 在"版本详情"对应版本的"包含 REQ"中登记
-3. 在 `scripts/IMPACT-ANALYSIS.md §二` 中更新依赖声明表
+3. 在需求文件 front matter 的 `depends_on` / `related_to` / `blocks` 中声明依赖关系
 
 ### 需求变更时
 1. 修改需求文件，更新 frontmatter 中的 `version` 字段
-2. 将本表中该 REQ 的 `req_ver` 更新，状态改为 `🟠 下游过期`
-3. 运行 `scripts/IMPACT-ANALYSIS.md` 分析影响范围
-4. 重新生成受影响的下游文档后，将 `output_ver` 更新为最新 `req_ver`，状态改为 `✅ 同步`
+2. 在需求文件 §18 变更历史中追加一行，填写「影响下游文档」列
+3. 将本表中该 REQ 的 `req_ver` 更新，状态改为 `🟠 下游过期`
+4. 按 §18 标注的影响范围重新生成下游文档，将 `output_ver` 更新为最新 `req_ver`，状态改为 `✅ 同步`
 
 ### 版本发布时
 1. 确认该版本所有 REQ 状态均为 `✅ 同步`

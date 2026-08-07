@@ -343,7 +343,7 @@ Required Action:
 ```markdown
 ## 追溯校验
 
-- [ ] 已运行 `scripts/validate.py`,无 ERROR
+- [ ] 已按本文件 §1~§8 完成追溯链复核,无破链引用
 - [ ] 影响分析已 review
 - [ ] 受影响下游文档已更新
 ```

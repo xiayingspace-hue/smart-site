@@ -11,7 +11,6 @@
 | `requirement.md` | PM(主) | 需求文档,所有下游文档的源头 |
 | `data-contract.md` | 后端架构师 / TL | **单一事实源**:数据模型、API 契约、状态机 |
 | `user-stories.md` | PM + TL | 把模块需求拆分为可独立交付的故事 |
-| `glossary.md` | 全员 | 术语表,统一项目内的业务词汇 |
 | `ui-spec.md` | UI 设计师 | UI 设计稿生成依据 |
 | `frontend-spec.md` | 前端开发 | 前端实现依据 |
 | `backend-spec.md` | 后端开发 | 后端实现依据 |
@@ -27,10 +26,11 @@ requirement.md ──┬─► user-stories.md
                  │                      ├─► backend-spec.md
                  │                      └─► qa-spec.md
                  ├─► ui-spec.md ────────► frontend-spec.md
-                 └─► glossary.md (全员引用)
+                 └─► ../glossary.md (全员引用,项目根目录)
 
 下游文档变更不能反向影响 requirement.md。
 data-contract.md 是前端/后端/QA 三方协调的枢纽。
+glossary.md 全项目仅一份,直接维护根目录实例,本目录不设模板。
 ```
 
 ---
@@ -56,10 +56,7 @@ mcc-requirements/
 ├── glossary.md                # 全局术语表(项目级,所有需求共享)
 ├── rules/                     # 转换规则配置
 ├── schemas/                   # 文档结构 schema(可选,用于校验)
-├── examples/                  # 真实业务示例(参考)
-└── scripts/
-    ├── validate.py            # 校验文档结构、AC 追溯
-    └── trace.py               # 输出 AC 覆盖率报告
+└── examples/                  # 真实业务示例(参考)
 ```
 
 ---
@@ -172,7 +169,7 @@ generated_from: requirement.md@0.1.0
 ## FAQ
 
 **Q: 我的需求很简单,需要写这么多吗?**
-A: 8 份模板每份都按需填。简单需求 `data-contract.md` 可能就 1 个 API,`user-stories.md` 可能就 1 个 Story,但**结构必须保留**,因为下游 agent 按结构解析。
+A: 7 份模板每份都按需填。简单需求 `data-contract.md` 可能就 1 个 API,`user-stories.md` 可能就 1 个 Story,但**结构必须保留**,因为下游 agent 按结构解析。
 
 **Q: 下游 agent 跑出来的文档质量不达标怎么办?**
 A: 大概率是上游 `requirement.md` 信息密度不够。先检查上游有没有 OQ、有没有遗漏字段,而不是反复 prompt 下游 agent。
