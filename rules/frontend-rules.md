@@ -20,10 +20,10 @@
 | `data-contract.md §4.2` 错误码 | §6.3 错误处理映射 |
 | `data-contract.md §1` 实体字段 | §6 类型生成依据 |
 | `data-contract.md §7` constants | 引用,不重复 |
-| `requirement.md §9.1` 性能 | §7 性能预算 |
+| `requirement.md §10.1` 性能 | §7 性能预算 |
 | `background/tech-stack.md` 各端规范 | §7、§8 弱网策略（兼容性已从需求模板移除,统一以本文件为准） |
-| `requirement.md §9.4` 可观测性 | §10 埋点设计 |
-| `requirement.md §15` 成功指标 | §10 埋点反推 |
+| `requirement.md §10.4` 可观测性 | §10 埋点设计 |
+| `requirement.md §16` 成功指标 | §10 埋点反推 |
 
 ---
 
@@ -264,7 +264,7 @@ H5 端 `frontend-spec.md §2 技术栈` 须声明以下条目（按项目实际�
 
 #### 3.8.2 反推规则
 
-对 `requirement.md §15` 每个成功指标,反推埋点:
+对 `requirement.md §16` 每个成功指标,反推埋点:
 
 | 指标类型 | 推断埋点 |
 |---------|---------|

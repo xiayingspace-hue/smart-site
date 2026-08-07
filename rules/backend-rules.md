@@ -16,12 +16,12 @@
 | `requirement.md §5` 权限矩阵 | §13.2 鉴权权限 |
 | `requirement.md §7` 状态机 | §4 状态机实现 |
 | `requirement.md §3` 功能需求 | §3 业务逻辑 |
-| `requirement.md §8` AC | §15 AC 覆盖 |
-| `requirement.md §9.1` 性能 | §12 性能要求 |
-| `requirement.md §9.2` 安全 | §13 安全要求 |
-| `requirement.md §10` 数据量级 | §8.1 索引、§9 缓存策略 |
-| `requirement.md §11` 外部系统依赖 | §2.2 新增依赖 |
-| `requirement.md §14` 灰度 | §17 部署回滚 |
+| `requirement.md §9` AC | §15 AC 覆盖 |
+| `requirement.md §10.1` 性能 | §12 性能要求 |
+| `requirement.md §10.2` 安全 | §13 安全要求 |
+| `requirement.md §11` 数据量级 | §8.1 索引、§9 缓存策略 |
+| `requirement.md §12` 外部系统依赖 | §2.2 新增依赖 |
+| `requirement.md §15` 灰度 | §17 部署回滚 |
 | `data-contract.md §1` 数据模型 | §8 数据库设计(只列建表/索引要点) |
 | `data-contract.md §3` 状态机 | §4 状态机实现 |
 | `data-contract.md §4` API | §3 业务逻辑(每个 API → 1 个业务点) |
@@ -326,7 +326,7 @@ CREATE INDEX ON audit_logs (actor_id, occurred_at DESC);
 
 #### 3.10.1 默认指标
 
-若 requirement §9.1 未指定:
+若 requirement §10.1 未指定:
 
 | 接口类型 | P95 默认目标 |
 |---------|-----------|
@@ -388,7 +388,7 @@ CREATE INDEX ON audit_logs (actor_id, occurred_at DESC);
 | 每个 API | qps、延迟分位、错误率 |
 | 每个状态机 | 状态转换计数(by from-to) |
 | 每个异步任务 | 队列深度、消费延迟、重试次数 |
-| requirement §15 成功指标 | 业务计数器 |
+| requirement §16 成功指标 | 业务计数器 |
 
 #### 3.12.3 告警规则(默认)
 

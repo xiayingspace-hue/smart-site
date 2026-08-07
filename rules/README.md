@@ -134,7 +134,7 @@ agent 看到上游缺信息时:
 |-----|-----------|
 | 数据字段、API、状态机 | `data-contract.md` |
 | 业务术语 | `glossary.md` |
-| 验收标准 | `requirement.md` §8 |
+| 验收标准 | `requirement.md` §9 |
 | 用户故事 | `user-stories.md` |
 
 下游文档**只引用、不重复**。
@@ -273,7 +273,7 @@ A: 可以,但代价是前后端 QA 各自从需求"理解"接口,联调成本会
 
 **Q: 如果团队还没准备好做这么严格的追溯,从哪开始?**
 A: 优先级从高到低:
-1. 先用 `requirement.md` 模板的 AC 编号系统(§8)
+1. 先用 `requirement.md` 模板的 AC 编号系统(§9)
 2. 让 QA 在每个 TC 中标 covers_ac
 3. 加 data-contract,让前后端有共同的字段定义
 4. 最后加追溯校验脚本

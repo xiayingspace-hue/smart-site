@@ -19,10 +19,10 @@
 | `requirement.md §7` 状态机 | §3 状态机定义 |
 | `requirement.md §2` 业务流程 | §4 接口清单(每个流程节点 ≈ 一个 API) |
 | `requirement.md §3` 功能需求 | §4 接口详细规范 |
-| `requirement.md §8` AC | §3、§4 的 ac_refs 字段 |
-| `requirement.md §9.1` 性能 | §7 constants(分页等) |
-| `requirement.md §9.2` 安全 | §6 鉴权与权限 |
-| `requirement.md §11` 依赖系统 | §5 异步任务(若涉及外部调用) |
+| `requirement.md §9` AC | §3、§4 的 ac_refs 字段 |
+| `requirement.md §10.1` 性能 | §7 constants(分页等) |
+| `requirement.md §10.2` 安全 | §6 鉴权与权限 |
+| `requirement.md §12` 依赖系统 | §5 异步任务(若涉及外部调用) |
 | `requirement.md §5` 权限矩阵 | §6.2 权限校验点 |
 | `glossary.md §5.2` 字段命名规范 | 全文字段命名 |
 | `glossary.md §5.3` 枚举命名规范 | §2 枚举 |
@@ -41,7 +41,7 @@
 | 3 状态机定义 | ✅(若 requirement §7 非空) | 转换 §7,机器可解析 yaml |
 | 4 API 接口契约 | ✅ | 主要内容 |
 | 5 异步任务与事件 | ⭕(可空,但需保留章节) | 从功能需求识别异步项 |
-| 6 鉴权与权限模型 | ✅ | 转换 §5 + §9.2 |
+| 6 鉴权与权限模型 | ✅ | 转换 §5 + §10.2 |
 | 7 数据约束总览 | ✅ | 集中所有"魔法数字" |
 | 8 契约校验机制 | ✅ | 模板内容,不需推导 |
 | 9 变更历史 | ✅ | 首版填初稿 |
@@ -190,7 +190,7 @@ business_rules:
 
 ### 3.4 性能/分页/限流 → §7 constants
 
-从 `requirement.md §9.1` 抽取所有数值,集中放入 §7:
+从 `requirement.md §10.1` 抽取所有数值,集中放入 §7:
 
 ```yaml
 constants:

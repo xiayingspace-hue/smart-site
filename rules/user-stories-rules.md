@@ -27,7 +27,7 @@
 | `requirement.md` | §4.2 用户故事(若 PM 已写) | 作为基础 |
 | `requirement.md` | §2 业务流程 | 拆分依据(每个流程节点是潜在 Story) |
 | `requirement.md` | §3 功能需求 | Story 内容来源 |
-| `requirement.md` | §8 验收标准 | Story 与 AC 关联 |
+| `requirement.md` | §9 验收标准 | Story 与 AC 关联 |
 | `requirement.md` | §5 权限矩阵 | 推导角色相关 Story |
 | `glossary.md` | 全文 | 术语对齐 |
 
@@ -36,7 +36,7 @@
 通用校验外,本 agent 必须检查:
 
 - [ ] requirement.md §2 业务流程已写明步骤(否则无从拆分)
-- [ ] requirement.md §8 至少有 3 条 AC
+- [ ] requirement.md §9 至少有 3 条 AC
 - [ ] 若 §2.2 已有 US 列表,以 PM 写的为基础**再拆分**,**不覆盖**
 
 ---
@@ -45,10 +45,10 @@
 
 | 输出章节 | 输入来源 | 转换规则 |
 |---------|---------|---------|
-| §1 Epic 概览 | §6 主流程的大阶段 | 见 §4.1 |
+| §1 Epic 概览 | requirement §2.1 主流程的大阶段 | 见 §4.1 |
 | §2 优先级与 Sprint 概览 | Story 的依赖 + 优先级 | 见 §4.4 |
-| §3 Story 详述 | §6 + §7 + §3 + §8 | 见 §4.2(核心) |
-| §4 Story 依赖图 | §6 流程顺序 | 见 §4.3 |
+| §3 Story 详述 | requirement §2 + §3 + §5 + §9 | 见 §4.2(核心) |
+| §4 Story 依赖图 | requirement §2 流程顺序 | 见 §4.3 |
 | §5 Sprint 排布建议 | 依赖 + 优先级 | 见 §4.4 |
 | §6 Story 状态追踪 | 初始填 TODO | - |
 
@@ -107,7 +107,7 @@
 | 前置依赖 | ✅ | 见 §4.3 |
 | 所属流程节点 | ✅ | 引用需求 §6 章节 |
 | 关联 AC | ✅ | 列出所有 AC ID |
-| 验收要点 | ✅ | 简述,详细见 requirement.md §8 |
+| 验收要点 | ✅ | 简述,详细见 requirement.md §9 |
 | 涉及接口 | 🔶 | 若 data-contract 已生成,引用 API ID |
 | 技术风险 | 🔶 | 识别明显风险点 |
 | 已知问题 | 🔶 | 引用 OQ-XXX |

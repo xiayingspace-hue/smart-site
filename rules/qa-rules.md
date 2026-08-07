@@ -27,11 +27,11 @@
 | `requirement.md` | §5 权限矩阵 | §3.3 权限场景 |
 | `requirement.md` | §2 业务流程(主+异常) | §3.1/3.2 主/异常场景 |
 | `requirement.md` | §3 功能需求 | TC 派生 |
-| `requirement.md` | §8 AC | §11 覆盖矩阵(核心) |
-| `requirement.md` | §9 非功能 | §7/8 性能/安全 |
+| `requirement.md` | §9 AC | §11 覆盖矩阵(核心) |
+| `requirement.md` | §10 非功能 | §7/8 性能/安全 |
 | `background/tech-stack.md` | 各端规范 | §9 兼容性测试（兼容性已从需求模板移除,统一以本文件为准） |
-| `requirement.md` | §10 数据量级 | 极端场景测试 |
-| `requirement.md` | §11 外部系统依赖 | §12 回归测试范围 |
+| `requirement.md` | §11 数据量级 | 极端场景测试 |
+| `requirement.md` | §12 外部系统依赖 | §12 回归测试范围 |
 | `data-contract.md` | §1 实体 | 测试数据 |
 | `data-contract.md` | §3 状态机 | §3.4 状态转换场景 |
 | `data-contract.md` | §4 API + 错误码 | §6 接口测试 |
@@ -43,7 +43,7 @@
 
 通用校验外,本 agent 必须检查:
 
-- [ ] requirement.md §8 AC 不为空
+- [ ] requirement.md §9 AC 不为空
 - [ ] data-contract.md 已生成(否则无法生成接口测试)
 - [ ] 每个 AC 都有完整 Given/When/Then(若残缺,标 TODO 警告)
 
@@ -53,17 +53,17 @@
 
 | 输出章节 | 输入来源 | 转换规则 |
 |---------|---------|---------|
-| §1 测试目标 | requirement §1 + §8 | 一段话 |
+| §1 测试目标 | requirement §1 + §9 | 一段话 |
 | §2 测试策略 | 团队默认 + 需求规模 | 见 §4.1 |
 | §3 测试场景总览 | 多源 | 见 §4.2(核心) |
-| §4 测试用例(TC)详述 | requirement §8 + data-contract | 见 §4.3(核心) |
+| §4 测试用例(TC)详述 | requirement §9 + data-contract | 见 §4.3(核心) |
 | §5 边界值与等价类 | data-contract §7 + requirement §3 | 见 §4.4 |
 | §6 接口测试 | data-contract §4 | 见 §4.5 |
-| §7 性能测试 | requirement §9.1 | 见 §4.6 |
-| §8 安全测试 | requirement §9.2 + 业务敏感 | 见 §4.7 |
+| §7 性能测试 | requirement §10.1 | 见 §4.6 |
+| §8 安全测试 | requirement §10.2 + 业务敏感 | 见 §4.7 |
 | §9 兼容性测试 | background/tech-stack.md 对应端 | 按需求所在目录（pc/app/h5）取对应端规范 |
 | §10 测试数据 | data-contract §1 + 边界值 | 见 §4.8 |
-| §11 AC 覆盖矩阵 | requirement §8 | 见 §4.9(核心) |
+| §11 AC 覆盖矩阵 | requirement §9 | 见 §4.9(核心) |
 | §12 回归测试范围 | 需求依赖关系 | 见 §4.10 |
 | §13 测试环境 | 团队默认 | 模板 |
 | §14 验收条件 | 模板固定内容 | 直接套用 |
@@ -107,7 +107,7 @@
 
 **规则**:
 - 每个异常 → 1 个 SC-EXX
-- 关联 AC:扫描 §8 AC 中 Given 或 When 描述了异常的
+- 关联 AC:扫描 requirement §9 AC 中 Given 或 When 描述了异常的
 
 #### §3.3 权限场景
 
@@ -174,7 +174,7 @@ cleanup: [...]                 # 推荐
 #### 4.3.4 派生规则(伪代码)
 
 ```pseudo
-for each AC in requirement §8:
+for each AC in requirement §9:
   base_tc = {
     tc_id: generate_id(AC),
     covers_ac: [AC.id],
@@ -273,7 +273,7 @@ for each AC in requirement §8:
 
 ### 4.6 性能测试规则
 
-**输入**: requirement.md §9.1 + backend-spec.md §12
+**输入**: requirement.md §10.1 + backend-spec.md §12
 
 **规则**:
 
@@ -349,7 +349,7 @@ fixtures/
 **判定**: 哪些存量功能受本次需求影响?
 
 **输入**:
-- requirement §11 外部系统依赖
+- requirement §12 外部系统依赖
 - requirement.md `depends_on` / `blocks` front matter
 
 **派生规则**:
@@ -377,14 +377,14 @@ fixtures/
 
 通用清单外,本 agent 自检:
 
-- [ ] requirement §8 每个 AC 都在 §11 矩阵中(包括 N/A 也要列出)
+- [ ] requirement §9 每个 AC 都在 §11 矩阵中(包括 N/A 也要列出)
 - [ ] 每个 AC 至少有 1 个 TC,边界/权限/状态类 AC 满足最低数量
 - [ ] data-contract §3 每条 transition + 每条 forbidden 都有对应 SC-T
 - [ ] data-contract §4 每个 API 都有 §6.2 专项接口测试
 - [ ] data-contract §4.2 每个错误码都被某 TC 覆盖
 - [ ] 每个 TC 都显式 covers_ac
 - [ ] 没有 TC 关联到不存在的 AC
-- [ ] 性能测试覆盖了 requirement §9.1 中所有明确指标
+- [ ] 性能测试覆盖了 requirement §10.1 中所有明确指标
 - [ ] OWASP A01/A03/A07/A09 必加项已覆盖
 - [ ] 边界值字段全部派生 4 类用例
 - [ ] 文本字段全部派生标准 fuzzing 集
