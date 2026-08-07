@@ -94,7 +94,7 @@ owner: ""
 
 | 类型 | 格式 | 示例 |
 |-----|------|------|
-| 需求 | `REQ-{4 位数字}` | REQ-0042 |
+| 需求 | `REQ-{3 位数字}[子需求字母]` | REQ-003、REQ-003A |
 | 用户故事 | `US-{3 位数字}` | US-001 |
 | 验收标准 | `AC-{REQ_ID}-{3 位数字}` | AC-0042-001 |
 | 测试用例 | `TC-{AC_ID}-{2 位数字}` | TC-0042-001-01 |
@@ -105,14 +105,27 @@ owner: ""
 | 待定问题 | `OQ-{3 位数字}` | OQ-001 |
 | 角色 | `ROLE-{3 位数字}` | ROLE-001 |
 
-### 5.2 字段命名
+### 5.2 文件命名
+
+> 端标识取值:`shared` / `pc` / `app` / `h5`。多端拆分原则见 `rules/global-rules.md` §15。
+
+| 类型 | 格式 | 示例 |
+|-----|------|------|
+| 需求文件 | `REQ-{编号}-{端标识}.md` | `REQ-003A-pc.md`、`REQ-007-shared.md` |
+| 数据契约 | `DATA-CONTRACT-REQ-{编号}-{端标识}.md` | `DATA-CONTRACT-REQ-003H-pc.md` |
+| UI 说明 | `UI-REQ-{编号}-{端标识}.md` | `UI-REQ-003A-pc.md` |
+| 前端说明 | `FRONTEND-REQ-{编号}-{端标识}.md` | `FRONTEND-REQ-003A-pc.md` |
+| 后端说明 | `BACKEND-REQ-{编号}.md`（不分端） | `BACKEND-REQ-003A.md` |
+| 测试用例 | `QA-REQ-{编号}-{端标识}.md` | `QA-REQ-003A-pc.md` |
+
+### 5.3 字段命名
 
 - 数据库字段:`snake_case`
 - API 字段:`snake_case`(对外契约统一,前端 client 内部转 camelCase)
 - 前端组件 prop:`camelCase`
 - TS 类型:`PascalCase`
 
-### 5.3 枚举值命名
+### 5.4 枚举值命名
 
 - 全大写,下划线分隔(如 `IN_PROGRESS`)
 - 不要用数字编码

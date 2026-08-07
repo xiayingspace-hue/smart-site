@@ -11,7 +11,7 @@
 | 步骤 | 文件 | 读完你会知道 |
 |------|------|------------|
 | 1 | `background/project-overview.md` | 这是什么产品、三端分别是什么 |
-| 2 | `MULTI-PLATFORM.md` | 三端（PC / APP / H5）如何分文件夹管理 |
+| 2 | `rules/global-rules.md §15` | 三端（PC / APP / H5）如何分文件夹管理、shared 与各端如何分工 |
 | 3 | `rules/README.md` | 整套 agent 规则体系如何运作 |
 | 4 | `VERSIONS.md` | 当前有哪些 REQ，各自处于什么状态 |
 
@@ -78,8 +78,7 @@ smart-site/
 ├── README.md                    # 本文件
 ├── glossary.md                  # ⭐ 全项目术语表（单例，无模板，直接维护本文件）
 ├── VERSIONS.md                  # ⭐ REQ 状态总表 + 版本规划
-├── CHANGELOG.md                 # 各 REQ 的功能变更日志
-└── MULTI-PLATFORM.md            # 多端管理规范
+└── CHANGELOG.md                 # 各 REQ 的功能变更日志
 ```
 
 ---
@@ -116,7 +115,7 @@ requirements/           PM 手动提示 AI agent  →    outputs/shared/       (
 
 | 文件 | 为什么重要 |
 |------|-----------|
-| `rules/global-rules.md §14` | 项目所有技术约定的集中地（技术栈/枚举/错误码/API规范） |
+| `rules/global-rules.md §14` | 项目所有技术约定的集中地（技术栈/枚举/错误码/API规范）—— ⚠️ 本节内容尚未写入，当前为空占位 |
 | `background/key-decisions.md` | 解释"为什么这样设计"，防止新人推翻已有决策 |
 | `outputs/ui/shared/UI-COMPONENT-REGISTRY.md` | 已有 UI 组件注册表，生成新文档前必查 |
 
@@ -142,7 +141,7 @@ requirements/           PM 手动提示 AI agent  →    outputs/shared/       (
 - `smart-site-design` — 设计体系（Token + 组件规范）
 - `ai-doc-framework` — agent 规则框架（rules + templates）
 
-触发时机和分离成本见 `rules/global-rules.md §14.10`。
+触发时机和分离成本原计划记于 `rules/global-rules.md §14.10`，该节尚未写入。
 
 ---
 
