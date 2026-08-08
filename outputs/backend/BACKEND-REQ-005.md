@@ -7,7 +7,7 @@ generated_at: 2026-05-28
 
 # 后端说明文档：PC 端 Site Engineer 图纸查阅与局部更新查看
 
-> 本文档依据 [REQ-005-pc.md v0.3.5](../../../requirements/pc/REQ-005-pc.md) 生成，描述 SE 视角下图纸查阅、确认与局部更新相关的后端接口、数据模型和业务逻辑。
+> 本文档依据 [REQ-005-pc.md v0.3.5](../../requirements/pc/REQ-005-pc.md) 生成，描述 SE 视角下图纸查阅、确认与局部更新相关的后端接口、数据模型和业务逻辑。
 
 ---
 

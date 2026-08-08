@@ -10,8 +10,8 @@ owner: ""
 
 # 后端开发说明 — PC 端上传新版本
 
-> **来源需求**: [REQ-003F-pc.md](../../../requirements/pc/REQ-003F-pc.md) @ v0.5.0
-> **依赖共享规范**: [REQ-003-shared](../../../requirements/shared/REQ-003-shared.md)、[REQ-007-shared](../../../requirements/shared/REQ-007-shared.md)
+> **来源需求**: [REQ-003F-pc.md](../../requirements/pc/REQ-003F-pc.md) @ v0.5.0
+> **依赖共享规范**: [REQ-003-shared](../../requirements/shared/REQ-003-shared.md)、[REQ-007-shared](../../requirements/shared/REQ-007-shared.md)
 > **产品**: SMART SITE SYSTEM
 > **服务模块**: `drawing-service`
 > **生成日期**: 2026-05-26

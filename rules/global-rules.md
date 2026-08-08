@@ -440,7 +440,7 @@ function generate_spec(requirement_md):
 ```markdown
 ## 业务规则
 
-> 详见 [REQ-001-shared.md](../shared/REQ-001-shared.md) — §3「登录业务规则」
+> 详见 [REQ-001-shared.md](../requirements/shared/REQ-001-shared.md) — §3「登录业务规则」
 ```
 
 agent 在生成下游文档时,若发现某端文档重复定义了 shared 中已有的业务规则,
