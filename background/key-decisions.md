@@ -38,7 +38,6 @@
 - 枚举值：`not_started` / `in_progress` / `completed`
 - `completed` 为终态，后端拒绝任何状态逆转请求，返回 `422`
 - APP 端 Start Task 无需确认弹框（低风险操作），Mark as Complete 必须有确认弹框（不可逆）
-- 详见 `global-rules.md §14.4`
 
 ---
 
@@ -62,7 +61,6 @@
 - 权重默认值从工序模板带出，CM 可手动修改
 - 进度公式：`Σ(completed工序weight) / Σ(all工序weight) × 100%`
 - 只统计 `status = completed` 的工序，`in_progress` 不计入
-- 详见 `global-rules.md §14.5`
 
 ---
 
@@ -85,7 +83,6 @@
 - 状态变为 `completed` 时，后端同步将该记录 `is_locked = 1`
 - 对 `is_locked = 1` 的记录发起任何修改操作，返回 `403`
 - 前端收到 403 时展示"该记录已锁定，无法修改"提示
-- 详见 `global-rules.md §14.4`
 
 ---
 
@@ -105,10 +102,9 @@ PC 端使用 Element UI（桌面扁平风格），APP 端使用 UNIAPP（iOS/And
 采用方案 2（完全独立）。理由：PC 和 APP 设计语言差异过大，共享层的价值低于维护成本；独立管理更清晰，Figma 文件也是独立的。
 
 **约定细节**
-- Token 文件：`design-tokens-pc.json` / `design-tokens-app.json` / `design-tokens-h5.json`
-- 三端汇总对比文件 `design-tokens.json` 仅供参考，不作为开发依据
-- 跨端一致性靠品牌层（同一套视觉语言原则），而非 Token 继承
-- 详见 `outputs/ui/shared/tokens/design-tokens.json`
+- 三端各自维护独立 Token，无继承关系；跨端一致性靠品牌层（同一套视觉语言原则）
+- 三端汇总对比视图仅供参考，不作为开发依据
+- Token 的文件组织与命名由 UI agent 在设计体系侧决定，本仓库不作规定、不持有这些文件
 
 ---
 
@@ -154,12 +150,11 @@ PC 端使用 Element UI（桌面扁平风格），APP 端使用 UNIAPP（iOS/And
 
 | 未来仓库 | 内容来源 | 触发时机 |
 |---------|---------|---------|
-| `smart-site-design` | `outputs/ui/shared/tokens/` + 组件规范 | 设计体系规则稳定后 |
+| `smart-site-design` | 设计体系产物（Token + 组件规范），由 UI agent 维护，当前不在本仓库 | 设计体系规则稳定后 |
 | `ai-doc-framework` | `rules/ §1–§13` + `templates/` | 第二个项目启动时 |
 
 **约定细节**
 - 分离时只需修改各 `rules/*.md` 头部的 `继承:` 声明（约 7 处），业务文档零改动
-- 详见 `global-rules.md §14.10`
 
 ---
 
@@ -171,13 +166,13 @@ PC 端使用 Element UI（桌面扁平风格），APP 端使用 UNIAPP（iOS/And
 如果业务文档直接写入颜色值或尺寸值，未来 Token 变更时需要逐一修改所有业务文档，维护成本极高，也会阻碍仓库分离。
 
 **最终决策**
-业务文档只引用语义名，具体值集中在 Token 文件和 `global-rules.md §14` 中维护。
+业务文档只引用语义名，不写具体值。具体值由 UI agent 在设计体系侧维护，不在本仓库定义。
 
 **约定细节**
-- ✅ 正确：`statusTagType()` 返回 `"primary"`；颜色见 `global-rules §14.4`
+- ✅ 正确：`statusTagType()` 返回 `"primary"`，颜色值交由设计体系解析
 - ❌ 错误：直接写 `color: #6892ff`
+- ❌ 错误：在业务文档中引用某个具体 Token 文件的路径（本仓库不持有这些文件）
 - 此规则对所有 agent 生成的文档强制生效
-- 详见 `global-rules.md §14.10`
 
 ---
 
@@ -186,3 +181,5 @@ PC 端使用 Element UI（桌面扁平风格），APP 端使用 UNIAPP（iOS/And
 | 版本 | 日期 | 变更摘要 |
 |-----|------|---------|
 | 0.1.0 | 2026-05-01 | 初建；录入 DEC-001 至 DEC-007，替换占位模板 |
+| 0.2.0 | 2026-08-08 | 清理 7 处指向 `global-rules.md §14`（空占位章节，已删除）的断链：DEC-001/002/003/006 的「详见」行删除（约定细节本节已写全） |
+| 0.3.0 | 2026-08-08 | 明确设计 Token 不在本仓库定义、由 UI agent 在设计体系侧维护：DEC-004/006/007 移除全部指向 `outputs/ui/shared/tokens/`（该目录从未建立）的路径引用；DEC-004 一并移除 Token 文件命名约定，文件组织与命名归 UI agent 决定 |

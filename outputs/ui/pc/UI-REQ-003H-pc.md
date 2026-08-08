@@ -409,7 +409,7 @@ owner: ""
 
 > **本需求不新建任何组件**。两处"新增分支"需要 REQ-007C 对应组件开放新的状态入参，属既有组件的能力扩展，需与该组件维护方确认。
 >
-> <!-- NOTE: README 声称 outputs/ui/shared/UI-COMPONENT-REGISTRY.md 是"生成新文档前必查"，但该文件及整个 outputs/ui/shared/ 目录当前不存在，本节的"现有 DS"判断依据的是既有 UI 文档中的实际用法，无注册表可对照。 -->
+> <!-- NOTE: 本仓库无 UI 组件注册表，本节的"现有 DS"判断依据的是既有 UI 文档中的实际用法，无注册表可对照。 -->
 
 ---
 
@@ -441,7 +441,7 @@ owner: ""
 
 - Figma 设计稿：<!-- TODO: 待设计输出后补充。需覆盖：上传弹窗 Approval Route 两态（Standard / Pre-Approved）、无权限用户弹窗（验证与现状一致）、版本历史跳过态展开、列表 Pre-approved 标识（1280px 窄屏） -->
 - 交互原型：<!-- TODO: 待设计输出后补充 -->
-- 设计系统：PC 端设计令牌（`design-tokens-pc.json`，见 [DEC-004](../../../background/key-decisions.md)）
+- 设计系统：PC 端设计令牌，由 UI agent 在设计体系侧维护，本仓库只引用语义名（见 [DEC-004](../../../background/key-decisions.md)、[DEC-007](../../../background/key-decisions.md)）
 
 ---
 
@@ -501,3 +501,4 @@ UI 设计交付物完成的判定：
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
 | 0.1.0 | 2026-08-07 | ui-agent | 初稿：基于 REQ-003H-pc §8 页面简图生成。定义 Approval Route 区域、警示文案块、版本历史跳过态、列表 Pre-approved 标识共 4 个页面/组件；新增 OQ-UI-001（REQ-007C 组件是否支持新状态分支）、OQ-UI-002（窄屏列宽取舍） |
+| 0.1.1 | 2026-08-08 | XIA YING | 仅链接维护，设计内容未变：§8 NOTE 去掉对已删除的 README 组件注册表条目的指向；§10 去掉 `design-tokens-pc.json` 文件名（Token 由 UI agent 在设计体系侧维护，本仓库不持有） |

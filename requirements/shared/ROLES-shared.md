@@ -14,7 +14,7 @@ updated_at: 2026-08-08
 > 涉及角色时，必须使用本文档 §1 的标准名，并遵守 §2 的禁用词表。
 >
 > 本文档不属于任何单个 REQ，故不采用 `REQ-{编号}-shared.md` 命名。
-> 归入 `requirements/shared/` 的依据见 `rules/global-rules.md` §15.2
+> 归入 `requirements/shared/` 的依据见 `rules/global-rules.md` §14.2
 > —— 「权限与角色定义」属跨端共享内容。
 
 ---

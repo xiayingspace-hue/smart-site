@@ -11,7 +11,7 @@
 | 步骤 | 文件 | 读完你会知道 |
 |------|------|------------|
 | 1 | `background/project-overview.md` | 这是什么产品、三端分别是什么 |
-| 2 | `rules/global-rules.md §15` | 三端（PC / APP / H5）如何分文件夹管理、shared 与各端如何分工 |
+| 2 | `rules/global-rules.md §14` | 三端（PC / APP / H5）如何分文件夹管理、shared 与各端如何分工 |
 | 3 | `rules/README.md` | 整套 agent 规则体系如何运作 |
 | 4 | `requirements/versions.md` | 当前有哪些 REQ、各自处于什么状态、彼此如何依赖 |
 
@@ -56,7 +56,7 @@ smart-site/
 │
 ├── rules/                       # Agent 生成规则（规定文档怎么生成）
 │   ├── README.md                # ⭐ 规则体系总览，必读
-│   ├── global-rules.md          # 所有 agent 共享的基础规则 + 项目专属约定
+│   ├── global-rules.md          # 所有 agent 共享的基础规则 + 命名规范 + 多端拆分原则
 │   ├── ui-rules.md              # UI agent 规则
 │   ├── frontend-rules.md        # 前端 agent 规则
 │   ├── backend-rules.md         # 后端 agent 规则
@@ -114,9 +114,9 @@ requirements/           PM 手动提示 AI agent  →    outputs/shared/       (
 
 | 文件 | 为什么重要 |
 |------|-----------|
-| `rules/global-rules.md §14` | 项目所有技术约定的集中地（技术栈/枚举/错误码/API规范）—— ⚠️ 本节内容尚未写入，当前为空占位 |
+| `background/tech-stack.md` | 三端 + 后端技术栈的单一事实源（框架、语言、构建、浏览器支持、API 风格与网关） |
+| `rules/data-contract-rules.md` | 枚举与错误码的生成规则；具体取值在各 REQ 的 `data-contract.md §2 / §4.2` |
 | `background/key-decisions.md` | 解释"为什么这样设计"，防止新人推翻已有决策 |
-| `outputs/ui/shared/UI-COMPONENT-REGISTRY.md` | 已有 UI 组件注册表，生成新文档前必查 |
 
 ---
 
@@ -141,7 +141,7 @@ requirements/           PM 手动提示 AI agent  →    outputs/shared/       (
 - `smart-site-design` — 设计体系（Token + 组件规范）
 - `ai-doc-framework` — agent 规则框架（rules + templates）
 
-触发时机和分离成本原计划记于 `rules/global-rules.md §14.10`，该节尚未写入。
+触发时机和分离成本见 `background/key-decisions.md` DEC-006。
 
 ---
 

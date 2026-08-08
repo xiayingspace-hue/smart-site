@@ -132,7 +132,7 @@ owner: ""                           # 留空,等待人类填写
 
 ### 4.3 文件命名
 
-> 端标识取值:`shared` / `pc` / `app` / `h5`。多端拆分原则见 §15。
+> 端标识取值:`shared` / `pc` / `app` / `h5`。多端拆分原则见 §14。
 
 | 类型 | 格式 | 示例 |
 |-----|------|------|
@@ -208,17 +208,25 @@ agent **允许**以下推导,但必须**显式标注来源**:
 | 数据模型字段 | `data-contract.md` §1 | 引用实体名 + 章节,**不复制字段表** |
 | 枚举值 | `data-contract.md` §2 | 引用枚举名 |
 | API 字段 | `data-contract.md` §4 | 引用 API ID |
+| 错误码 | `data-contract.md` §4.2(取值)、`rules/data-contract-rules.md` §3.3.3(命名规则) | 引用错误码常量名,**不复制含义与触发条件** |
 | 状态机 | `data-contract.md` §3 | 引用状态机名 |
 | 验收标准 | `requirement.md` §9 | 引用 AC ID |
 | 角色(跨文档) | `requirements/shared/ROLES-shared.md` §1 | 引用标准名,**不用 ROLE-XXX** |
 | 角色(需求文件内) | `requirement.md` §4.1 | 局部编号,仅本文件内有效 |
 | 命名与书写规范 | 本文件 §4、§9 | 直接遵循,不另立规则 |
 | 用户故事 | `user-stories.md` 或 `requirement.md` §4.2 | 引用 US ID |
+| 技术栈 | `background/tech-stack.md` | 引用文件 + 章节,**不在需求/下游文档重复列举框架与版本** |
+
+> ⚠️ 本表即技术类约定的完整索引。**不要**在本文件或任何单一文档中新建
+> "项目技术约定汇总"类章节去收编上表内容 —— 历史上的 §14 就是这样一个
+> 从未写入、却被 8 处引用的空占位,已于 v0.4.0 删除。新增约定应写进它
+> 所属的 SSoT 文件,并在本表补一行。
 
 **违反 SSoT 的典型错误**:
 - ❌ 在 `frontend-spec.md` 写"上传接口字段:file, hash, size..."(应引用 API-XXX)
 - ❌ 在 `qa-spec.md` 重新写一遍 AC 描述(应只写 AC ID)
 - ❌ 在 `backend-spec.md` 重新定义实体字段(应引用 data-contract §1.X)
+- ❌ 在需求文档写"前端用 Vue 2 + Element UI"(应引用 `background/tech-stack.md` §1)
 
 ---
 
@@ -387,22 +395,12 @@ function generate_spec(requirement_md):
 
 ---
 
-## 14. 项目专属约定
-
-<!-- MISSING: 本节被 README.md 与 background/key-decisions.md 共 8 处引用
-     (§14、§14.4、§14.5、§14.10),但内容从未写入本文件。
-     按引用处的描述,本节应包含:技术栈约定、枚举、错误码、API 规范、
-     设计 Token 语义值、仓库分离方案的触发时机与成本。
-     在补齐之前,上述引用均为断链。 -->
-
----
-
-## 15. 多端拆分原则
+## 14. 多端拆分原则
 
 > 本项目包含 PC / APP / H5 三端,共享同一套后端服务与业务逻辑。
 > 各端技术栈见 `background/tech-stack.md`(技术栈的单一事实源),本节不重复。
 
-### 15.1 目录与端标识
+### 14.1 目录与端标识
 
 | 端 | 端标识 | 目标用户 |
 |----|-------|---------|
@@ -414,7 +412,7 @@ function generate_spec(requirement_md):
 `requirements/` 与 `outputs/` 均按端标识分子目录;`outputs/backend/` 不分端。
 文件命名规范见 §4.3。
 
-### 15.2 shared 与各端的职责边界
+### 14.2 shared 与各端的职责边界
 
 写入 `shared/`:
 
@@ -433,7 +431,7 @@ function generate_spec(requirement_md):
 - 端特有功能(如 APP 扫码登录、H5 微信授权、PC 批量操作)
 - 端特有的非功能需求(屏幕适配等)
 
-### 15.3 引用而非复制
+### 14.3 引用而非复制
 
 各端需求文档**引用** shared 文档中的业务规则与 API 定义,不得重复表述：
 
@@ -446,7 +444,7 @@ function generate_spec(requirement_md):
 agent 在生成下游文档时,若发现某端文档重复定义了 shared 中已有的业务规则,
 应标注 `<!-- MISSING: 与 REQ-XXX-shared.md §N 重复定义 -->` 并以 shared 为准。
 
-### 15.4 设计体系分层
+### 14.4 设计体系分层
 
 跨端设计系统(品牌标识、品牌色、语义色、字体家族、图标库)为三端共同基线;
 各端在此之上独立维护自己的设计语言(圆角、触控尺寸、信息密度、导航模式),
@@ -454,10 +452,11 @@ agent 在生成下游文档时,若发现某端文档重复定义了 shared 中�
 
 ---
 
-## 16. 变更历史
+## 15. 变更历史
 
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
 | 0.1.0 | YYYY-MM-DD | | 初稿 |
 | 0.2.0 | 2026-08-08 | XIA YING | 新增 §15 多端拆分原则(由 MULTI-PLATFORM.md 并入);§14 标记为缺失章节 |
 | 0.3.0 | 2026-08-08 | XIA YING | §2.1 将 `background/project-overview.md` §文档覆盖范围 列为必读输入;§11 新增第 9 条,禁止因需求文档缺失而推断功能不存在或系统边界 |
+| 0.4.0 | 2026-08-08 | XIA YING | 删除空占位章节「§14 项目专属约定」。该节声称收纳的技术栈/枚举/错误码/API 规范/设计 Token 各有既存 SSoT(见 §6),集中到本文件会与 §6 冲突;8 处断链引用已改指各自 SSoT。原 §15 顺延为 §14,原 §16 顺延为 §15;§6 SSoT 表新增「技术栈 → `background/tech-stack.md`」「错误码 → `data-contract.md` §4.2 + `data-contract-rules.md` §3.3.3」两行并加注,禁止再建同类汇总章节 |
