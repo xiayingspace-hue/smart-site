@@ -96,7 +96,7 @@ generated_from: requirement.md@0.1.0
 
 ### 4. Open Questions(待定项)
 
-- PM 在 §15 显式列出想不清楚的问题
+- PM 在 §17 Open Questions 显式列出想不清楚的问题
 - 下游 agent 看到 OQ 标记**不要编造**,在对应章节生成 `<!-- TODO: 等待 OQ-XXX 解决 -->`
 
 ### 5. 单一事实源(SSoT)

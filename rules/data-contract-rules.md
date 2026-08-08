@@ -88,19 +88,19 @@
 
 ```yaml
 state_machine: <实体名>_status
-initial_state: <来自需求 §5.1 第一个非终态>
+initial_state: <来自需求 §7.1 状态定义,第一个非终态>
 transitions:
-  - id: T-001                         # 来自需求 §5.2 顺序编号
+  - id: T-001                         # 来自需求 §7.2 状态转换表,顺序编号
     from: <状态 ID>
     to: <状态 ID>
-    action: <动作名,snake_case>      # 来自需求 §5.2 触发动作
+    action: <动作名,snake_case>      # 来自需求 §7.2 状态转换表,触发动作
     guard: <数组,来自守卫条件,每条一行>
     side_effects: <数组,来自副作用>
     ac_refs: [AC-XXX]                 # 反查所有 Given/When/Then 中提到该转换的 AC
 forbidden_transitions:
   - from: <状态>
     to: "*"                           # 或具体状态
-    reason: <来自需求 §5.3>
+    reason: <来自需求 §7.3 非法转换>
 ```
 
 **guard 表达式规范**:
