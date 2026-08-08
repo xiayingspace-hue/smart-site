@@ -62,11 +62,11 @@ owner: ""
 - 某前置 Story 已完成
 -->
 
-**所属流程节点**: 需求文档 §X.X 步骤 N
+**所属流程节点**: 需求文档 §2.1 主流程 步骤 N
 
 **关联 AC**: AC-XXXX-001, AC-XXXX-002
 
-**验收要点**(详细 AC 见 requirement.md §8):
+**验收要点**(详细 AC 见 requirement.md §9):
 <!-- 简述本 Story 的验收要点,详细规范在需求文档 -->
 
 **涉及接口**: API-XXX, API-YYY

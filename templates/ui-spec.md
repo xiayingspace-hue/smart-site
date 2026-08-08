@@ -200,7 +200,7 @@ owner: ""                           # UI 设计师
 
 ## 11. 待定问题(Open Questions)
 
-> 引用自 requirement.md §15 中影响 UI 的项,以及 UI 设计师自己发现的新问题。
+> 引用自 requirement.md §17 Open Questions 中影响 UI 的项,以及 UI 设计师自己发现的新问题。
 
 | OQ ID | 问题 | 影响 UI 哪部分 |
 |------|------|--------------|

@@ -78,7 +78,7 @@ generated_from: requirement.md@0.1.0
 
 ### 2. AC ID 追溯系统
 
-- PM 在 `requirement.md` §8 写 `AC-{REQ_ID}-{NNN}` 格式的验收标准
+- PM 在 `requirement.md` §9 写 `AC-{REQ_ID}-{NNN}` 格式的验收标准
 - 下游所有文档(UI/前端/后端/QA)在末尾的"AC 覆盖检查表"列出 AC → 对应实现位置
 - QA 的每个 TC 必须显式 `covers_ac: [AC-XXX]`
 - 代码注释中标注 `// AC-XXX`
@@ -113,7 +113,7 @@ generated_from: requirement.md@0.1.0
 ### Step 1:PM 写需求
 
 1. 复制 `requirement.md` 到 `requirements/REQ-XXXX-xxx/`
-2. 填字段。**遇到不确定的事写到 §15 Open Questions,不要瞎填**
+2. 填字段。**遇到不确定的事写到 §17 Open Questions,不要瞎填**
 3. 同步更新 `requirements/shared/ROLES-shared.md`(如有新角色)
 4. 与 TL 共同产出 `data-contract.md`(API 设计)
 5. 与 TL 共同拆分 `user-stories.md`
