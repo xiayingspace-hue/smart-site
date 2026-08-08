@@ -37,7 +37,7 @@
 |-----|------|
 | 0 溯源块 | ✅ |
 | 1 功能概述 | ✅ |
-| 2 技术栈 | ✅ |
+| 2 技术栈(引用基线 + 本需求新增/偏离) | ✅ |
 | 3 业务逻辑 | ✅ |
 | 4 状态机实现 | ✅(若有状态机) |
 | 5 事务边界 | ✅ |
@@ -459,6 +459,8 @@ CREATE INDEX ON audit_logs (actor_id, occurred_at DESC);
 ## 7. 不要做的事
 
 - ❌ 在 backend-spec 重新定义字段(必须引用 data-contract)
+- ❌ 在 §2.1 复制 `background/tech-stack.md §4` 的语言/框架/数据库/中间件条目
+  (基线只引用不复制,见 `global-rules.md` §6)
 - ❌ 让业务代码直接改 status 字段(必须走状态机入口)
 - ❌ 把 MQ 发布写在业务事务里(应走 outbox)
 - ❌ 跳过幂等设计(POST 创建类不带 Idempotency-Key)
