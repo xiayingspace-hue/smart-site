@@ -2,13 +2,13 @@
 doc_type: requirement
 req_id: REQ-003H-pc
 req_title: "PC 端 — 免审批上传（已完成审批的图纸直接生效）"
-version: 0.1.3
+version: 0.1.4
 status: draft
 priority: P1
 product: SMART SITE SYSTEM
 owner: ""
 created_at: 2026-08-06
-updated_at: 2026-08-06
+updated_at: 2026-08-08
 
 depends_on:
   - REQ-003E-pc
@@ -347,11 +347,11 @@ flowchart TD
 | 实体 ID | 实体名 | 描述 | 关键属性（业务语义） |
 |--------|-------|------|------------------|
 | ENT-001 | Drawing | 图纸主记录 | 沿用 [REQ-003-shared §2.1](../shared/REQ-003-shared.md)，本需求**不新增字段**；免审批创建的记录 `status` 直接为 `ACTIVE` |
-| ENT-002 | DrawingVersion | 图纸版本记录（本需求场景下恒为首版 V1） | 沿用 [REQ-003-shared §2.2](../shared/REQ-003-shared.md) + [REQ-007-shared §4.1](../shared/REQ-007-shared.md)，**新增 `approvalRoute`**（见 §6.2）；`approvalStatus` 直接为 `APPROVED`；`fileUrl` 与 `signedFileUrl` 指向同一文件 |
+| ENT-002 | DrawingVersion | 图纸版本记录（本需求场景下恒为首版 V1） | 沿用 [REQ-003-shared §2.2](../shared/REQ-003-shared.md) + [REQ-007-shared §4.1](../shared/REQ-007-shared.md)，**新增 `approvalRoute`**（见本节下方属性表）；`approvalStatus` 直接为 `APPROVED`；`fileUrl` 与 `signedFileUrl` 指向同一文件 |
 | ENT-003 | DrawingApproval | 审批记录 | 免审批路径**不创建任何 DrawingApproval 记录**（既无 `phase = INTERNAL` 也无 `phase = EXTERNAL`）——系统内确实没有发生过审批行为，不应伪造审批记录 |
 | ENT-004 | AIRecognitionJob | AI 识别任务 | 沿用 [REQ-003E-pc](REQ-003E-pc.md)，行为不变：`SHOP_DRAWING` 照常识别，`OTHERS` 不创建 |
 
-### 6.2 新增属性：审批路径（approvalRoute）
+**DrawingVersion 新增属性：审批路径（approvalRoute）**
 
 | 属性 | 取值 | 含义 |
 |------|------|------|
@@ -362,14 +362,14 @@ flowchart TD
 >
 > **留痕由系统自动完成**：免审批版本的操作人与时间直接复用 `DrawingVersion.uploaderId` / `uploaderName` / `uploadTime`，不新增字段、不要求上传人额外录入任何内容。`approvalRoute = PRE_APPROVED` + 上传人 + 上传时间三者即构成完整的责任链。
 
-### 6.3 实体关系
+### 6.2 实体关系
 
 - 一次免审批上传创建**一条 Drawing + 一条 DrawingVersion**，与 [REQ-003E-pc §4.2](REQ-003E-pc.md) 一致，两类 `submissionType` 均无差别
 - 该 DrawingVersion **不关联任何 DrawingApproval**（0 条），与 Standard 路径的"1 条 INTERNAL + N 条 EXTERNAL"形成对照
 - 该 DrawingVersion 的 `fileUrl` 与 `signedFileUrl` **指向同一个 OSS 对象**——上传人提交的就是最终流通版，不存在"原始版 vs 签字版"的区分
 - QR 叠加对象为 `signedFileUrl`，产出 `pdfWithQrUrl`，与 [REQ-007-shared §7.7](../shared/REQ-007-shared.md) 文件使用优先级规则保持一致
 
-### 6.4 数据生命周期
+### 6.3 数据生命周期
 
 **DrawingVersion（PRE_APPROVED）生命周期**：
 
@@ -700,7 +700,7 @@ Then   后端实时校验拦截，返回 1003003020
 
 ## 10. 非功能需求
 
-### 10.1 性能
+### 10.1 验证指标
 
 | 指标 | 目标值 | 测量方式 |
 |-----|-------|---------|
@@ -768,6 +768,10 @@ Then   后端实时校验拦截，返回 1003003020
 
 ## 14. 上线操作清单（Launch Checklist）
 
+> 上线前由 PM + 后端 TL + QA 共同确认，逐项打勾后方可发布。
+> PM/TL 确认动作**已执行**，QA 验证结果**已生效**（核对方式见 `rules/qa-rules.md §4.11`，
+> 落到 `qa-spec.md §14.2/§14.3`）。
+
 ### 14.1 上线前
 
 - [ ] 执行数据迁移脚本：新增 `approval_route` 字段并回填 `STANDARD`（详见 §13）
@@ -833,6 +837,7 @@ Then   后端实时校验拦截，返回 1003003020
 | 0.1.1 | 2026-08-06 | agent | 按新版需求模板重构（业务规则零变更）：章节调整为业务流程/功能需求前置的 19 节结构；新增 §8 页面简图（上传弹窗 Approval Route 区域、版本历史免审批展开态、列表 Status 列）；删除 Figma 节与兼容性节（后者统一由 background/tech-stack.md 定义）；§10.3 可访问性收窄为基线外增量；§12 改为只列外部系统，需求间依赖回归 front matter | 无 |
 | 0.1.2 | 2026-08-08 | XIA YING | 按 glossary.md §2 统一角色名称：项目管理员 / 项目管理人员 / 业务人员 / 管理员 → 图纸管理员；Drawing 团队（成员）→ 设计人员；审批人 → 内部审批人；普通业务人员 → 普通用户 | 全部 |
 | 0.1.3 | 2026-08-08 | XIA YING | §19.2 移除指向已删除的 CHANGELOG.md 的行，其登记职责并入 requirements/versions.md 需求依赖关系总览 | 无 |
+| 0.1.4 | 2026-08-08 | XIA YING | 结构对齐最新需求模板（业务规则零变更）：原 §6.2「新增属性」并入 §6.1 实体清单，§6.3 实体关系与 §6.4 数据生命周期回归模板编号 §6.2 / §6.3；§10.1 标题「性能」改为「验证指标」；§14 补模板说明行（确认人含 QA，PM/TL 确认动作已执行、QA 验证结果已生效）| 无 |
 
 ---
 
