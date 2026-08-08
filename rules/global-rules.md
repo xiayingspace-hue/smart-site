@@ -353,7 +353,7 @@ function generate_spec(requirement_md):
 | 跨端共享 | `shared` | — |
 
 `requirements/` 与 `outputs/` 均按端标识分子目录;`outputs/backend/` 不分端。
-文件命名规范见 `glossary.md` §5.1。
+文件命名规范见 `glossary.md` §3.2。
 
 ### 15.2 shared 与各端的职责边界
 

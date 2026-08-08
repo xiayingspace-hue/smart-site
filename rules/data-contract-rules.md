@@ -24,8 +24,8 @@
 | `requirement.md §10.2` 安全 | §6 鉴权与权限 |
 | `requirement.md §12` 依赖系统 | §5 异步任务(若涉及外部调用) |
 | `requirement.md §5` 权限矩阵 | §6.2 权限校验点 |
-| `glossary.md §5.3` 字段命名规范 | 全文字段命名 |
-| `glossary.md §5.4` 枚举命名规范 | §2 枚举 |
+| `glossary.md §3.3` 字段命名规范 | 全文字段命名 |
+| `glossary.md §3.4` 枚举命名规范 | §2 枚举 |
 
 ---
 
@@ -279,8 +279,8 @@ constants:
 - [ ] 每个 POST 创建类 API 有 Idempotency-Key 处理
 - [ ] §6.2 权限校验点覆盖所有 API
 - [ ] §7 constants 覆盖所有"具体数值"
-- [ ] 所有字段命名遵循 glossary.md §5.3
-- [ ] 所有枚举命名遵循 glossary.md §5.4
+- [ ] 所有字段命名遵循 glossary.md §3.3
+- [ ] 所有枚举命名遵循 glossary.md §3.4
 - [ ] 没有重复定义(同一字段在多个实体下重复)
 - [ ] 至少 1 个 transition 引用了 ac_refs(否则状态机和 AC 失联)
 
