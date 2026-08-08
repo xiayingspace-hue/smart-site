@@ -463,15 +463,6 @@ Then   DC-A 和 DC-B 的 Todo 列表均出现"External Approval Required"任务
 | OQ-001 | 是否允许为不同图纸分类（Category）配置不同 DC？当前方案为项目级统一配置。 | 配置粒度 | PM | — |
 | OQ-002 | DC 人员离职/权限被撤销时，是否需要系统自动提醒图纸管理员重新配置？ | 运营保障 | PM | — |
 
----
-
-## 17. Figma / 原型链接
-
-- Figma 设计稿：<!-- 填写 DC Configuration 页 / Add DC 弹窗 Frame 链接 -->
-- 交互原型：
-
----
-
 ## 18. 变更历史
 
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |

@@ -140,7 +140,7 @@ generated_from: requirement.md@0.1.0
 
 ### Step 4:执行落地
 
-- UI 设计师按 `ui-spec.md` 出 Figma
+- UI 设计师按 `ui-spec.md` 出视觉稿与交互稿(设计文件在设计工具中自行维护,不在本仓库登记)
 - 开发按 `frontend-spec.md` / `backend-spec.md` 编码
 - QA 按 `qa-spec.md` 写测试代码
 

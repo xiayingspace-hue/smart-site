@@ -47,7 +47,7 @@
 | `requirement.md` AC | `qa-spec.md` TC | 每个 AC 至少 1 个 TC 覆盖 | 反向扫描 TC 的 covers_ac |
 | `requirement.md` AC | `frontend-spec.md` §13 | UI 类 AC 必须有前端实现位置 | 扫描 §13 表 |
 | `requirement.md` AC | `backend-spec.md` §15 | 业务逻辑类 AC 必须有后端实现位置 | 扫描 §15 表 |
-| `requirement.md` AC | `ui-spec.md` §11 | 设计类 AC 必须有 UI 元素 | 扫描 §11 表 |
+| `requirement.md` AC | `ui-spec.md` §10 | 设计类 AC 必须有 UI 元素 | 扫描 §10 表 |
 | `data-contract.md` API | `frontend-spec.md` §6.2 | 每个 API 必须有前端调用方 | 扫描 §6.2 表 |
 | `data-contract.md` API | `backend-spec.md` 业务逻辑 | 每个 API 必须有后端实现 | 扫描业务点 |
 | `data-contract.md` 状态机 transition | `qa-spec.md` SC-T | 每条转换必须有 1 个测试场景 | 扫描状态转换场景 |

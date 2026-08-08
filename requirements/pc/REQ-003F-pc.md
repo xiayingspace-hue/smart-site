@@ -465,14 +465,6 @@ Then   新的"Internal Approval Required"任务立即出现，包含图纸编号
 | OQ-003 | 文件大小上限未来是否需要放宽？ | F-001 约束 | PM | — |
 | OQ-004 | Version Note 是否需要字数上限约束？ | F-001 字段约束 | PM | — |
 
----
-
-## 13. Figma / 原型链接
-
-- Figma 设计稿：<!-- 填写 Upload New Version 弹窗 Frame 链接 -->
-
----
-
 ## 14. 变更历史
 
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |

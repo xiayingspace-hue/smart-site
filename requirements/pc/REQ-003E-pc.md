@@ -718,15 +718,6 @@ Then   Submission Type 默认选中 Shop Drawing；文件上传区自弹窗打�
 | OQ-009 | **[新增]** REQ-003-shared §2.1 的 `drawingCode` / `drawingName` 由必填改为条件必填、§2.6 新增 `submissionType` 枚举、§4.1 上传接口收窄为仅 PDF——契约变更需后端确认改动量与 DB 约束影响 | 契约同步、BE 改动 | PM + 后端 | — |
 | OQ-010 | **[新增]** REQ-006-pc §181 假设"原始文件可能非 PDF（DWG/DXF/PNG/JPG）"，但新建图纸已收窄为仅 PDF——该分支是否成为死代码？需确认是否删除 | REQ-006 范围 | PM | — |
 
----
-
-## 17. Figma / 原型链接
-
-- Figma 设计稿：<!-- 填写上传弹窗（含 Submission Type 选择 / AI 识别中 / 识别结果列表 / Others 形态 / 降级模式）Frame 链接 -->
-- 交互原型：
-
----
-
 ## 18. 变更历史
 
 | 版本 | 日期 | 修改人 | 变更摘要 | 影响下游文档 |
