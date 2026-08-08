@@ -22,6 +22,21 @@
 - `templates/` 定义文档**长什么样**(结构、字段、章节)
 - `rules/` 定义文档**怎么生成**(从哪读、怎么转、怎么校验)
 
+`templates/` 下 7 份模板与各自的人类负责人:
+
+| 模板 | 人类负责人 | 对应规则 |
+|-----|----------|---------|
+| `requirement.md` | PM(主) | — (源头文档,由人撰写) |
+| `data-contract.md` | 后端架构师 / TL | `data-contract-rules.md` |
+| `user-stories.md` | PM + TL | `user-stories-rules.md` |
+| `ui-spec.md` | UI 设计师 | `ui-rules.md` |
+| `frontend-spec.md` | 前端开发 | `frontend-rules.md` |
+| `backend-spec.md` | 后端开发 | `backend-rules.md` |
+| `qa-spec.md` | QA | `qa-rules.md` |
+
+> agent 生成初稿,人类负责人 review 并对内容负责。`requirement.md` 无对应
+> 规则文件——它是全链路源头,不由任何 agent 生成。
+
 ---
 
 ## 规则文件的统一结构
@@ -130,15 +145,8 @@ agent 看到上游缺信息时:
 
 ### 3. 单一事实源(SSoT)
 
-| 信息 | 唯一定义位置 |
-|-----|-----------|
-| 数据字段、API、状态机 | `data-contract.md` |
-| 角色定义 | `requirements/shared/ROLES-shared.md` |
-| 命名与书写规范 | `global-rules.md` §4、§9 |
-| 验收标准 | `requirement.md` §9 |
-| 用户故事 | `user-stories.md` |
-
-下游文档**只引用、不重复**。
+下游文档**只引用、不重复**。哪类信息以哪个文件为准,见 `global-rules.md` §6
+的 SSoT 表——该表是唯一索引,本文件不另列一份。
 
 ### 4. 章节锚定
 
@@ -156,30 +164,6 @@ agent 看到上游缺信息时:
 - frontend-agent 不定义 API 字段
 - backend-agent 不写 UI 描述
 - qa-agent 不生成可运行测试代码(那是 test-code-agent 的事)
-
----
-
-## 项目目录结构(建议)
-
-```
-your-project/
-├── README.md
-├── requirements/                 # PM 写的需求(每个一个子目录)
-│   └── REQ-XXXX-[名称]/
-│       ├── requirement.md
-│       ├── data-contract.md
-│       └── user-stories.md
-├── outputs/                      # 各角色 agent 生成的下游文档
-│   └── REQ-XXXX-[名称]/
-│       ├── ui-spec.md
-│       ├── frontend-spec.md
-│       ├── backend-spec.md
-│       ├── qa-spec.md
-│       └── .trace-report.md      # 校验脚本输出
-├── templates/                    # 文档模板(7 份)
-├── rules/                        # 本目录(9 份规则)
-└── schemas/                      # OpenAPI / JSON Schema(可选)
-```
 
 ---
 
@@ -282,3 +266,4 @@ A: 在生成的文档底部加一节"规则偏离记录",显式说明哪条规�
 | 版本 | 日期 | 修改人 | 变更摘要 |
 |-----|------|-------|---------|
 | 0.1.0 | YYYY-MM-DD | | 初稿:9 份规则文件 |
+| 0.2.0 | 2026-08-08 | XIA YING | 删除 `templates/README.md`(8 节中 7 节与 global-rules / 本文件重复,且零引用);其唯一独有信息「7 份模板的人类负责人」并入本文件文件清单节。删除本文件「项目目录结构」一节——目录树的唯一事实源是根 `README.md`,本节既是副本又已过时(原写法为每需求一子目录 + 不存在的 schemas/、examples/);目录归属规则本就在 `global-rules.md` §14、§4.3;「关键设计原则 > 3. SSoT」的 5 行简表同理删除,改为指向 `global-rules.md` §6 的 11 行权威表(简表缺错误码、技术栈、状态机、需求文件内角色等行,易被误读为全集) |
