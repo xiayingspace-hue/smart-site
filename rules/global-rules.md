@@ -1,6 +1,7 @@
 # 全局转换规则(Global Rules)
 
-> **本文档定义所有下游 agent(UI / 前端 / 后端 / QA / data-contract / user-stories / glossary)的共享规则**。
+> **本文档定义所有下游 agent(UI / 前端 / 后端 / QA / data-contract / user-stories)的共享规则**,
+> 并收录全项目的命名与书写约定(§4、§9)。
 >
 > 各角色 rules 文件不应重复定义本文档已覆盖的内容,只在角色专属部分扩展。
 
@@ -22,7 +23,6 @@
 |------|------|------|------|
 | 1 | `requirement.md` | 需求源头 | ✅ 必须 |
 | 2 | `requirements/shared/ROLES-shared.md` | 角色标准名与角色禁用词 | ✅ 必须 |
-| 3 | `glossary.md` | 命名与缩写规范 | ✅ 必须 |
 | 3 | `data-contract.md` | 接口与数据 | 🔶 除 data-contract agent 自身外必须 |
 | 4 | `user-stories.md` | Story 拆分 | 🔶 推荐 |
 | 5 | `background/project-overview.md` §文档覆盖范围 | 了解本仓库的覆盖边界 | ✅ 必须 |
@@ -52,7 +52,7 @@
 
 ```yaml
 ---
-doc_type: [ui_spec | frontend_spec | backend_spec | qa_spec | data_contract | user_stories | glossary]
+doc_type: [ui_spec | frontend_spec | backend_spec | qa_spec | data_contract | user_stories]
 req_id: REQ-XXXX                    # 来自上游
 version: 0.1.0                      # 初次生成统一为 0.1.0
 status: draft                       # 初次生成统一为 draft
@@ -89,14 +89,30 @@ owner: ""                           # 留空,等待人类填写
 
 ---
 
-## 4. ID 命名规范
+## 4. 命名规范
+
+### 4.1 常用缩写
+
+| 缩写 | 全称 | 含义 |
+|-----|------|------|
+| AC | Acceptance Criteria | 验收标准 |
+| US | User Story | 用户故事 |
+| TC | Test Case | 测试用例 |
+| OQ | Open Question | 待定问题 |
+| API | Application Programming Interface | 应用编程接口 |
+| DTO | Data Transfer Object | 数据传输对象 |
+| SSoT | Single Source of Truth | 单一事实源 |
+
+> 项目专属缩写在此续填。
+
+### 4.2 ID 命名
 
 | 类型 | 格式 | 示例 | 由谁分配 |
 |-----|------|------|--------|
-| 需求 | `REQ-{4 位数字}` | REQ-0042 | PM |
+| 需求 | `REQ-{3 位数字}[子需求字母]` | REQ-003、REQ-003A | PM |
 | 用户故事 | `US-{3 位数字}` | US-001 | PM 或 user-stories agent |
-| 验收标准 | `AC-{REQ_ID 后 4 位}-{3 位数字}` | AC-0042-001 | PM |
-| 测试用例 | `TC-{AC_ID 后部}-{2 位数字}` | TC-0042-001-01 | QA agent |
+| 验收标准 | `AC-{REQ 编号}-{3 位数字}` | AC-003H-001 | PM |
+| 测试用例 | `TC-{AC 编号}-{2 位数字}` | TC-003H-001-01 | QA agent |
 | 接口 | `API-{3 位数字}` | API-001 | data-contract agent |
 | 实体 | `ENT-{3 位数字}` | ENT-001 | PM 或 data-contract agent |
 | 状态 | `S-{大写英文}` | S-PUBLISHED | PM |
@@ -110,7 +126,38 @@ owner: ""                           # 留空,等待人类填写
 **规则**:
 - ID 一旦分配,**永不复用**(即使删除了对应内容)
 - ID 在所属命名空间内必须唯一
-- 跨文档引用 ID 时**禁止改写格式**(不能写 `Ac-0042-1` 或 `AC0042001`)
+- 跨文档引用 ID 时**禁止改写格式**(不能写 `Ac-003H-1` 或 `AC003H001`)
+- `ROLE-XXX` 是**需求文件内的局部编号**,不跨文档通用。跨文档引用角色须使用标准名,
+  见 `requirements/shared/ROLES-shared.md` §1
+
+### 4.3 文件命名
+
+> 端标识取值:`shared` / `pc` / `app` / `h5`。多端拆分原则见 §15。
+
+| 类型 | 格式 | 示例 |
+|-----|------|------|
+| 需求文件 | `REQ-{编号}-{端标识}.md` | `REQ-003A-pc.md`、`REQ-007-shared.md` |
+| 数据契约 | `DATA-CONTRACT-REQ-{编号}-{端标识}.md` | `DATA-CONTRACT-REQ-003H-pc.md` |
+| UI 说明 | `UI-REQ-{编号}-{端标识}.md` | `UI-REQ-003A-pc.md` |
+| 前端说明 | `FRONTEND-REQ-{编号}-{端标识}.md` | `FRONTEND-REQ-003A-pc.md` |
+| 后端说明 | `BACKEND-REQ-{编号}.md`(不分端) | `BACKEND-REQ-003A.md` |
+| 测试用例 | `QA-REQ-{编号}-{端标识}.md` | `QA-REQ-003A-pc.md` |
+
+> **例外**:不属于任何单个 REQ 的跨端共享文档,采用 `{主题}-shared.md` 命名,
+> 如 `requirements/shared/ROLES-shared.md`(全项目角色定义)。
+
+### 4.4 字段命名
+
+- 数据库字段:`snake_case`
+- API 字段:`snake_case`(对外契约统一,前端 client 内部转 camelCase)
+- 前端组件 prop:`camelCase`
+- TS 类型:`PascalCase`
+
+### 4.5 枚举值命名
+
+- 全大写,下划线分隔(如 `IN_PROGRESS`)
+- 不要用数字编码
+- 枚举的**取值**定义在 data-contract §2,本节只规定命名形式
 
 ---
 
@@ -163,10 +210,9 @@ agent **允许**以下推导,但必须**显式标注来源**:
 | API 字段 | `data-contract.md` §4 | 引用 API ID |
 | 状态机 | `data-contract.md` §3 | 引用状态机名 |
 | 验收标准 | `requirement.md` §9 | 引用 AC ID |
-| 角色定义 | `requirements/shared/ROLES-shared.md` §1 | 使用标准名,不重新定义 |
-| 命名与缩写规范 | `glossary.md` | 直接遵循,不另立规则 |
-| 角色（跨文档） | `requirements/shared/ROLES-shared.md` §1 | 引用标准名,**不用 ROLE-XXX** |
-| 角色（需求文件内） | `requirement.md` §4.1 | 局部编号,仅本文件内有效 |
+| 角色(跨文档) | `requirements/shared/ROLES-shared.md` §1 | 引用标准名,**不用 ROLE-XXX** |
+| 角色(需求文件内) | `requirement.md` §4.1 | 局部编号,仅本文件内有效 |
+| 命名与书写规范 | 本文件 §4、§9 | 直接遵循,不另立规则 |
 | 用户故事 | `user-stories.md` 或 `requirement.md` §4.2 | 引用 US ID |
 
 **违反 SSoT 的典型错误**:
@@ -178,11 +224,12 @@ agent **允许**以下推导,但必须**显式标注来源**:
 
 ## 7. 术语一致性
 
-- 所有用户可见文案、字段命名、文档行文,**必须**与 `glossary.md` 一致
-- 发现 glossary 缺词时,先在 glossary 增补,再使用
+- 角色名**必须**取自 `requirements/shared/ROLES-shared.md` §1 标准名
+- 字段与枚举命名**必须**遵循本文件 §4.4 / §4.5
+- 发现缺少标准角色名时,先在 `ROLES-shared.md` 增补,再使用
 - **禁止**同义词漂移(同一概念用多个名字)
 
-agent 自检方法:生成完成后,扫描文档中的核心名词,对照 glossary 检查。
+agent 自检方法:生成完成后,扫描文档中出现的角色名,对照 `ROLES-shared.md` §1 与 §2 检查。
 
 ---
 
@@ -205,6 +252,15 @@ agent 自检方法:生成完成后,扫描文档中的核心名词,对照 glossar
 - 表格表头加粗自动应用,无需额外加 `**`
 - 代码块标注语言(```yaml / ```ts / ```sql / ```pseudo)
 - 链接用相对路径(`./data-contract.md`)便于跨文档跳转
+
+**全角 / 半角**:中文语境下的括号统一用全角 `（）`。
+
+| ❌ 不要用 | ✅ 应该用 |
+|---------|---------|
+| `Document Controller (DC)` | `Document Controller（DC）` |
+| `Site Engineer (SE)` | `Site Engineer（SE）` |
+
+> 当前 `REQ-007-shared` 使用半角,其余文件使用全角。
 
 ### 9.2 注释类型
 
@@ -254,7 +310,7 @@ agent **生成完成后,必须自检以下项**,任一未通过须修正后重�
 
 agent **绝对不允许**:
 
-1. ❌ 修改源文档(requirement.md / glossary.md / data-contract.md)
+1. ❌ 修改源文档(requirement.md / ROLES-shared.md / data-contract.md)
 2. ❌ 删除模板中的章节(可留空,但不能删)
 3. ❌ 改变章节顺序与编号
 4. ❌ 跳过 AC 覆盖检查表
@@ -356,7 +412,7 @@ function generate_spec(requirement_md):
 | 跨端共享 | `shared` | — |
 
 `requirements/` 与 `outputs/` 均按端标识分子目录;`outputs/backend/` 不分端。
-文件命名规范见 `glossary.md` §2.2。
+文件命名规范见 §4.3。
 
 ### 15.2 shared 与各端的职责边界
 

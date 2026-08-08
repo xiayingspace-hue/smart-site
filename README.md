@@ -62,7 +62,7 @@ smart-site/
 │   ├── qa-rules.md              # QA agent 规则
 │   ├── data-contract-rules.md   # 数据契约 agent 规则
 │   ├── traceability-rules.md    # 追溯规则（AC → 代码 → 测试的闭环）
-│   ├── glossary-rules.md        # 角色表与命名规范 agent 规则
+│   ├── roles-rules.md           # 角色定义 agent 规则
 │   └── user-stories-rules.md    # 用户故事 agent 规则
 │
 ├── templates/                   # 文档模板（规定文档长什么样）
@@ -77,7 +77,6 @@ smart-site/
 ├── releases/                    # 发布快照归档（每次版本发布时存入）
 │
 ├── README.md                    # 本文件
-├── glossary.md                  # ⭐ 项目命名与缩写规范（单例，无模板，直接维护本文件）
 └── VERSIONS.md                  # ⭐ REQ 状态总表 + 需求依赖关系总览 + 版本规划
 ```
 

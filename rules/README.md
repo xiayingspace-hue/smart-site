@@ -10,7 +10,7 @@
 |-----|-------------|---------|------|
 | `global-rules.md` | **所有 agent 共享** | - | 基础规则 |
 | `traceability-rules.md` | 校验脚本 + 所有 agent 自检 | - | 追溯规则 |
-| `glossary-rules.md` | glossary-agent | `ROLES-shared.md` + `glossary.md` | 角色规则 |
+| `roles-rules.md` | roles-agent | `ROLES-shared.md` | 角色规则 |
 | `user-stories-rules.md` | user-stories-agent | `user-stories.md` | 角色规则 |
 | `data-contract-rules.md` | data-contract-agent | `data-contract.md` | 角色规则 |
 | `ui-rules.md` | ui-agent | `ui-spec.md` | 角色规则 |
@@ -52,7 +52,7 @@
               ┌────────────┼────────────┐
               ↓            ↓            ↓
        ┌─────────┐   ┌──────────┐   ┌──────────────┐
-       │glossary │   │user-stor.│   │data-contract │
+       │ roles   │   │user-stor.│   │data-contract │
        │ agent   │   │  agent   │   │   agent      │
        └────┬────┘   └────┬─────┘   └──────┬───────┘
             │             │                │
@@ -67,7 +67,7 @@
 
 执行顺序:
 1. PM 写 requirement.md
-2. glossary + user-stories + data-contract 三者基本并行
+2. roles + user-stories + data-contract 三者基本并行
    (但 data-contract 强烈建议有 TL/架构师评审)
 3. ui / frontend / backend / qa 四者基本并行
    (frontend 强依赖 ui-spec 和 data-contract;
@@ -134,7 +134,7 @@ agent 看到上游缺信息时:
 |-----|-----------|
 | 数据字段、API、状态机 | `data-contract.md` |
 | 角色定义 | `requirements/shared/ROLES-shared.md` |
-| 命名与缩写规范 | `glossary.md` |
+| 命名与书写规范 | `global-rules.md` §4、§9 |
 | 验收标准 | `requirement.md` §9 |
 | 用户故事 | `user-stories.md` |
 
@@ -164,7 +164,6 @@ agent 看到上游缺信息时:
 ```
 your-project/
 ├── README.md
-├── glossary.md                   # 命名与缩写规范(项目级)
 ├── requirements/                 # PM 写的需求(每个一个子目录)
 │   └── REQ-XXXX-[名称]/
 │       ├── requirement.md
@@ -201,7 +200,6 @@ your-project/
 请基于以下输入生成 ui-spec.md:
 - requirement.md: ...
 - data-contract.md: ...
-- glossary.md: ...
 ```
 
 ### 对 PM(使用 agent 的人)

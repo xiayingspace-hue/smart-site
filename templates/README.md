@@ -26,11 +26,11 @@ requirement.md ──┬─► user-stories.md
                  │                      ├─► backend-spec.md
                  │                      └─► qa-spec.md
                  ├─► ui-spec.md ────────► frontend-spec.md
-                 └─► ../glossary.md (全员引用,项目根目录)
+                 └─► ../requirements/shared/ROLES-shared.md (全员引用)
 
 下游文档变更不能反向影响 requirement.md。
 data-contract.md 是前端/后端/QA 三方协调的枢纽。
-glossary.md 全项目仅一份,直接维护根目录实例,本目录不设模板。
+ROLES-shared.md 全项目仅一份,直接维护,本目录不设模板。
 ```
 
 ---
@@ -53,7 +53,6 @@ mcc-requirements/
 │       ├── frontend-spec.md
 │       ├── backend-spec.md
 │       └── qa-spec.md
-├── glossary.md                # 命名与缩写规范(项目级)
 ├── rules/                     # 转换规则配置
 ├── schemas/                   # 文档结构 schema(可选,用于校验)
 └── examples/                  # 真实业务示例(参考)
@@ -121,7 +120,7 @@ generated_from: requirement.md@0.1.0
 
 ### Step 2:并行启动下游 agent
 
-把 `requirement.md + data-contract.md + glossary.md` 喂给:
+把 `requirement.md + data-contract.md + ROLES-shared.md` 喂给:
 
 - UI agent → 产出 `ui-spec.md`
 - 前端 agent → 产出 `frontend-spec.md`

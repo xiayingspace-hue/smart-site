@@ -12,7 +12,7 @@ owner: ""                           # UI 设计师
 
 > **本文档供 UI 设计师及其 agent 使用,产出视觉稿与交互稿**。
 >
-> - 输入:requirement.md(主)、ROLES-shared.md(角色)、glossary.md(命名规范)
+> - 输入:requirement.md(主)、ROLES-shared.md(角色)
 > - 输出引用:Figma 链接、交互原型链接
 > - 不重复定义数据字段(参见 data-contract.md)
 

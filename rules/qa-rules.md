@@ -36,7 +36,7 @@
 | `data-contract.md` | §3 状态机 | §3.4 状态转换场景 |
 | `data-contract.md` | §4 API + 错误码 | §6 接口测试 |
 | `data-contract.md` | §7 数据约束 | §5 边界值 |
-| `glossary.md` | 全文 | 命名一致 |
+| `requirements/shared/ROLES-shared.md` | §1 标准名 | 角色命名一致 |
 | `frontend-spec.md` / `backend-spec.md` | 测试要求章节 | 协调测试金字塔分工 |
 
 ### 2.2 输入校验
