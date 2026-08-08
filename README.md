@@ -13,7 +13,7 @@
 | 1 | `background/project-overview.md` | 这是什么产品、三端分别是什么 |
 | 2 | `rules/global-rules.md §15` | 三端（PC / APP / H5）如何分文件夹管理、shared 与各端如何分工 |
 | 3 | `rules/README.md` | 整套 agent 规则体系如何运作 |
-| 4 | `VERSIONS.md` | 当前有哪些 REQ、各自处于什么状态、彼此如何依赖 |
+| 4 | `requirements/versions.md` | 当前有哪些 REQ、各自处于什么状态、彼此如何依赖 |
 
 ---
 
@@ -30,6 +30,7 @@ smart-site/
 │   └── user-research.md         # 用户研究
 │
 ├── requirements/                # PM 编写的需求文档（唯一事实源）
+│   ├── versions.md              # ⭐ REQ 状态总表 + 依赖关系总览 + 版本规划
 │   ├── shared/                  # 跨端共享业务规则（REQ-XXX-shared.md）
 │   │   └── ROLES-shared.md      # ⭐ 全项目角色定义与角色禁用词
 │   ├── pc/                      # PC 管理端需求（REQ-XXX-pc.md）
@@ -76,8 +77,7 @@ smart-site/
 │
 ├── releases/                    # 发布快照归档（每次版本发布时存入）
 │
-├── README.md                    # 本文件
-└── VERSIONS.md                  # ⭐ REQ 状态总表 + 需求依赖关系总览 + 版本规划
+└── README.md                    # 本文件
 ```
 
 ---
@@ -94,7 +94,7 @@ requirements/           PM 手动提示 AI agent  →    outputs/shared/       (
                                               →    outputs/qa/pc/        (测试用例)
 ```
 
-**需求变更时**：由 PM 判断哪些下游文档受影响并重新生成，在 `VERSIONS.md` 中更新对应 REQ 的状态。
+**需求变更时**：由 PM 判断哪些下游文档受影响并重新生成，在 `requirements/versions.md` 中更新对应 REQ 的状态。
 
 ---
 
@@ -122,7 +122,7 @@ requirements/           PM 手动提示 AI agent  →    outputs/shared/       (
 
 ## 📊 当前 REQ 覆盖状态
 
-详见 `VERSIONS.md` — REQ 文档版本状态总表。
+详见 `requirements/versions.md` — REQ 文档版本状态总表。
 
 | 状态 | 含义 |
 |------|------|

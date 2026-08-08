@@ -1,4 +1,4 @@
-# Smart Site 产品版本管理
+# Smart Site 需求索引与版本管理
 
 > **文档用途**：记录产品版本规划、各版本包含的 REQ 清单，以及每个 REQ 当前的文档版本状态。
 > 版本号遵循语义化版本（SemVer）：`Major.Minor.Patch`。
@@ -95,7 +95,7 @@
 ### 当前状态说明
 
 - 除 REQ-002、REQ-003C、REQ-003D 外，其余 REQ 的下游文档均已生成，但**全部标记为
-  🟠 下游过期** —— 2026-08-08 图纸线 21 份需求统一了角色名称（详见 `requirements/shared/ROLES-shared.md` §2.1），
+  🟠 下游过期** —— 2026-08-08 图纸线 21 份需求统一了角色名称（详见 [shared/ROLES-shared.md](shared/ROLES-shared.md) §2.1），
   下游文档尚未同步重新生成
 - 9 个 REQ 因需求文件缺 front matter 无法判定状态，补齐后方可纳入版本管理
 - 数据契约（DATA-CONTRACT）目前仅 REQ-003H 一份，其余 REQ 的前后端字段定义
@@ -179,8 +179,8 @@ REQ-015 BCA 月度人力数据提交（独立模块，无依赖）
 
 > **关于物料管理**：原表将 REQ-015 记为「物料管理」，而 REQ-015 实为 BCA 月度人力数据提交。
 > 物料管理功能**已上线**，只是在本仓库建立前即已开发完成，故无需求文档（见
-> `background/project-overview.md` §文档覆盖范围）。其设计决策记于
-> `background/key-decisions.md` DEC-005。
+> [../background/project-overview.md](../background/project-overview.md) §文档覆盖范围）。
+> 其设计决策记于 [../background/key-decisions.md](../background/key-decisions.md) DEC-005。
 > 本表只登记有需求文档的 REQ，不为已上线的历史功能预留编号。
 
 ---
@@ -215,3 +215,4 @@ REQ-015 BCA 月度人力数据提交（独立模块，无依赖）
 | 0.2.0 | 2026-05-01 | 框架结构大调整：新增 glossary.md 根目录实例、补充 requirement.md §13 上线操作清单、§6.2 Mermaid 流程图、backend-rules 接口路径规范及服务清单、ui-rules Figma 文件结构规范、前后端测试要求改为建议项 |
 | 0.3.0 | 2026-08-08 | 新增「需求依赖关系总览」（由 CHANGELOG.md 并入并按 front matter 重建） |
 | 0.4.0 | 2026-08-08 | 按磁盘实际重建 REQ 状态总表：原表 15 行中标题、版本、状态几乎全部失实（如 REQ-003 记为「Activity 管理」、REQ-015 记为「物料管理」），现为 26 行并逐行校验；移除无法可靠取值的 output_ver 列，改用「下游文档」列；状态图例新增 ⚠️ 元数据缺失与 ⚫ 已废弃；版本发布历史与版本详情按依赖关系重排 |
+| 0.5.0 | 2026-08-08 | 由根目录 `VERSIONS.md` 移入 `requirements/versions.md` —— 版本号在创建需求时确定，与需求关系更近；文件标题改为「需求索引与版本管理」；内部路径引用改为相对本文件位置 |

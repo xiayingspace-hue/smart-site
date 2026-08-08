@@ -216,7 +216,7 @@ your-project/
 1. 按 `global-rules.md` §10 检查文档结构(front matter、溯源块、章节完整)
 2. 按 `traceability-rules.md` 检查追溯链(每个 AC 至少 1 条 TC,无破链引用)
 3. 确认所有 `<!-- TODO -->` / `<!-- MISSING -->` 标记指向真实的上游缺口
-4. 在 `VERSIONS.md` 中更新该 REQ 的 `output_ver` 与状态
+4. 在 `requirements/versions.md` 中更新该 REQ 的状态与下游文档列
 
 ---
 
