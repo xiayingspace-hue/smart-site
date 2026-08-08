@@ -53,7 +53,7 @@ mcc-requirements/
 │       ├── frontend-spec.md
 │       ├── backend-spec.md
 │       └── qa-spec.md
-├── glossary.md                # 全局术语表(项目级,所有需求共享)
+├── glossary.md                # 命名与缩写规范(项目级)
 ├── rules/                     # 转换规则配置
 ├── schemas/                   # 文档结构 schema(可选,用于校验)
 └── examples/                  # 真实业务示例(参考)
@@ -103,7 +103,8 @@ generated_from: requirement.md@0.1.0
 ### 5. 单一事实源(SSoT)
 
 - **数据模型与 API 字段**:只在 `data-contract.md` 定义,其他文档只能引用
-- **业务术语**:只在 `glossary.md` 定义
+- **角色定义**:只在 `requirements/shared/ROLES-shared.md` 定义
+- **业务术语**:只在各需求 §6 核心实体定义
 - **验收标准**:只在 `requirement.md` 定义,其他文档只能引用 ID
 
 ---
@@ -114,7 +115,7 @@ generated_from: requirement.md@0.1.0
 
 1. 复制 `requirement.md` 到 `requirements/REQ-XXXX-xxx/`
 2. 填字段。**遇到不确定的事写到 §15 Open Questions,不要瞎填**
-3. 同步更新 `glossary.md`(如有新术语)
+3. 同步更新 `requirements/shared/ROLES-shared.md`(如有新角色)
 4. 与 TL 共同产出 `data-contract.md`(API 设计)
 5. 与 TL 共同拆分 `user-stories.md`
 

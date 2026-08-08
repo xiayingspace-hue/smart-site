@@ -21,7 +21,8 @@
 | 优先级 | 文件 | 用途 | 必需? |
 |------|------|------|------|
 | 1 | `requirement.md` | 需求源头 | ✅ 必须 |
-| 2 | `glossary.md` | 术语对齐 | ✅ 必须 |
+| 2 | `requirements/shared/ROLES-shared.md` | 角色标准名与角色禁用词 | ✅ 必须 |
+| 3 | `glossary.md` | 命名与缩写规范 | ✅ 必须 |
 | 3 | `data-contract.md` | 接口与数据 | 🔶 除 data-contract agent 自身外必须 |
 | 4 | `user-stories.md` | Story 拆分 | 🔶 推荐 |
 | 5 | `background/project-overview.md` §文档覆盖范围 | 了解本仓库的覆盖边界 | ✅ 必须 |
@@ -38,7 +39,7 @@
 - [ ] requirement.md 的 YAML front matter 字段齐全(req_id / version / status)
 - [ ] requirement.md status ≠ `draft`(若是 draft,警告但允许继续)
 - [ ] requirement.md 的所有 AC 都有唯一 ID,符合 `AC-{REQ_ID}-{NNN}` 格式
-- [ ] 引用的术语在 glossary.md 中存在
+- [ ] 引用的角色名是 `ROLES-shared.md` §1 的标准名,且未使用其 §2 禁用词
 - [ ] 引用的实体/接口在 data-contract.md 中存在(若已生成)
 
 ---
@@ -162,8 +163,10 @@ agent **允许**以下推导,但必须**显式标注来源**:
 | API 字段 | `data-contract.md` §4 | 引用 API ID |
 | 状态机 | `data-contract.md` §3 | 引用状态机名 |
 | 验收标准 | `requirement.md` §9 | 引用 AC ID |
-| 业务术语 | `glossary.md` | 直接使用术语,不重新定义 |
-| 角色定义 | `requirement.md` §4.1 | 引用 ROLE ID |
+| 角色定义 | `requirements/shared/ROLES-shared.md` §1 | 使用标准名,不重新定义 |
+| 命名与缩写规范 | `glossary.md` | 直接遵循,不另立规则 |
+| 角色（跨文档） | `requirements/shared/ROLES-shared.md` §1 | 引用标准名,**不用 ROLE-XXX** |
+| 角色（需求文件内） | `requirement.md` §4.1 | 局部编号,仅本文件内有效 |
 | 用户故事 | `user-stories.md` 或 `requirement.md` §4.2 | 引用 US ID |
 
 **违反 SSoT 的典型错误**:
@@ -237,7 +240,7 @@ agent **生成完成后,必须自检以下项**,任一未通过须修正后重�
 
 - [ ] 没有重复定义已在 SSoT 文档定义的字段
 - [ ] 引用而不复制
-- [ ] 术语与 glossary.md 一致
+- [ ] 角色名与 `ROLES-shared.md` §1 一致,未命中其 §2 禁用词
 
 ### 10.4 缺失项校验
 
@@ -256,7 +259,7 @@ agent **绝对不允许**:
 3. ❌ 改变章节顺序与编号
 4. ❌ 跳过 AC 覆盖检查表
 5. ❌ 在不确定时编造默认值
-6. ❌ 用同义词替换 glossary 已定义的术语
+6. ❌ 用同义词替换 `ROLES-shared.md` 已定义的角色标准名
 7. ❌ 生成超出本角色职责的内容(例如 UI agent 不应输出 SQL)
 8. ❌ 输出"建议增加 XXX 章节"这类元评论(应直接修改本 rules 反馈)
 9. ❌ **因某模块在 `requirements/` 下找不到文档,就推断该功能不存在**
@@ -353,7 +356,7 @@ function generate_spec(requirement_md):
 | 跨端共享 | `shared` | — |
 
 `requirements/` 与 `outputs/` 均按端标识分子目录;`outputs/backend/` 不分端。
-文件命名规范见 `glossary.md` §3.2。
+文件命名规范见 `glossary.md` §2.2。
 
 ### 15.2 shared 与各端的职责边界
 

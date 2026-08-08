@@ -31,6 +31,7 @@ smart-site/
 │
 ├── requirements/                # PM 编写的需求文档（唯一事实源）
 │   ├── shared/                  # 跨端共享业务规则（REQ-XXX-shared.md）
+│   │   └── ROLES-shared.md      # ⭐ 全项目角色定义与角色禁用词
 │   ├── pc/                      # PC 管理端需求（REQ-XXX-pc.md）
 │   ├── app/                     # APP 移动端需求（REQ-XXX-app.md）
 │   └── h5/                      # H5 移动端需求（REQ-XXX-h5.md）
@@ -61,7 +62,7 @@ smart-site/
 │   ├── qa-rules.md              # QA agent 规则
 │   ├── data-contract-rules.md   # 数据契约 agent 规则
 │   ├── traceability-rules.md    # 追溯规则（AC → 代码 → 测试的闭环）
-│   ├── glossary-rules.md        # 术语表 agent 规则
+│   ├── glossary-rules.md        # 角色表与命名规范 agent 规则
 │   └── user-stories-rules.md    # 用户故事 agent 规则
 │
 ├── templates/                   # 文档模板（规定文档长什么样）
@@ -76,7 +77,7 @@ smart-site/
 ├── releases/                    # 发布快照归档（每次版本发布时存入）
 │
 ├── README.md                    # 本文件
-├── glossary.md                  # ⭐ 全项目术语表（单例，无模板，直接维护本文件）
+├── glossary.md                  # ⭐ 项目命名与缩写规范（单例，无模板，直接维护本文件）
 └── VERSIONS.md                  # ⭐ REQ 状态总表 + 需求依赖关系总览 + 版本规划
 ```
 
@@ -127,9 +128,10 @@ requirements/           PM 手动提示 AI agent  →    outputs/shared/       (
 | 状态 | 含义 |
 |------|------|
 | ✅ 同步 | 需求与下游文档版本一致 |
-| 🔴 下游缺失 | 需求存在，下游文档未生成（当前：REQ-015） |
+| 🔴 下游缺失 | 需求存在，下游文档未生成或仅生成一部分 |
 | 🟠 下游过期 | 需求已更新，下游文档未重新生成 |
-| 🟡 草稿 | 需求文件仍为 draft |
+| ⚠️ 元数据缺失 | 需求文件无 version / updated_at，无法判定 |
+| ⚫ 已废弃 | 文档已被拆分或替代，不再维护 |
 
 ---
 
@@ -144,4 +146,4 @@ requirements/           PM 手动提示 AI agent  →    outputs/shared/       (
 
 ---
 
-*最后更新：2026-05-01*
+*最后更新：2026-08-08*

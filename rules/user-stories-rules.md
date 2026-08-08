@@ -29,7 +29,7 @@
 | `requirement.md` | §3 功能需求 | Story 内容来源 |
 | `requirement.md` | §9 验收标准 | Story 与 AC 关联 |
 | `requirement.md` | §5 权限矩阵 | 推导角色相关 Story |
-| `glossary.md` | 全文 | 术语对齐 |
+| `requirements/shared/ROLES-shared.md` | §1 标准名 | 角色对齐 |
 
 ### 2.2 输入校验
 
