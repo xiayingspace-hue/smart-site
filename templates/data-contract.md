@@ -20,6 +20,19 @@ owner: ""                           # 通常是后端架构师 / Tech Lead
 
 ---
 
+## 0. 溯源块(Traceability)
+
+| 项 | 值 |
+|---|---|
+| 来源需求 | REQ-XXXX @ v0.1.0 |
+| 覆盖 AC | AC-XXXX-XXX |
+| 上次同步时间 | YYYY-MM-DD |
+
+> ⚠️ 本文档是前端/后端/QA 三方的共同上游,版本变更影响面最大。
+> requirement.md 版本变更时须更新此块,并通知全部下游 agent 重新生成。
+
+---
+
 ## 1. 实体数据模型(Data Models)
 
 > 对应需求文档第 4 节的实体清单。
