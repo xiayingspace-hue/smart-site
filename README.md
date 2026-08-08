@@ -75,8 +75,6 @@ smart-site/
 │   ├── data-contract.md         # 数据契约模板
 │   └── user-stories.md          # 用户故事模板
 │
-├── releases/                    # 发布快照归档（每次版本发布时存入）
-│
 └── README.md                    # 本文件
 ```
 
