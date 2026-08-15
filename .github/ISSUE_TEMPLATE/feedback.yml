@@ -1,0 +1,76 @@
+name: 反馈受理
+description: 从反馈池受理一条（或多条）反馈，进入需求流程
+title: "[FB-000] "
+labels: ["needs:spec"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        用于把「反馈池」里已判定要做的反馈转入需求流程。
+        还没进过反馈池的用户反馈，请先录入反馈池，不要直接开 Issue。
+
+  - type: input
+    id: fb-id
+    attributes:
+      label: 反馈池 ID
+      description: Notion 反馈池中的 FB 编号，多条用逗号分隔
+      placeholder: FB-042, FB-057
+    validations:
+      required: true
+
+  - type: textarea
+    id: raw
+    attributes:
+      label: 用户原话
+      description: 从反馈池原样复制，不要改写
+    validations:
+      required: true
+
+  - type: input
+    id: source
+    attributes:
+      label: 来源与角色
+      placeholder: 现场培训 / SE / 新加坡 XX 项目
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 涉及端
+      options:
+        - PC
+        - APP
+        - H5
+        - 跨端
+        - 不确定
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: 影响面
+      options:
+        - 阻塞业务
+        - 有绕行方案
+        - 轻微不便
+    validations:
+      required: true
+
+  - type: input
+    id: req
+    attributes:
+      label: 关联 REQ
+      description: 已知归属填写；待定留空，写完需求后补
+      placeholder: REQ-016-pc
+
+  - type: checkboxes
+    id: gate
+    attributes:
+      label: 受理前确认
+      options:
+        - label: 已在反馈池中查过重复，未发现同类
+          required: true
+        - label: 已确认这不是「不会用」类的培训问题
+          required: true

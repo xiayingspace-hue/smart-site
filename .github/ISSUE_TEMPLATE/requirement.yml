@@ -1,0 +1,50 @@
+name: 需求立项
+description: 非反馈驱动的需求（战略规划、技术债、合规要求）
+title: "[REQ] "
+labels: ["needs:spec"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        用于没有具体用户反馈来源的需求。
+        如果这个需求来自客户或现场反馈，请改用「反馈受理」模板。
+
+  - type: dropdown
+    id: origin
+    attributes:
+      label: 立项来源
+      options:
+        - 版本规划
+        - 技术债
+        - 合规要求
+        - 竞品对标
+        - 内部效率
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: 为什么现在做
+      description: 不写「用户需要」这类空话，写具体的触发事件
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 涉及端
+      options:
+        - PC
+        - APP
+        - H5
+        - 跨端
+        - 不确定
+    validations:
+      required: true
+
+  - type: input
+    id: req
+    attributes:
+      label: 计划 REQ 编号
+      placeholder: REQ-017-pc
