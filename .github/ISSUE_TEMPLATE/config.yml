@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 提一条用户反馈
+    url: "https://app.notion.com/p/e4915434536e45599f218ba396f1a46a?v=7b0c2515ca8b407caa14bceeda341d6b"
+    about: 来自客户或现场的反馈请走反馈池，不要直接开 Issue
